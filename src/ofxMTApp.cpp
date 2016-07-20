@@ -154,15 +154,23 @@ void ofxMTApp::setMode(MTAppMode mode)
 	}
 }
 
-void ofxMTApp::createWindowForView(ofPtr<ofxMTView> view, ofGLWindowSettings settings)
+void ofxMTApp::createWindowForView(shared_ptr<ofxMTView>& view, ofGLFWWindowSettings settings)
 {
 	
 	shared_ptr<ofAppBaseWindow> window = ofCreateWindow(settings);
 	view->setWindow(window);
 	ofAddListener(ofxMTApp::modelLoadedEvent, view.get(), &ofxMTView::modelDidLoad, OF_EVENT_ORDER_AFTER_APP);
 
-	windows.push_back(window);
-	views.push_back(view);
+	if (view == mainView)
+	{
+		windows.insert(windows.begin(), window);
+		views.insert(views.begin(), view);
+	}
+	else
+	{
+		windows.push_back(window);
+		views.push_back(view);
+	}
 	
 	ofParameterGroup thisView;
 	auto names = NSPrefsViewsGroup.getGroupHierarchyNames();
