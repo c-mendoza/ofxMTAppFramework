@@ -8,16 +8,19 @@
 
 #include "ofxMTView.hpp"
 
-ofxMTView::ofxMTView() {
+ofxMTView::ofxMTView()
+{
 	window = nullptr;
 	model = ofxMTApp::sharedApp->getModel();
 }
 
-ofxMTView::~ofxMTView() {
+ofxMTView::~ofxMTView()
+{
 	
 }
 
-void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window) {
+void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window)
+{
 	if (!this->window)
 	{
 		this->window = window;
@@ -36,7 +39,8 @@ void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window) {
 	}
 }
 
-void ofxMTView::setModel(ofPtr<ofxMTModel> model){
+void ofxMTView::setModel(ofPtr<ofxMTModel> model)
+{
 	this->model = model;
 }
 
@@ -49,18 +53,21 @@ void ofxMTView::setName(string newName)
 	}
 }
 
-ofPtr<ofAppBaseWindow> ofxMTView::getWindow() {
+ofPtr<ofAppBaseWindow> ofxMTView::getWindow()
+{
 	return window;
 }
 
-void ofxMTView::draw(){
+void ofxMTView::draw()
+{
 	ofBackground(255);
 	
 	ofSetColor(255, 0, 0);
 	ofDrawRectangle(100, 100, 400, 200);
 }
 
-void ofxMTView::addAllEvents() {
+void ofxMTView::addAllEvents()
+{
 	window->events().enable();
 //	window->events().setup.disable();
 //	ofAddListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
@@ -87,7 +94,8 @@ void ofxMTView::addAllEvents() {
 	ofAddListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_APP);
 
 }
-void ofxMTView::removeAllEvents() {
+void ofxMTView::removeAllEvents()
+{
 //	ofRemoveListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
