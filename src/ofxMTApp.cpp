@@ -113,7 +113,7 @@ void ofxMTApp::initialize()
 	// These should be overriden sometime
 //	model = shared_ptr<ofxMTModel>(new ofxMTModel("default"));
 	model = nullptr;
-	mainView = shared_ptr<ofxMTView>(new ofxMTView);
+	mainView = shared_ptr<ofxMTView>(new ofxMTView("Main View"));
 	
 	ofGLFWWindowSettings windowSettings;
 	windowSettings.setGLVersion(2, 1);
@@ -172,25 +172,26 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView>& view, ofGLFWWindowSett
 		views.push_back(view);
 	}
 	
-	ofParameterGroup thisView;
-	auto names = NSPrefsViewsGroup.getGroupHierarchyNames();
-	auto it = std::find(names.begin(), names.end(), view->getName());
-	if(it <= names.end())
+	ofParameterGroup* thisView;
+	
+	if(NSPrefsViewsGroup.contains(view->getName()))
 	{
-		thisView = NSPrefsViewsGroup.getGroup(view->getName());
-		ofPoint pos = thisView.getVec3f(NSPrefsViewPositionName);
-		ofPoint size = thisView.getVec3f(NSPrefsViewSizeName);
+		thisView = &NSPrefsViewsGroup.getGroup(view->getName());
+		ofPoint pos = thisView->getVec3f(NSPrefsViewPositionName);
+		ofPoint size = thisView->getVec3f(NSPrefsViewSizeName);
 		window->setWindowShape(size.x, size.y);
 		window->setWindowPosition(pos.x, pos.y);
 	}
 	else
 	{
-		thisView.setName(view->getName());
-		ofParameter<ofPoint> pos, size;
-		pos.set(NSPrefsViewPositionName, view->getWindow()->getWindowPosition());
-		size.set(NSPrefsViewSizeName, view->getWindow()->getWindowSize());
-		thisView.add(pos, size);
-		NSPrefsViewsGroup.add(thisView);
+		thisView = new ofParameterGroup();
+		thisView->setName(view->getName());
+		ofParameter<ofPoint>* pos = new ofParameter<ofPoint>();
+		ofParameter<ofPoint>* size = new ofParameter<ofPoint>();
+		pos->set(NSPrefsViewPositionName, view->getWindow()->getWindowPosition());
+		size->set(NSPrefsViewSizeName, view->getWindow()->getWindowSize());
+		thisView->add(*pos, *size);
+		NSPrefsViewsGroup.add(*thisView);
 	}
 	
 	

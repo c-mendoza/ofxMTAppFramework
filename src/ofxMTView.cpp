@@ -8,10 +8,11 @@
 
 #include "ofxMTView.hpp"
 
-ofxMTView::ofxMTView()
+ofxMTView::ofxMTView(string _name)
 {
 	window = nullptr;
 	model = ofxMTApp::sharedApp->getModel();
+	name = _name;
 }
 
 ofxMTView::~ofxMTView()

@@ -18,7 +18,7 @@ class ofxMTModel;
 class ofxMTView {
 	
 public:
-	ofxMTView();
+	ofxMTView(string _name);
 	~ofxMTView();
 	void setModel(ofPtr<ofxMTModel> model);
 	void setName(string viewName);
