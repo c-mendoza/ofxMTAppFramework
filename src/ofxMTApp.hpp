@@ -69,7 +69,7 @@ public:
 	//// UI
 	shared_ptr<ofAppBaseWindow> getMainWindow();
 	shared_ptr<ofxMTView> getMainView();
-	void createWindowForView(shared_ptr<ofxMTView>& view, ofGLFWWindowSettings settings);
+	void createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings);
 	void viewClosing(ofxMTView* view);
 	
 	//// FILE HANDLING

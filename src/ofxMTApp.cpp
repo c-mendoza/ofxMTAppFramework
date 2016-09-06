@@ -124,9 +124,8 @@ void ofxMTApp::initialize()
 
 void ofxMTApp::run()
 {
-//	ofRunApp(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
-	
-	ofGetMainLoop()->run(std::shared_ptr<ofBaseApp> (this));
+	ofRunApp(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
+//	ofGetMainLoop()->run(std::shared_ptr<ofBaseApp> (this));
 	ofAddListener(ofEvents().keyPressed, this, &ofxMTApp::keyPressed);
 
 	ofRunMainLoop();
@@ -154,7 +153,7 @@ void ofxMTApp::setMode(MTAppMode mode)
 	}
 }
 
-void ofxMTApp::createWindowForView(shared_ptr<ofxMTView>& view, ofGLFWWindowSettings settings)
+void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings)
 {
 	
 	shared_ptr<ofAppBaseWindow> window = ofCreateWindow(settings);
