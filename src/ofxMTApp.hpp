@@ -77,9 +77,10 @@ public:
 	void open();
 	void save();
 	bool revert();
-	bool saveAppSettings();
+	bool saveAppPreferences();
 	
-	void addPreference(ofAbstractParameter& preference);
+	void registerAppPreference(ofAbstractParameter& preference);
+	
 	shared_ptr<ofxMTModel> getModel() { return model; };
 	
 	static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
@@ -101,7 +102,7 @@ protected:
 	string fileExtension;
 	shared_ptr<ofxMTView> mainView;
 	shared_ptr<ofxMTModel> model;
-	const static string APP_SETTINGS_FILE;
+	const static string APP_PREFERENCES_FILE;
 	bool isInitialized;
 	ofParameterGroup appPreferences;
 	ofParameter<string> NSPrefLastFile;

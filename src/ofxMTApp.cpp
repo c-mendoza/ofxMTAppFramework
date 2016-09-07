@@ -2,7 +2,7 @@
 #include "ofxMTView.hpp"
 #include "ofxMTModel.hpp"
 
-const string ofxMTApp::APP_SETTINGS_FILE = "appSettings.xml";
+const string ofxMTApp::APP_PREFERENCES_FILE = "appSettings.xml";
 const string ofxMTApp::NSPrefsViewsGroupName = "Views";
 const string ofxMTApp::NSPrefsViewPositionName = "Position";
 const string ofxMTApp::NSPrefsViewSizeName = "Size";
@@ -44,11 +44,11 @@ ofxMTApp::ofxMTApp()
 		serializer = ofPtr<ofXml>(new ofXml);
 		appPrefsSerializer = ofPtr<ofXml>(new ofXml);
 		
-		if(!appPrefsSerializer->load(APP_SETTINGS_FILE))
+		if(!appPrefsSerializer->load(APP_PREFERENCES_FILE))
 		{
 			ofLog(OF_LOG_ERROR, "App Preferences could not be loaded, creating a new file.");
 			ofSystemAlertDialog("App Preferences could not be loaded, creating a new file.");
-			saveAppSettings();
+			saveAppPreferences();
 		}
 		else
 		{
@@ -72,10 +72,29 @@ ofxMTApp::ofxMTApp()
 				} while (appPrefsSerializer->setToSibling());
 			}
 			
+			appPrefsSerializer->reset();
 			appPrefsSerializer->setTo("//" + appPreferences.getEscapedName());
 			appPrefsSerializer->deserialize(appPreferences);
 			appPrefsSerializer->clear();
 		}
+	}
+}
+
+void ofxMTApp::registerAppPreference(ofAbstractParameter &preference)
+{
+	appPrefsSerializer->clear();
+	appPrefsSerializer->load(APP_PREFERENCES_FILE);
+	appPreferences.add(preference);
+	appPrefsSerializer->setTo(appPreferences.getEscapedName());
+	if (appPrefsSerializer->exists(preference.getEscapedName()))
+	{
+		appPrefsSerializer->deserialize(preference);
+		appPrefsSerializer->reset();
+	}
+	else
+	{
+		appPrefsSerializer->reset();
+		saveAppPreferences();
 	}
 }
 
@@ -317,7 +336,7 @@ bool ofxMTApp::saveImpl()
 		return false;
 	}
 	
-	saveAppSettings();
+	saveAppPreferences();
 	return true;
 
 }
@@ -346,7 +365,7 @@ bool ofxMTApp::openImpl(string filePath)
 			fileName = ofFilePath::getFileName(filePath);
 			isInitialized = true;
 			mainView->getWindow()->setWindowTitle(fileName);
-			saveAppSettings();
+			saveAppPreferences();
 			modelLoadedEvent.notify();
 //			mainView->modelDidLoad();
 			return true;
@@ -362,11 +381,12 @@ bool ofxMTApp::revert()
 }
 
 /// Saves!
-bool ofxMTApp::saveAppSettings()
+bool ofxMTApp::saveAppPreferences()
 {
 	serializer->clear();
+	appPrefsSerializer->clear();
 	appPrefsSerializer->serialize(appPreferences);
-	return appPrefsSerializer->save(APP_SETTINGS_FILE);
+	return appPrefsSerializer->save(APP_PREFERENCES_FILE);
 }
 
 void ofxMTApp::storeViewParameters(ofxMTView* v)
@@ -391,7 +411,7 @@ void ofxMTApp::viewClosing(ofxMTView* view)
 		if (i->get() == view)
 		{
 			storeViewParameters(view);
-			saveAppSettings();
+			saveAppPreferences();
 			views.erase(i);
 			return;
 		}
