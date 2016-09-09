@@ -146,8 +146,24 @@ void ofxMTApp::run()
 	ofRunApp(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
 //	ofGetMainLoop()->run(std::shared_ptr<ofBaseApp> (this));
 	ofAddListener(ofEvents().keyPressed, this, &ofxMTApp::keyPressed);
-
+	isInitialized = false;
+	
+	for (auto view : views)
+	{
+		//		view->setup();
+	}
+	
+	if (NSPrefAutoloadLastFile)
+	{
+		isInitialized = openImpl(NSPrefLastFile);
+	}
+	else
+	{
+		isInitialized = true;
+	}
 	ofRunMainLoop();
+	
+
 	
 	//	ofGetMainLoop()->run(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
 	//	ofRunMainLoop();
@@ -212,42 +228,23 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 		NSPrefsViewsGroup.add(*thisView);
 	}
 	
-	
-	
-	
-	///////NO:
-//	window->events().notifySetup();
-	
-	//The ofApp system only notifies setup for the first window it creates, the rest are on their own aparently.
-	//So we check if we have initilized the ofApp system, and if we have, then that means that we need
-	//to notify setup for the window we are creating
-//	if(!ofAppInitialized)
-//	{
-//		ofAppInitialized = true;
-//	}
-//	else
-//	{
-//		window->events().notifySetup();
-//	}
+
+//	The ofApp system only notifies setup for the first window it creates, the rest are on their own aparently.
+//	So we check if we have initilized the ofApp system, and if we have, then that means that we need
+//	to notify setup for the window we are creating
+	if(!ofAppInitialized)
+	{
+		ofAppInitialized = true;
+	}
+	else
+	{
+		window->events().notifySetup();
+	}
 }
 
 void ofxMTApp::setup()
 {
-	isInitialized = false;
-	
-	for (auto view : views)
-	{
-		view->setup();
-	}
-	
-	if (NSPrefAutoloadLastFile)
-	{
-		isInitialized = openImpl(NSPrefLastFile);
-	}
-	else
-	{
-		isInitialized = true;
-	}
+
 }
 
 //// UI

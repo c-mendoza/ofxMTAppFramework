@@ -70,8 +70,7 @@ void ofxMTView::draw()
 void ofxMTView::addAllEvents()
 {
 	window->events().enable();
-//	window->events().setup.disable();
-//	ofAddListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
+	ofAddListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
 	ofAddListener(window->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
 	ofAddListener(window->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
 	ofAddListener(window->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
@@ -97,7 +96,7 @@ void ofxMTView::addAllEvents()
 }
 void ofxMTView::removeAllEvents()
 {
-//	ofRemoveListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
+	ofRemoveListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
