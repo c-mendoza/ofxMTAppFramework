@@ -9,40 +9,20 @@
 #ifndef ofxMTAppMode_hpp
 #define ofxMTAppMode_hpp
 
-#include <stdio.h>
-#include <string>
-
+#include "ofxMTAppFramework.h"
 class ofxMTView;
-class ofxMTModel;
-
 
 class ofxMTAppMode  {
-	ofxMTModel* model;
-	ofxMTView* view;
-	std::string name;
 	
 public:
-//	ofxMTAppMode(){};
+	ofxMTAppMode(string name) { this->name = name; }
 	
-	void setModel(ofxMTModel* model)
-	{
-		this->model = model;
-	};
-	
-	void setView(ofxMTView* view)
-	{
-		this->view = view;
-	};
-	
-	void setName(std::string n) { name = n; };
 	std::string getName() { return name; }
 	
-	virtual void activate(){};
-	virtual void deactivate(){};
-	virtual void setup(){};
+	virtual void setup(ofxMTView* view) = 0;
+	virtual void exit() = 0;
 	virtual void update(){};
 	virtual void draw(){};
-	virtual void exit(){};
 	virtual void keyPressed(int key){};
 	virtual void keyReleased(int key){};
 	virtual void mouseMoved(int x, int y ){};
@@ -52,9 +32,11 @@ public:
 	virtual void mouseEntered(int x, int y){};
 	virtual void mouseExited(int x, int y){};
 	virtual void windowResized(int w, int h){};
-//	virtual void dragEvent(ofDragInfo dragInfo);
-//	virtual void gotMessage(ofMessage msg);
-	
+	//	virtual void dragEvent(ofDragInfo dragInfo);
+	//	virtual void gotMessage(ofMessage msg);
+protected:
+	ofxMTView* view;
+	std::string name;
 };
 
 #endif /* ofxMTAppMode_hpp */

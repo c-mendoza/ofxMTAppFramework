@@ -1,15 +1,11 @@
 #ifndef ofxMTApp_hpp
 #define ofxMTApp_hpp
 
-#include "ofMain.h"
-
-//#include "ofxMTModel.hpp"
-//#include "ofxMTView.hpp"
-#include "ofxMTAppMode.hpp"
+#include "ofxMTAppFramework.h"
 
 class ofxMTView;
 class ofxMTModel;
-//class ofxMTAppMode;
+class ofxMTAppMode;
 
 typedef string MTAppMode;
 
@@ -70,6 +66,14 @@ public:
 	shared_ptr<ofAppBaseWindow> getMainWindow();
 	shared_ptr<ofxMTView> getMainView();
 	void createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings);
+	///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
+	///have any ofxMTView partner.
+	shared_ptr<ofxMTView> getMTViewForWindow(shared_ptr<ofAppBaseWindow> window);
+	
+	///Returns the mouse x-position in local coordinates of the current window
+	int getLocalMouseX();
+	///Returns the mouse y-position in local coordinates of the current window
+	int getLocalMouseY();
 	void viewClosing(ofxMTView* view);
 	
 	//// FILE HANDLING
@@ -143,6 +147,9 @@ public:
 	MTAppModeChangeArgs(){}
 	
 };
+
+int mtGetLocalMouseX();
+int mtGetLocalMouseY();
 
 
 

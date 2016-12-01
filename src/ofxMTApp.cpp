@@ -1,6 +1,4 @@
 #include "ofxMTApp.hpp"
-#include "ofxMTView.hpp"
-#include "ofxMTModel.hpp"
 
 const string ofxMTApp::APP_PREFERENCES_FILE = "appSettings.xml";
 const string ofxMTApp::NSPrefsViewsGroupName = "Views";
@@ -363,7 +361,7 @@ bool ofxMTApp::openImpl(string filePath)
 			isInitialized = true;
 			mainView->getWindow()->setWindowTitle(fileName);
 			saveAppPreferences();
-			modelLoadedEvent.notify();
+			modelLoadedEvent.notify(this);
 //			mainView->modelDidLoad();
 			return true;
 		} //End load model
@@ -435,6 +433,58 @@ void ofxMTApp::exit()
 	}
 }
 
+shared_ptr<ofxMTView> ofxMTApp::getMTViewForWindow(shared_ptr<ofAppBaseWindow> window)
+{
+	for (auto mtView : views)
+	{
+		if (mtView->getWindow().get() == window.get())
+		{
+			return mtView;
+		}
+	}
+	
+	return nullptr;
+}
+
+int ofxMTApp::getLocalMouseX()
+{
+	auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+	if (mtView != nullptr)
+	{
+		return mtView->getContentMouse().x;
+	}
+	else
+	{
+		ofLogNotice("ofxMTApp") << "getLocalMouseX: Could not find MTView for window";
+		return -1;
+	}
+}
+
+
+int ofxMTApp::getLocalMouseY()
+{
+	auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+	if (mtView != nullptr)
+	{
+		return mtView->getContentMouse().y;
+	}
+	else
+	{
+		ofLogNotice("ofxMTApp") << "getLocalMouseY: Could not find MTView for window";
+		return -1;
+	}
+}
+
+int mtGetLocalMouseX()
+{
+	return ofxMTApp::sharedApp->getLocalMouseX();
+}
+
+int mtGetLocalMouseY()
+{
+	return ofxMTApp::sharedApp->getLocalMouseY();
+
+}
 //--------------------------------------------------------------
 void ofxMTApp::keyPressed(int key)
 {

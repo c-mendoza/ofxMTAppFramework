@@ -8,11 +8,17 @@
 
 #include "ofxMTView.hpp"
 
+//int	ofGetMouseY();
+
 ofxMTView::ofxMTView(string _name)
 {
 	window = nullptr;
 	model = ofxMTApp::sharedApp->getModel();
 	name = _name;
+//	contentPosition.set("Content Position", ofVec2f());
+	contentScale.set("Content Scale", 1);
+	scrollbarColor.set("Scrollbar Color", ofColor(110));
+	bScrollbarsVisible = true;
 }
 
 ofxMTView::~ofxMTView()
@@ -26,6 +32,9 @@ void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window)
 	{
 		this->window = window;
 		window->setWindowTitle(name);
+		
+		//Preliminarily set the Content Frame to the size of the window:
+		setContentFrame(ofRectangle(0, 0, window->getWidth(), window->getHeight()));
 		addAllEvents();
 	}
 	else
@@ -59,12 +68,95 @@ ofPtr<ofAppBaseWindow> ofxMTView::getWindow()
 	return window;
 }
 
-void ofxMTView::draw()
+void ofxMTView::update(ofEventArgs & args)
 {
-	ofBackground(255);
+	//I should do something here to update the size of the contentFrame and the scroll bars when necessary
+	update(); //Call user's update()
+}
+
+void ofxMTView::draw(ofEventArgs & args)
+{
+//	ofPushView();
+//	ofViewport(viewport);
+
+	ofPushView();
+	ofSetupScreenOrtho(ofGetViewportWidth(), ofGetViewportHeight());
+	ofLoadMatrix(transMatrix);
 	
-	ofSetColor(255, 0, 0);
-	ofDrawRectangle(100, 100, 400, 200);
+	//Call the user's draw() function
+	draw();
+	
+	ofPopView();
+	
+	//Draw in screen coordinates:
+	
+	if (bScrollbarsVisible)
+	{
+		int hDiff = contentFrame.width - ofGetWidth();
+		int vDiff = contentFrame.height - ofGetHeight();
+		
+		//If there is more content than window, draw the scrollbars:
+		if (hDiff > 0)
+		{
+			float barWidth = ofGetWidth() * ((float)ofGetWidth() / contentFrame.width);
+			ofFill();
+			ofSetColor(scrollbarColor);
+			ofDrawRectangle(-contentPosition.x, ofGetHeight() - 10, barWidth, 10);
+		}
+		
+		if (vDiff > 0)
+		{
+			float barHeight = ofGetHeight() * ((float)ofGetHeight() / contentFrame.height);
+			ofFill();
+			ofSetColor(scrollbarColor);
+			ofDrawRectangle(ofGetWidth() - 10, -contentPosition.y, 10, barHeight);
+		}
+		
+	}
+}
+
+void ofxMTView::exit(ofEventArgs &args)
+{
+	//		removeAllEvents();
+	ofxMTApp::sharedApp->viewClosing(this);
+	exit();
+}
+
+void ofxMTView::updateMatrix()
+{
+	transMatrix.makeIdentityMatrix();
+	transMatrix.scale(contentScale, contentScale, 1);
+//	transMatrix.translate(ofGetViewportWidth()/2, ofGetViewportHeight()/2, 0);
+
+//	transMatrix.translate(-ofGetViewportWidth()/2, -ofGetViewportHeight()/2, 0);
+	transMatrix.translate(contentPosition.x, contentPosition.y, 0);
+	invTransMatrix = transMatrix.getInverse();
+}
+
+void ofxMTView::scrollBy(float dx, float dy)
+{
+	contentPosition.x += dx;
+	contentPosition.y += dy;
+	updateMatrix();
+}
+
+void ofxMTView::scrollTo(float x, float y)
+{
+	contentPosition.x = x;
+	contentPosition.y = y;
+	updateMatrix();
+}
+
+void ofxMTView::zoomTo(float zoom)
+{
+	contentScale = zoom;
+	updateMatrix();
+}
+
+void ofxMTView::zoomBy(float zoomChange)
+{
+	contentScale += zoomChange;
+	updateMatrix();
 }
 
 void ofxMTView::addAllEvents()
@@ -119,3 +211,4 @@ void ofxMTView::removeAllEvents()
 	ofRemoveListener(window->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
 	ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_APP);
 }
+
