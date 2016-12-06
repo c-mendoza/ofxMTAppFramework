@@ -16,27 +16,22 @@
 class ofxMTModel {
 	
 public:
-	ofxMTModel(string _name){
-		name = _name;
-		parameters.setName(name);
-	};
-	virtual ~ofxMTModel(){};
-	
-	string getName() { return name; };
-	void setName(string n) {
-		name = n;
-		parameters.setName(n);
-	}
-	
-	ofParameterGroup& getParameters() { return parameters; };
+	ofxMTModel(string _name);
+	virtual ~ofxMTModel();
+	string getName();
+	void setName(string n);
+	ofParameterGroup& getParameters();
 	
 	virtual void loadFromSerializer(ofXml& serializer) = 0;
 	virtual void saveWithSerializer(ofXml& serializer) = 0;
 	
-//	virtual void setup(){};
-	
+	/// If you need event listeners that should die when this object gets destroyed,
+	/// add them with this method.
+	void addEventListener(ofEventListener&& el);
+
 protected:
 	ofParameterGroup parameters;
+	vector<ofEventListener> eventListeners;
 private:
 	string name;
 };

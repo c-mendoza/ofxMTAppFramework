@@ -7,3 +7,40 @@
 //
 
 #include "ofxMTModel.hpp"
+
+ofxMTModel::ofxMTModel(string _name)
+{
+	name = _name;
+	parameters.setName(name);
+}
+
+ofxMTModel::~ofxMTModel()
+{
+	for (auto &el : eventListeners)
+	{
+		el.unsubscribe();
+	}
+
+	eventListeners.clear();
+}
+
+string ofxMTModel::getName()
+{
+	return name;
+}
+
+void ofxMTModel::setName(string n)
+{
+	name = n;
+	parameters.setName(n);
+}
+
+ofParameterGroup& ofxMTModel::getParameters()
+{
+	return parameters;
+}
+
+void ofxMTModel::addEventListener(ofEventListener&& el)
+{
+	eventListeners.push_back(move(el));
+}

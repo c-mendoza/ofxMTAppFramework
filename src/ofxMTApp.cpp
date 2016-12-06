@@ -21,6 +21,7 @@ ofxMTApp::ofxMTApp()
 		NSPrefAutoloadLastFile.set("NSPrefAutoloadLastFile", false);
 		NSPrefLaunchInFullScreen.set("NSPrefLaunchInFullScreen", false);
 		NSPrefsViewsGroup.setName(NSPrefsViewsGroupName);
+		NSPrefsViewsGroup.setSerializable(false);
 		appPreferences.setName("App Preferences");
 		appPreferences.add(NSPrefLaunchInFullScreen,
 						   NSPrefLastFile,
@@ -171,7 +172,7 @@ void ofxMTApp::run()
 
 void ofxMTApp::setMode(MTAppMode mode)
 {
-	if(!ofContains(appModes, mode)) return;
+//	if(!ofContains(appModes, mode)) return;
 	
 	if (mode == currentMode)
 	{
@@ -209,19 +210,20 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	if(NSPrefsViewsGroup.contains(view->getName()))
 	{
 		thisView = &NSPrefsViewsGroup.getGroup(view->getName());
-		ofPoint pos = thisView->getVec3f(NSPrefsViewPositionName);
-		ofPoint size = thisView->getVec3f(NSPrefsViewSizeName);
-		window->setWindowShape(size.x, size.y);
-		window->setWindowPosition(pos.x, pos.y);
+		auto pos = thisView->getVec3f(NSPrefsViewPositionName);
+		auto size = thisView->getVec3f(NSPrefsViewSizeName);
+		window->setWindowShape(size->x, size->y);
+		window->setWindowPosition(pos->x, pos->y);
 	}
 	else
 	{
 		thisView = new ofParameterGroup();
 		thisView->setName(view->getName());
-		ofParameter<ofPoint>* pos = new ofParameter<ofPoint>();
-		ofParameter<ofPoint>* size = new ofParameter<ofPoint>();
-		pos->set(NSPrefsViewPositionName, view->getWindow()->getWindowPosition());
-		size->set(NSPrefsViewSizeName, view->getWindow()->getWindowSize());
+		ofParameter<ofDefaultVec3>* pos = new ofParameter<ofDefaultVec3>();
+		ofParameter<ofDefaultVec3>* size = new ofParameter<ofDefaultVec3>();
+		auto pp = view->getWindow()->getWindowPosition();
+		pos->set(NSPrefsViewPositionName, glm::vec3(view->getWindow()->getWindowPosition(), 0));
+		size->set(NSPrefsViewSizeName, glm::vec3(view->getWindow()->getWindowSize(), 0));
 		thisView->add(*pos, *size);
 		NSPrefsViewsGroup.add(*thisView);
 	}
@@ -238,11 +240,6 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	{
 		window->events().notifySetup();
 	}
-}
-
-void ofxMTApp::setup()
-{
-
 }
 
 //// UI
@@ -388,8 +385,8 @@ void ofxMTApp::storeViewParameters(ofxMTView* v)
 {
 	ofParameterGroup thisView = NSPrefsViewsGroup.getGroup(v->getName());
 
-	thisView.getVec3f(NSPrefsViewPositionName).set(v->getWindow()->getWindowPosition());
-	thisView.getVec3f(NSPrefsViewSizeName).set(v->getWindow()->getWindowSize());
+	thisView.getVec3f(NSPrefsViewPositionName).set( glm::vec3(v->getWindow()->getWindowPosition(), 0) );
+	thisView.getVec3f(NSPrefsViewSizeName).set( glm::vec3(v->getWindow()->getWindowSize(), 0) );
 
 }
 
@@ -422,7 +419,6 @@ void ofxMTApp::viewClosing(ofxMTView* view)
 		windows.erase(it);
 	}
 }
-
 
 void ofxMTApp::exit()
 {
@@ -485,59 +481,63 @@ int mtGetLocalMouseY()
 	return ofxMTApp::sharedApp->getLocalMouseY();
 
 }
-//--------------------------------------------------------------
-void ofxMTApp::keyPressed(int key)
+
+ofPath ofxMTApp::pathFromString(string s)
 {
+	vector<string> commandStrings = ofSplitString(s, "{", true, true);
+	ofPath thePath;
 	
+	for (auto cs : commandStrings) {
+		vector<string> commandStringElements = ofSplitString(cs, ";", true, true);
+		
+		ofPath::Command* thisCommand;
+		int commandType = ofToInt(commandStringElements[0]);
+		ofPoint p, cp1, cp2;
+		switch (commandType) {
+			case ofPath::Command::moveTo:
+				p = ofFromString<ofPoint>(commandStringElements[1]);
+				thePath.moveTo(p);
+				break;
+			case ofPath::Command::lineTo:
+				p = ofFromString<ofPoint>(commandStringElements[1]);
+				thePath.lineTo(p);
+				break;
+			case ofPath::Command::curveTo:
+				p = ofFromString<ofPoint>(commandStringElements[1]);
+				thePath.curveTo(p);
+			case ofPath::Command::bezierTo:
+				p = ofFromString<ofPoint>(commandStringElements[1]);
+				cp1 = ofFromString<ofPoint>(commandStringElements[2]);
+				cp2 = ofFromString<ofPoint>(commandStringElements[3]);
+				thePath.bezierTo(cp1, cp2, p);
+				break;
+			case ofPath::Command::close:
+				thePath.close();
+				break;
+			default:
+				ofLog(OF_LOG_WARNING, "Multiline::pathFromString: A Path Command supplied is not implemented");
+				break;
+		}
+		
+	}
+	
+	return thePath;
 }
 
-//--------------------------------------------------------------
-void ofxMTApp::keyReleased(int key)
+string ofxMTApp::pathToString(ofPath &path)
 {
+	vector<ofPath::Command> commands = path.getCommands();
 	
+	string out = "";
+	
+	for (auto c : commands)
+	{
+		out += "{ " + ofToString(c.type) + "; " +
+		ofToString(c.to) + "; " +
+		ofToString(c.cp1) + "; " +
+		ofToString(c.cp2) + "; } ";
+		
+	}
+	
+	return out;
 }
-//
-////--------------------------------------------------------------
-//void ofxMTApp::mouseMoved(int x, int y ){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::mouseDragged(int x, int y, int button){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::mousePressed(int x, int y, int button){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::mouseReleased(int x, int y, int button){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::mouseEntered(int x, int y){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::mouseExited(int x, int y){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::windowResized(int w, int h){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::gotMessage(ofMessage msg){
-//	
-//}
-//
-////--------------------------------------------------------------
-//void ofxMTApp::dragEvent(ofDragInfo dragInfo){
-//	
-//}

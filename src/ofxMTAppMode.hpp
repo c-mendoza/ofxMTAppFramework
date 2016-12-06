@@ -18,7 +18,7 @@ public:
 	ofxMTAppMode(string name) { this->name = name; }
 	
 	std::string getName() { return name; }
-	
+	void setName(string name) { this->name = name; }
 	virtual void setup(ofxMTView* view) = 0;
 	virtual void exit() = 0;
 	virtual void update(){};

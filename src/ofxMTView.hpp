@@ -24,9 +24,13 @@ public:
 	void setName(string viewName);
 	string getName() { return name; }
 	void setWindow(shared_ptr<ofAppBaseWindow> window);
+
+	/// Use this to add event listeners that should be destroyed when this view is destroyed.
+	void addEventListener(ofEventListener&& el) { eventListeners.push_back(move(el)); }
+
 	
-	//Called once the model is successfully loaded from file
-	//Default implementation does nothing
+	/// Called once the model is successfully loaded from file.
+	/// Default implementation does nothing.
 	virtual void modelDidLoad(){}
 	virtual void setup(){}
 	virtual void update(){}
@@ -241,12 +245,15 @@ public:
 	
 	///Returns the mouse position in content (local) coordinates
 	const ofVec3f & getContentMouse() { return contentMouse; }
+	shared_ptr<ofxMTAppMode> currentAppMode; //?
 
 	
 protected:
 	shared_ptr<ofxMTModel> model;
 	shared_ptr<ofAppBaseWindow> window;
 	string name;
+	
+	vector<ofEventListener> eventListeners;
 	
 	bool bScrollbarsVisible = false;
 	

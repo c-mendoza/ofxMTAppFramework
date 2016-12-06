@@ -23,7 +23,13 @@ ofxMTView::ofxMTView(string _name)
 
 ofxMTView::~ofxMTView()
 {
+	for (auto& el : eventListeners)
+	{
+		el.unsubscribe();
+	}
 	
+	eventListeners.clear();
+	removeAllEvents();
 }
 
 void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window)
@@ -183,7 +189,7 @@ void ofxMTView::addAllEvents()
 	ofAddListener(window->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
 	ofAddListener(window->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
 	ofAddListener(window->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-	ofAddListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_APP);
+	ofAddListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
 
 }
 void ofxMTView::removeAllEvents()
@@ -209,6 +215,6 @@ void ofxMTView::removeAllEvents()
 	ofRemoveListener(window->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
 	ofRemoveListener(window->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-	ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_APP);
+	ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
 }
 

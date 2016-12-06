@@ -10,10 +10,12 @@
 #define ofxMTAppFramework_h
 
 
-
+//This is sadly the only way that I can think of overriding "of..." globals.
+//This will cause ofGetMouseX and ofGetMouseY to return "local" view coordinates.
+//In addition to this define, you must enable Prefix headers and use the supplied .pch file.
 #define OFXMTAPP_USE_LOCAL_MOUSE 1
 
-//This is sadly the only way that I can think of overriding "of..." globals:
+
 //#ifdef OFXMTAPP_USE_LOCAL_MOUSE
 //	#define ofGetMouseX mtGetLocalMouseX
 //	#define ofGetMouseY mtGetLocalMouseY
@@ -26,5 +28,6 @@
 #include "ofxMTModel.hpp"
 #include "ofxMTView.hpp"
 #include "ofxDatGui.h"
+#include "MTProcedure.h"
 
 #endif /* ofxMTAppFramework_h */

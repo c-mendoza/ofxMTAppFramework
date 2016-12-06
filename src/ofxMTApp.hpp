@@ -15,14 +15,6 @@ class ofxMTApp : public ofBaseApp
 {
 	
 public:
-//	static ofxMTApp& sharedApp() {
-//		static ofxMTApp instance;
-//		return instance;
-//	};
-//	
-//	ofxMTApp(ofxMTApp const&) = delete;
-//	void operator=(ofxMTApp const&) = delete;
-
 	ofxMTApp();
 	
 	//TODO: Proper singleton
@@ -34,38 +26,26 @@ public:
 	virtual void initialize();
 	void run();
 	
-	/// APP MODES
+	//------ APP MODES
 	const MTAppMode defaultMode = "MTAppModeDefault";
-
-	
 	void setMode(MTAppMode mode);
 	void registerMode(MTAppMode mode)
 	{
 		appModes.push_back(mode);
 	}
 	
-	//------------------- EVENTS
-	/// Called after the window is created and once the OpenGL context is up.
-	virtual void setup();
-//	virtual void update();
-//	virtual void draw();
+	//------ EVENTS
+	static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
+	static ofEvent<void> modelLoadedEvent;
+	
 	virtual void exit();
-	virtual void keyPressed(int key);
-	virtual void keyReleased(int key);
-//	virtual void mouseMoved(int x, int y );
-//	virtual void mouseDragged(int x, int y, int button);
-//	virtual void mousePressed(int x, int y, int button);
-//	virtual void mouseReleased(int x, int y, int button);
-//	virtual void mouseEntered(int x, int y);
-//	virtual void mouseExited(int x, int y);
-//	virtual void windowResized(int w, int h);
-//	virtual void dragEvent(ofDragInfo dragInfo);
-//	virtual void gotMessage(ofMessage msg);
+
 	
 	//// UI
 	shared_ptr<ofAppBaseWindow> getMainWindow();
 	shared_ptr<ofxMTView> getMainView();
 	void createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings);
+	
 	///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
 	///have any ofxMTView partner.
 	shared_ptr<ofxMTView> getMTViewForWindow(shared_ptr<ofAppBaseWindow> window);
@@ -74,6 +54,7 @@ public:
 	int getLocalMouseX();
 	///Returns the mouse y-position in local coordinates of the current window
 	int getLocalMouseY();
+	
 	void viewClosing(ofxMTView* view);
 	
 	//// FILE HANDLING
@@ -87,8 +68,12 @@ public:
 	
 	shared_ptr<ofxMTModel> getModel() { return model; };
 	
-	static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
-	static ofEvent<void> modelLoadedEvent;
+	//// UTILITY
+	/// Stringifies a path.
+	static string pathToString(ofPath& path);
+	
+	/// Makes an ofPath from a stringified representation.
+	static ofPath pathFromString(string s);
 
 
 protected:
@@ -96,14 +81,15 @@ protected:
 	ofPtr<ofXml> serializer;
 	ofPtr<ofXml> appPrefsSerializer;
 
-	///The current file that is open
+	///The name of the current file.
 	string fileName;
 	
 	///Full path of the file
 	string filePath;
 	
-	///The file extension you want your documents to have
-	string fileExtension;
+	///The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
+	string fileExtension = "xml";
+
 	shared_ptr<ofxMTView> mainView;
 	shared_ptr<ofxMTModel> model;
 	const static string APP_PREFERENCES_FILE;
