@@ -210,20 +210,19 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	if(NSPrefsViewsGroup.contains(view->getName()))
 	{
 		thisView = &NSPrefsViewsGroup.getGroup(view->getName());
-		auto pos = thisView->getVec3f(NSPrefsViewPositionName);
-		auto size = thisView->getVec3f(NSPrefsViewSizeName);
-		window->setWindowShape(size->x, size->y);
-		window->setWindowPosition(pos->x, pos->y);
+		ofPoint pos = thisView->getVec3f(NSPrefsViewPositionName);
+		ofPoint size = thisView->getVec3f(NSPrefsViewSizeName);
+		window->setWindowShape(size.x, size.y);
+		window->setWindowPosition(pos.x, pos.y);
 	}
 	else
 	{
 		thisView = new ofParameterGroup();
 		thisView->setName(view->getName());
-		ofParameter<ofDefaultVec3>* pos = new ofParameter<ofDefaultVec3>();
-		ofParameter<ofDefaultVec3>* size = new ofParameter<ofDefaultVec3>();
-		auto pp = view->getWindow()->getWindowPosition();
-		pos->set(NSPrefsViewPositionName, glm::vec3(view->getWindow()->getWindowPosition(), 0));
-		size->set(NSPrefsViewSizeName, glm::vec3(view->getWindow()->getWindowSize(), 0));
+		ofParameter<ofPoint>* pos = new ofParameter<ofPoint>();
+		ofParameter<ofPoint>* size = new ofParameter<ofPoint>();
+		pos->set(NSPrefsViewPositionName, view->getWindow()->getWindowPosition());
+		size->set(NSPrefsViewSizeName, view->getWindow()->getWindowSize());
 		thisView->add(*pos, *size);
 		NSPrefsViewsGroup.add(*thisView);
 	}
@@ -385,8 +384,8 @@ void ofxMTApp::storeViewParameters(ofxMTView* v)
 {
 	ofParameterGroup thisView = NSPrefsViewsGroup.getGroup(v->getName());
 
-	thisView.getVec3f(NSPrefsViewPositionName).set( glm::vec3(v->getWindow()->getWindowPosition(), 0) );
-	thisView.getVec3f(NSPrefsViewSizeName).set( glm::vec3(v->getWindow()->getWindowSize(), 0) );
+	thisView.getVec3f(NSPrefsViewPositionName).set(v->getWindow()->getWindowPosition());
+	thisView.getVec3f(NSPrefsViewSizeName).set(v->getWindow()->getWindowSize());
 
 }
 
