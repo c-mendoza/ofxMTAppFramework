@@ -6,4 +6,14 @@
 //
 //
 
-//#include "ofxMTAppMode.hpp"
+#include "ofxMTAppMode.hpp"
+
+ofxMTAppMode::~ofxMTAppMode()
+{
+	eventListeners.clear();
+}
+
+void ofxMTAppMode::addEventListener(ofEventListener &&e)
+{
+	eventListeners.push_back(move(e));
+}

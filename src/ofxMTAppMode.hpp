@@ -16,7 +16,7 @@ class ofxMTAppMode  {
 	
 public:
 	ofxMTAppMode(string name) { this->name = name; }
-	
+	~ofxMTAppMode();
 	std::string getName() { return name; }
 	void setName(string name) { this->name = name; }
 	virtual void setup(ofxMTView* view) = 0;
@@ -32,11 +32,14 @@ public:
 	virtual void mouseEntered(int x, int y){};
 	virtual void mouseExited(int x, int y){};
 	virtual void windowResized(int w, int h){};
+	
+	void addEventListener(ofEventListener&& e);
 	//	virtual void dragEvent(ofDragInfo dragInfo);
 	//	virtual void gotMessage(ofMessage msg);
 protected:
 	ofxMTView* view;
 	std::string name;
+	vector <ofEventListener> eventListeners;
 };
 
 #endif /* ofxMTAppMode_hpp */
