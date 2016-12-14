@@ -106,7 +106,17 @@ protected:
 	bool saveAsImpl(string newName);
 	bool saveImpl();
 	bool openImpl(string file);
-	void keyPressed(ofKeyEventArgs &key);
+	virtual void keyPressed(ofKeyEventArgs &key);
+	virtual void keyReleased(ofKeyEventArgs &key);
+	
+	/// Called whenever there is a key pressed anywhere in the app. Other than the built-in behavior, default
+	/// implementation does nothing.
+	virtual void appKeyPressed(int key){};
+	
+	/// Called whenever there is a key released anywhere in the app. Other than the built-in behavior, default
+	/// implementation does nothing.
+	virtual void appKeyReleased(int key){};
+	
 	
 	//APP MODES
 	MTAppMode currentMode;

@@ -99,29 +99,36 @@ void ofxMTApp::registerAppPreference(ofAbstractParameter &preference)
 
 void ofxMTApp::keyPressed(ofKeyEventArgs &key)
 {
-	
-	if (ofGetKeyPressed(OF_KEY_COMMAND))
-	{
-		switch (key.key)
-		{
-			case 'o':
-				open();
-			break;
-			case 's':
-				if (ofGetKeyPressed(OF_KEY_SHIFT))
-				{
-					saveAs();
-				}
-				else
-				{
-					save();
-				}
-			default:
-			break;
-		}
-	}
+//	ofLogNotice("ofxMTApp") << "Key Pressed " << getMTViewForWindow(ofGetMainLoop()->getCurrentWindow())->getName();
+	appKeyPressed(key.key);
 }
 
+void ofxMTApp::keyReleased(ofKeyEventArgs &key)
+{
+	if (ofGetKeyPressed(OF_KEY_COMMAND))
+	{
+		auto k = key.key;
+		int bla = 'o';
+		if ( k == 15 )
+		{
+				open();
+		}
+		else if ( k == 19 )
+		{
+			if (ofGetKeyPressed(OF_KEY_SHIFT))
+			{
+				saveAs();
+			}
+			else
+			{
+				save();
+			}
+		}
+	}
+	
+	appKeyReleased(key.key);
+	
+}
 /// Method is called in the ofxMTApp contructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as well as the main
 /// window size and settings.
@@ -204,6 +211,11 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 		windows.push_back(window);
 		views.push_back(view);
 	}
+	
+	// Add the "global" keyboard event listener:
+	ofAddListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
+	ofAddListener(window->events().keyReleased, this, &ofxMTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
+	
 	
 	ofParameterGroup* thisView;
 	
