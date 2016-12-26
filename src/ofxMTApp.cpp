@@ -51,7 +51,8 @@ ofxMTApp::ofxMTApp()
 		}
 		else
 		{
-			appPrefsSerializer->setTo("//" + appPreferences.getEscapedName());
+			// Load the saved view positions:
+			appPrefsSerializer->setTo("//");
 			appPrefsSerializer->setTo(NSPrefsViewsGroupName);
 			
 			bool success = appPrefsSerializer->setToChild(0);
@@ -71,8 +72,10 @@ ofxMTApp::ofxMTApp()
 				} while (appPrefsSerializer->setToSibling());
 			}
 			
-			appPrefsSerializer->reset();
-			appPrefsSerializer->setTo("//" + appPreferences.getEscapedName());
+//			appPrefsSerializer->reset();
+			success = appPrefsSerializer->setTo("//" + appPreferences.getEscapedName());
+			
+			if (!success) ofLogWarning() << "Couldn't set to appPreferences";
 			appPrefsSerializer->deserialize(appPreferences);
 			appPrefsSerializer->clear();
 		}
@@ -138,8 +141,12 @@ void ofxMTApp::initialize()
 	// These should be overriden sometime
 //	model = shared_ptr<ofxMTModel>(new ofxMTModel("default"));
 	model = nullptr;
+	createAppViews();
+}
+
+void ofxMTApp::createAppViews()
+{
 	mainView = shared_ptr<ofxMTView>(new ofxMTView("Main View"));
-	
 	ofGLFWWindowSettings windowSettings;
 	windowSettings.setGLVersion(2, 1);
 	windowSettings.width = 1280;
@@ -162,17 +169,22 @@ void ofxMTApp::run()
 	if (NSPrefAutoloadLastFile)
 	{
 		isInitialized = openImpl(NSPrefLastFile);
+		
+		if (!isInitialized)
+		{
+			string msg = "Tried to open " + NSPrefLastFile.get() + " but could not find it";
+			ofSystemAlertDialog(msg);
+			isInitialized = true;
+			newFile();
+		}
 	}
 	else
 	{
 		isInitialized = true;
+		newFile();
 	}
+	
 	ofRunMainLoop();
-	
-
-	
-	//	ofGetMainLoop()->run(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
-	//	ofRunMainLoop();
 }
 
 /// APP MODES
@@ -199,7 +211,6 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	
 	shared_ptr<ofAppBaseWindow> window = ofCreateWindow(settings);
 	view->setWindow(window);
-	ofAddListener(ofxMTApp::modelLoadedEvent, view.get(), &ofxMTView::modelDidLoad, OF_EVENT_ORDER_AFTER_APP);
 
 	if (view == mainView)
 	{
@@ -211,6 +222,8 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 		windows.push_back(window);
 		views.push_back(view);
 	}
+	
+	ofAddListener(ofxMTApp::modelLoadedEvent, view.get(), &ofxMTView::modelDidLoadInternal, OF_EVENT_ORDER_AFTER_APP);
 	
 	// Add the "global" keyboard event listener:
 	ofAddListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
@@ -349,6 +362,12 @@ bool ofxMTApp::openImpl(string filePath)
 {
 	serializer->clear();
 	
+	if (filePath == "")
+	{
+		newFile();
+		return true;
+	}
+	
 	if(!serializer->load(filePath))
 	{
 		ofLog(OF_LOG_ERROR, "Failed loading file");
@@ -375,6 +394,23 @@ bool ofxMTApp::openImpl(string filePath)
 		} //End load model
 	} //End loadLastFile
 	return false;
+}
+
+void ofxMTApp::newFile()
+{
+	// Call the user's newFile method:
+	
+	saveAppPreferences();
+	
+	newFileSetup();
+	NSPrefLastFile = "";
+	fileName = "";
+	isInitialized = true;
+	mainView->getWindow()->setWindowTitle(fileName);
+
+	setMode(defaultMode);
+	
+	modelLoadedEvent.notify(this);
 }
 
 /// Reload the last opened file.
@@ -408,6 +444,10 @@ void ofxMTApp::viewClosing(ofxMTView* view)
 	cout << "Closing " << view->getName() << "\n";
 	auto window = view->getWindow();
 	
+	ofRemoveListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
+	ofRemoveListener(window->events().keyReleased, this, &ofxMTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
+	ofRemoveListener(modelLoadedEvent, view, &ofxMTView::modelDidLoadInternal, OF_EVENT_ORDER_AFTER_APP);
+	
 	//One way to find for stuff:
 	for (auto i = views.begin(); i < views.end(); ++i)
 	{
@@ -433,11 +473,19 @@ void ofxMTApp::viewClosing(ofxMTView* view)
 
 void ofxMTApp::exit()
 {
-	for (auto i : windows)
-	{
-		i->setWindowShouldClose();
-		i->events().disable();
-	}
+	// Shouldn't be necessary, but just in case:
+//	if (windows.size() > 0)
+//	{
+//		for (auto window : windows)
+//		{
+//			
+//			window->setWindowShouldClose();
+//			window->events().disable();
+//		}
+//	}
+
+	views.clear();
+	windows.clear();
 }
 
 shared_ptr<ofxMTView> ofxMTApp::getMTViewForWindow(shared_ptr<ofAppBaseWindow> window)

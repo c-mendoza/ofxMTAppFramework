@@ -24,6 +24,12 @@ public:
 	/// and before the app's setup() function. This is where you want to instantiate your Model and your View.
 	/// Default implementation creates a placeholder model and view.
 	virtual void initialize();
+	
+	
+	/// Creates the app's views at initialization. This will set up your windows when the program launches or when
+	/// a new MTModel (a document) is loaded. Override this to create your views.
+	virtual void createAppViews();
+	
 	void run();
 	
 	//------ APP MODES
@@ -57,18 +63,22 @@ public:
 	
 	void viewClosing(ofxMTView* view);
 	
-	//// FILE HANDLING
+	/////// FILE HANDLING
 	void saveAs();
 	void open();
 	void save();
 	bool revert();
 	bool saveAppPreferences();
+	void newFile();
+	
+	/// Override this if you need to prep your app to create a new document.
+	virtual void newFileSetup(){}
 	
 	void registerAppPreference(ofAbstractParameter& preference);
 	
-	shared_ptr<ofxMTModel> getModel() { return model; };
+	virtual shared_ptr<ofxMTModel> getModel() { return model; };
 	
-	//// UTILITY
+	/////// UTILITY
 	/// Stringifies a path.
 	static string pathToString(ofPath& path);
 	
@@ -81,13 +91,13 @@ protected:
 	ofPtr<ofXml> serializer;
 	ofPtr<ofXml> appPrefsSerializer;
 
-	///The name of the current file.
+	/// The name of the current file.
 	string fileName;
 	
-	///Full path of the file
+	/// Full path of the file
 	string filePath;
 	
-	///The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
+	/// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
 	string fileExtension = "xml";
 
 	shared_ptr<ofxMTView> mainView;
@@ -100,12 +110,10 @@ protected:
 	ofParameter<bool> NSPrefLaunchInFullScreen;
 	ofParameterGroup NSPrefsViewsGroup;
 
+	//TODO: make these private?
 	vector<shared_ptr<ofAppBaseWindow>> windows;
 	vector<shared_ptr<ofxMTView>> views;
-	
-	bool saveAsImpl(string newName);
-	bool saveImpl();
-	bool openImpl(string file);
+
 	virtual void keyPressed(ofKeyEventArgs &key);
 	virtual void keyReleased(ofKeyEventArgs &key);
 	
@@ -127,12 +135,19 @@ protected:
 private:
 	bool ofAppInitialized = false;
 	
+	bool saveAsImpl(string newName);
+	bool saveImpl();
+	bool openImpl(string file);
+//	void newFileImpl();
+	
 	//UI / Convenience
 	void storeViewParameters(ofxMTView* view);
 	
 	const static string NSPrefsViewsGroupName;
 	const static string NSPrefsViewPositionName;
 	const static string NSPrefsViewSizeName;
+	
+	ofEventListener exitHandler;
 };
 
 class MTAppModeChangeArgs : public ofEventArgs

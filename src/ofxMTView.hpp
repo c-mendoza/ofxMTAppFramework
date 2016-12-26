@@ -19,8 +19,8 @@ class ofxMTView {
 public:
 	ofxMTView(string _name);
 	~ofxMTView();
-	void setModel(shared_ptr<ofxMTModel> model);
-	shared_ptr<ofxMTModel> getModel() { return model; }
+//	void setModel(shared_ptr<ofxMTModel> model);
+//	shared_ptr<ofxMTModel> getModel() { return model; }
 	void setName(string viewName);
 	string getName() { return name; }
 	void setWindow(shared_ptr<ofAppBaseWindow> window);
@@ -141,6 +141,7 @@ public:
 	int mouseX, mouseY;			// for processing heads
 	
 	bool isMouseDown = false;
+	bool isMouseDragging = true;
 	
 	ofParameter<ofColor> scrollbarColor;
 	
@@ -182,6 +183,7 @@ public:
 		mouseY=mouse.y;
 		contentMouse = viewToContent(mouse);
 		mouseDragged(mouse.x,mouse.y,mouse.button);
+		isMouseDragging = true;
 	}
 	virtual void mousePressed( ofMouseEventArgs & mouse ){
 		mouseX=mouse.x;
@@ -196,6 +198,7 @@ public:
 		contentMouse = viewToContent(mouse);
 		isMouseDown = false;
 		mouseReleased(mouse.x,mouse.y,mouse.button);
+		isMouseDragging = false;
 	}
 	virtual void mouseScrolled( ofMouseEventArgs & mouse ){
 		mouseScrolled(mouse.x, mouse.y, mouse.scrollX, mouse.scrollY);
@@ -239,7 +242,7 @@ public:
 
 	virtual void appModeChanged(MTAppModeChangeArgs & modeChange){}
 	
-	ofPtr<ofAppBaseWindow> getWindow();
+	shared_ptr<ofAppBaseWindow> getWindow();
 	const ofMatrix4x4 & getTransformationMatrix() { return transMatrix; }
 	const ofMatrix4x4 & getInverseTransformationMatrix() { return invTransMatrix; }
 	
@@ -247,9 +250,27 @@ public:
 	const ofVec3f & getContentMouse() { return contentMouse; }
 	shared_ptr<ofxMTAppMode> currentAppMode; //?
 
+	////// INTERNALS
+	
+	/// This function is called internally by the framework to signal that a model
+	/// has been loaded from a file. You don't need to call it.
+	void modelDidLoadInternal()
+	{
+		flagModelDidLoad = true;
+	}
+	
+	void enqueueDrawOperation(function<void()> funct)
+	{
+		drawOpQueue.push(funct);
+	}
+	
+	void enqueueUpdateOperation(function<void()> f)
+	{
+		updateOpQueue.push(f);
+	}
 	
 protected:
-	shared_ptr<ofxMTModel> model;
+//	shared_ptr<ofxMTModel> model;
 	shared_ptr<ofAppBaseWindow> window;
 	string name;
 	
@@ -272,6 +293,13 @@ protected:
 private:
 	ofMatrix4x4 transMatrix;
 	ofMatrix4x4 invTransMatrix; //Just a cached value
+	
+	bool flagModelDidLoad = false;
+	
+	queue<function<void()>> updateOpQueue;
+	queue<function<void()>> drawOpQueue;
+	
+
 
 };
 

@@ -12,8 +12,8 @@
 
 ofxMTView::ofxMTView(string _name)
 {
+	ofLogVerbose("View Construct: ") << _name;
 	window = nullptr;
-	model = ofxMTApp::sharedApp->getModel();
 	name = _name;
 //	contentPosition.set("Content Position", ofVec2f());
 	contentScale.set("Content Scale", 1);
@@ -30,6 +30,7 @@ ofxMTView::~ofxMTView()
 	
 	eventListeners.clear();
 	removeAllEvents();
+	ofLogVerbose("View Destruct: ") << getName();
 }
 
 void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window)
@@ -55,10 +56,10 @@ void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window)
 	}
 }
 
-void ofxMTView::setModel(ofPtr<ofxMTModel> model)
-{
-	this->model = model;
-}
+//void ofxMTView::setModel(ofPtr<ofxMTModel> model)
+//{
+//	this->model = model;
+//}
 
 void ofxMTView::setName(string newName)
 {
@@ -76,6 +77,18 @@ ofPtr<ofAppBaseWindow> ofxMTView::getWindow()
 
 void ofxMTView::update(ofEventArgs & args)
 {
+	if (flagModelDidLoad)
+	{
+		modelDidLoad();
+		flagModelDidLoad = false;
+	}
+	
+	while (!updateOpQueue.empty())
+	{
+		auto op = updateOpQueue.front();
+		op();
+		updateOpQueue.pop();
+	}
 	//I should do something here to update the size of the contentFrame and the scroll bars when necessary
 	update(); //Call user's update()
 }
@@ -85,6 +98,13 @@ void ofxMTView::draw(ofEventArgs & args)
 //	ofPushView();
 //	ofViewport(viewport);
 
+	while (!drawOpQueue.empty())
+	{
+		auto op = drawOpQueue.front();
+		op();
+		drawOpQueue.pop();
+	}
+	
 	ofPushView();
 	ofSetupScreenOrtho(ofGetViewportWidth(), ofGetViewportHeight());
 	ofLoadMatrix(transMatrix);
@@ -124,8 +144,9 @@ void ofxMTView::draw(ofEventArgs & args)
 void ofxMTView::exit(ofEventArgs &args)
 {
 	//		removeAllEvents();
-	ofxMTApp::sharedApp->viewClosing(this);
 	exit();
+	ofxMTApp::sharedApp->viewClosing(this);
+
 }
 
 void ofxMTView::updateMatrix()
