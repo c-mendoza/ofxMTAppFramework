@@ -574,7 +574,7 @@ ofPath ofxMTApp::pathFromString(string s)
 				thePath.close();
 				break;
 			default:
-				ofLog(OF_LOG_WARNING, "Multiline::pathFromString: A Path Command supplied is not implemented");
+				ofLog(OF_LOG_WARNING, "ofxMTApp::pathFromString: A Path Command supplied is not implemented");
 				break;
 		}
 		
