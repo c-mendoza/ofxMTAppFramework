@@ -52,7 +52,7 @@ ofxMTApp::ofxMTApp()
 		else
 		{
 			// Load the saved view positions:
-			appPrefsSerializer->setTo("//");
+			appPrefsSerializer->setTo("//" + appPreferences.getEscapedName());
 			appPrefsSerializer->setTo(NSPrefsViewsGroupName);
 			
 			bool success = appPrefsSerializer->setToChild(0);
@@ -183,8 +183,12 @@ void ofxMTApp::run()
 		isInitialized = true;
 		newFile();
 	}
-	
 	ofRunMainLoop();
+	
+
+	
+	//	ofGetMainLoop()->run(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
+	//	ofRunMainLoop();
 }
 
 /// APP MODES
@@ -202,14 +206,8 @@ void ofxMTApp::setMode(MTAppMode mode)
 		static MTAppModeChangeArgs changeArgs;
 		changeArgs.newMode = mode;
 		changeArgs.oldMode = currentMode;
-		currentMode = mode;
 		ofNotifyEvent(ofxMTApp::appChangeModeEvent, changeArgs, this);
 	}
-}
-
-MTAppMode ofxMTApp::getCurrentMode()
-{
-	return currentMode;
 }
 
 void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings)
@@ -580,7 +578,7 @@ ofPath ofxMTApp::pathFromString(string s)
 				thePath.close();
 				break;
 			default:
-				ofLog(OF_LOG_WARNING, "ofxMTApp::pathFromString: A Path Command supplied is not implemented");
+				ofLog(OF_LOG_WARNING, "Multiline::pathFromString: A Path Command supplied is not implemented");
 				break;
 		}
 		

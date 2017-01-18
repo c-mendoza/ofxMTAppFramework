@@ -30,11 +30,12 @@ public:
 	/// a new MTModel (a document) is loaded. Override this to create your views.
 	virtual void createAppViews();
 	
-	void run();
+	virtual void run();
 	
 	//------ APP MODES
 	const MTAppMode defaultMode = "MTAppModeDefault";
 	void setMode(MTAppMode mode);
+	MTAppMode getCurrentMode();
 	void registerMode(MTAppMode mode)
 	{
 		appModes.push_back(mode);
@@ -84,7 +85,9 @@ public:
 	
 	/// Makes an ofPath from a stringified representation.
 	static ofPath pathFromString(string s);
-
+	ofParameter<string> NSPrefLastFile;
+	ofParameter<bool> NSPrefAutoloadLastFile;
+	ofParameter<bool> NSPrefLaunchInFullScreen;
 
 protected:
 	
@@ -105,9 +108,6 @@ protected:
 	const static string APP_PREFERENCES_FILE;
 	bool isInitialized;
 	ofParameterGroup appPreferences;
-	ofParameter<string> NSPrefLastFile;
-	ofParameter<bool> NSPrefAutoloadLastFile;
-	ofParameter<bool> NSPrefLaunchInFullScreen;
 	ofParameterGroup NSPrefsViewsGroup;
 
 	//TODO: make these private?
