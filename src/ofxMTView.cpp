@@ -70,7 +70,7 @@ void ofxMTView::setName(string newName)
 	}
 }
 
-ofPtr<ofAppBaseWindow> ofxMTView::getWindow()
+shared_ptr<ofAppBaseWindow> ofxMTView::getWindow()
 {
 	return window;
 }

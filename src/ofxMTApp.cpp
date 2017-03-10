@@ -46,7 +46,7 @@ ofxMTApp::ofxMTApp()
 		if(!appPrefsSerializer->load(APP_PREFERENCES_FILE))
 		{
 			ofLog(OF_LOG_ERROR, "App Preferences could not be loaded, creating a new file.");
-			ofSystemAlertDialog("App Preferences could not be loaded, creating a new file.");
+//			ofSystemAlertDialog("App Preferences could not be loaded, creating a new file.");
 			saveAppPreferences();
 		}
 		else
@@ -217,17 +217,6 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	
 	shared_ptr<ofAppBaseWindow> window = ofCreateWindow(settings);
 	view->setWindow(window);
-
-	if (view == mainView)
-	{
-		windows.insert(windows.begin(), window);
-		views.insert(views.begin(), view);
-	}
-	else
-	{
-		windows.push_back(window);
-		views.push_back(view);
-	}
 	
 	ofAddListener(ofxMTApp::modelLoadedEvent, view.get(), &ofxMTView::modelDidLoadInternal, OF_EVENT_ORDER_AFTER_APP);
 	
@@ -269,6 +258,17 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	else
 	{
 		window->events().notifySetup();
+	}
+	
+	if (view == mainView)
+	{
+		windows.insert(windows.begin(), move(window));
+		views.insert(views.begin(), view);
+	}
+	else
+	{
+		windows.push_back(move(window));
+		views.push_back(view);
 	}
 }
 
