@@ -38,7 +38,7 @@ class MTProcedure
 		MTProcedureStep getCurrentStep();
 		void update();
 		void addStep(MTProcedureStep step);
-		void isProcedureComplete() { return procedureComplete; }
+		bool isProcedureComplete() { return procedureComplete; }
 		std::function<void()> procedureCompleteAction = [] {};
 
 	private:
