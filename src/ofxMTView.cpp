@@ -143,7 +143,7 @@ void ofxMTView::draw(ofEventArgs & args)
 
 void ofxMTView::exit(ofEventArgs &args)
 {
-	//		removeAllEvents();
+	removeAllEvents();
 	exit();
 	ofxMTApp::sharedApp->viewClosing(this);
 
