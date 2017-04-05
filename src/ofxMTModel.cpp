@@ -44,3 +44,13 @@ void ofxMTModel::addEventListener(ofEventListener&& el)
 {
 	eventListeners.push_back(move(el));
 }
+
+void ofxMTModel::serialize(ofXml& serializer)
+{
+	ofSerialize(serializer, parameters);
+}
+
+void ofxMTModel::deserialize(ofXml &serializer)
+{
+	ofDeserialize(serializer, parameters);
+}

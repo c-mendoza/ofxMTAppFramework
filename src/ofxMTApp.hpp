@@ -91,8 +91,8 @@ public:
 
 protected:
 	
-	ofPtr<ofXml> serializer;
-	ofPtr<ofXml> appPrefsSerializer;
+	ofXml serializer;
+	ofXml appPrefsXml;
 
 	/// The name of the current file.
 	string fileName;

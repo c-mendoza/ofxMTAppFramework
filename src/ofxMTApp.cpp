@@ -21,7 +21,7 @@ ofxMTApp::ofxMTApp()
 		NSPrefAutoloadLastFile.set("NSPrefAutoloadLastFile", false);
 		NSPrefLaunchInFullScreen.set("NSPrefLaunchInFullScreen", false);
 		NSPrefsViewsGroup.setName(NSPrefsViewsGroupName);
-		NSPrefsViewsGroup.setSerializable(false);
+		NSPrefsViewsGroup.setSerializable(true);
 		appPreferences.setName("App Preferences");
 		appPreferences.add(NSPrefLaunchInFullScreen,
 						   NSPrefLastFile,
@@ -40,10 +40,8 @@ ofxMTApp::ofxMTApp()
 		
 		ofSetLogLevel(OF_LOG_VERBOSE);
 		
-		serializer = ofPtr<ofXml>(new ofXml);
-		appPrefsSerializer = ofPtr<ofXml>(new ofXml);
 		
-		if(!appPrefsSerializer->load(APP_PREFERENCES_FILE))
+		if(!appPrefsXml.load(APP_PREFERENCES_FILE))
 		{
 			ofLog(OF_LOG_ERROR, "App Preferences could not be loaded, creating a new file.");
 //			ofSystemAlertDialog("App Preferences could not be loaded, creating a new file.");
@@ -52,16 +50,15 @@ ofxMTApp::ofxMTApp()
 		else
 		{
 			// Load the saved view positions:
-			appPrefsSerializer->setTo("//");
-			appPrefsSerializer->setTo(NSPrefsViewsGroupName);
+			auto viewsGroup = appPrefsXml.findFirst(appPreferences.getEscapedName() + "/" +NSPrefsViewsGroupName);
 			
-			bool success = appPrefsSerializer->setToChild(0);
-			
-			if (success)
+			if (viewsGroup)
 			{
-				do
+				auto views = viewsGroup.getChildren();
+				
+				for (auto &view : views)
 				{
-					string name = appPrefsSerializer->getName();
+					string name = view.getValue();
 					ofParameterGroup thisView;
 					thisView.setName(name);
 					ofParameter<ofPoint> pos, size;
@@ -69,34 +66,29 @@ ofxMTApp::ofxMTApp()
 					size.set(NSPrefsViewSizeName, ofVec3f(600, 400, 0));
 					thisView.add(pos, size);
 					NSPrefsViewsGroup.add(thisView);
-				} while (appPrefsSerializer->setToSibling());
+				}
 			}
 			
-//			appPrefsSerializer->reset();
-			success = appPrefsSerializer->setTo("//" + appPreferences.getEscapedName());
-			
-			if (!success) ofLogWarning() << "Couldn't set to appPreferences";
-			appPrefsSerializer->deserialize(appPreferences);
-			appPrefsSerializer->clear();
+			ofDeserialize(appPrefsXml, appPreferences);
 		}
 	}
 }
 
 void ofxMTApp::registerAppPreference(ofAbstractParameter &preference)
 {
-	appPrefsSerializer->clear();
-	appPrefsSerializer->load(APP_PREFERENCES_FILE);
-	appPreferences.add(preference);
-	appPrefsSerializer->setTo(appPreferences.getEscapedName());
-	if (appPrefsSerializer->exists(preference.getEscapedName()))
+	if (appPrefsXml.load(APP_PREFERENCES_FILE))
 	{
-		appPrefsSerializer->deserialize(preference);
-		appPrefsSerializer->reset();
-	}
-	else
-	{
-		appPrefsSerializer->reset();
-		saveAppPreferences();
+		
+		appPreferences.add(preference);
+		auto prefXml = appPrefsXml.findFirst(preference.getEscapedName());
+		if (prefXml)
+		{
+			ofDeserialize(prefXml, preference);
+		}
+		else
+		{
+			saveAppPreferences();
+		}
 	}
 }
 
@@ -230,10 +222,10 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSetti
 	if(NSPrefsViewsGroup.contains(view->getName()))
 	{
 		thisView = &NSPrefsViewsGroup.getGroup(view->getName());
-		ofPoint pos = thisView->getVec3f(NSPrefsViewPositionName);
-		ofPoint size = thisView->getVec3f(NSPrefsViewSizeName);
-		window->setWindowShape(size.x, size.y);
-		window->setWindowPosition(pos.x, pos.y);
+		auto pos = thisView->getVec3f(NSPrefsViewPositionName);
+		auto size = thisView->getVec3f(NSPrefsViewSizeName);
+		window->setWindowShape(size->x, size->y);
+		window->setWindowPosition(pos->x, pos->y);
 	}
 	else
 	{
@@ -348,10 +340,10 @@ bool ofxMTApp::saveAsImpl(string filePath)
 
 bool ofxMTApp::saveImpl()
 {
-	serializer->clear();
-	model->saveWithSerializer(*serializer);
+
+	model->serialize(serializer);
 	
-	if(!serializer->save(NSPrefLastFile))
+	if(!serializer.save(NSPrefLastFile.get()))
 	{
 		ofLog(OF_LOG_ERROR, "Encountered an error while saving the file");
 		ofSystemAlertDialog("Encountered an error while saving the file");
@@ -366,7 +358,6 @@ bool ofxMTApp::saveImpl()
 /// Open sesame.
 bool ofxMTApp::openImpl(string filePath)
 {
-	serializer->clear();
 	
 	if (filePath == "")
 	{
@@ -374,14 +365,14 @@ bool ofxMTApp::openImpl(string filePath)
 		return true;
 	}
 	
-	if(!serializer->load(filePath))
+	if(!serializer.load(filePath))
 	{
 		ofLog(OF_LOG_ERROR, "Failed loading file");
 		return false;
 	}
 	else
 	{
-		model->loadFromSerializer(*serializer);
+		model->deserialize(serializer);
 		if (model == nullptr)
 		{
 			ofLog(OF_LOG_ERROR, "Failed Loading Model");
@@ -428,19 +419,24 @@ bool ofxMTApp::revert()
 /// Saves!
 bool ofxMTApp::saveAppPreferences()
 {
-	serializer->clear();
-	appPrefsSerializer->clear();
-	appPrefsSerializer->serialize(appPreferences);
-	return appPrefsSerializer->save(APP_PREFERENCES_FILE);
+	for (auto view : views)
+	{
+		storeViewParameters(view.get());
+	}
+	
+	ofSerialize(appPrefsXml, appPreferences);
+	return appPrefsXml.save(APP_PREFERENCES_FILE);
 }
 
 void ofxMTApp::storeViewParameters(ofxMTView* v)
 {
 	ofParameterGroup thisView = NSPrefsViewsGroup.getGroup(v->getName());
-
-	thisView.getVec3f(NSPrefsViewPositionName).set(v->getWindow()->getWindowPosition());
-	thisView.getVec3f(NSPrefsViewSizeName).set(v->getWindow()->getWindowSize());
-
+	
+	if(thisView)
+	{
+		thisView.getVec3f(NSPrefsViewPositionName).set(glm::vec3(v->getWindow()->getWindowPosition(), 0));
+		thisView.getVec3f(NSPrefsViewSizeName).set(glm::vec3(v->getWindow()->getWindowSize(), 0));
+	}
 }
 
 //// EVENTS

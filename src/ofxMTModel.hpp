@@ -22,8 +22,10 @@ public:
 	void setName(string n);
 	ofParameterGroup& getParameters();
 	
-	virtual void loadFromSerializer(ofXml& serializer) = 0;
-	virtual void saveWithSerializer(ofXml& serializer) = 0;
+	virtual void serialize(ofXml& serializer);
+	virtual void deserialize(ofXml& serializer);
+//	virtual void loadFromSerializer(ofXml& serializer) = 0;
+//	virtual void saveWithSerializer(ofXml& serializer) = 0;
 	
 	/// If you need event listeners that should die when this object gets destroyed,
 	/// add them with this method.
