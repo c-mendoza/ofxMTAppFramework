@@ -49,27 +49,34 @@ ofxMTApp::ofxMTApp()
 		}
 		else
 		{
+			ofDeserialize(appPrefsXml, appPreferences);
+			
 			// Load the saved view positions:
 			auto viewsGroup = appPrefsXml.findFirst(appPreferences.getEscapedName() + "/" +NSPrefsViewsGroupName);
 			
 			if (viewsGroup)
 			{
+			
 				auto views = viewsGroup.getChildren();
-				
+				NSPrefsViewsGroup.clear();
 				for (auto &view : views)
 				{
-					string name = view.getValue();
 					ofParameterGroup thisView;
+					
+					ofParameter<string> name;
+					name.set("Name", view.getChild("Name").getValue());
 					thisView.setName(name);
+					
 					ofParameter<ofPoint> pos, size;
-					pos.set(NSPrefsViewPositionName, ofVec3f(0, 0, 0));
-					size.set(NSPrefsViewSizeName, ofVec3f(600, 400, 0));
-					thisView.add(pos, size);
+					pos.set(NSPrefsViewPositionName, view.getChild("Position").getValue<ofVec3f>());
+					size.set(NSPrefsViewSizeName, view.getChild("Size").getValue<ofVec3f>());
+					
+					thisView.add(name, pos, size);
 					NSPrefsViewsGroup.add(thisView);
 				}
 			}
-			
-			ofDeserialize(appPrefsXml, appPreferences);
+//
+//			ofDeserialize(appPrefsXml, appPreferences);
 		}
 	}
 }
@@ -423,17 +430,20 @@ bool ofxMTApp::saveAppPreferences()
 	{
 		storeViewParameters(view.get());
 	}
-	
+	NSPrefsViewsGroup.setParent(appPreferences);
+	appPreferences.add(NSPrefsViewsGroup);
 	ofSerialize(appPrefsXml, appPreferences);
 	return appPrefsXml.save(APP_PREFERENCES_FILE);
 }
 
 void ofxMTApp::storeViewParameters(ofxMTView* v)
 {
+	
 	ofParameterGroup thisView = NSPrefsViewsGroup.getGroup(v->getName());
 	
 	if(thisView)
 	{
+		thisView.getString("Name").set(v->getName());
 		thisView.getVec3f(NSPrefsViewPositionName).set(glm::vec3(v->getWindow()->getWindowPosition(), 0));
 		thisView.getVec3f(NSPrefsViewSizeName).set(glm::vec3(v->getWindow()->getWindowSize(), 0));
 	}
@@ -458,7 +468,7 @@ void ofxMTApp::viewClosing(ofxMTView* view)
 			storeViewParameters(view);
 			saveAppPreferences();
 			views.erase(i);
-			return;
+			break;
 		}
 	}
 	
@@ -469,6 +479,7 @@ void ofxMTApp::viewClosing(ofxMTView* view)
 	
 	if (it != windows.end())
 	{
+		(*it)->events().disable();
 		windows.erase(it);
 	}
 }
