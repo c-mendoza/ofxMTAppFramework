@@ -141,7 +141,7 @@ private:
 //	void newFileImpl();
 	
 	//UI / Convenience
-	void storeViewParameters(ofxMTView* view);
+//	void storeViewParameters(ofxMTView* view);
 	
 	const static string NSPrefsViewsGroupName;
 	const static string NSPrefsViewPositionName;
