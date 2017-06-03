@@ -10,47 +10,47 @@
 
 ofxMTModel::ofxMTModel(string _name)
 {
-	name = _name;
-	parameters.setName(name);
+    name = _name;
+    parameters.setName(name);
 }
 
 ofxMTModel::~ofxMTModel()
 {
-	for (auto &el : eventListeners)
-	{
-		el.unsubscribe();
-	}
+    for (auto &el : eventListeners)
+    {
+        el.unsubscribe();
+    }
 
-	eventListeners.clear();
+    eventListeners.clear();
 }
 
 string ofxMTModel::getName()
 {
-	return name;
+    return name;
 }
 
 void ofxMTModel::setName(string n)
 {
-	name = n;
-	parameters.setName(n);
+    name = n;
+    parameters.setName(n);
 }
 
 ofParameterGroup& ofxMTModel::getParameters()
 {
-	return parameters;
+    return parameters;
 }
 
 void ofxMTModel::addEventListener(ofEventListener&& el)
 {
-	eventListeners.push_back(move(el));
+    eventListeners.push_back(move(el));
 }
 
 void ofxMTModel::serialize(ofXml& serializer)
 {
-	ofSerialize(serializer, parameters);
+    ofSerialize(serializer, parameters);
 }
 
 void ofxMTModel::deserialize(ofXml &serializer)
 {
-	ofDeserialize(serializer, parameters);
+    ofDeserialize(serializer, parameters);
 }
