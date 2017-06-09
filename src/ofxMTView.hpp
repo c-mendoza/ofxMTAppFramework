@@ -86,7 +86,7 @@ public:
         return contentFrame;
     }
 
-    void setScrollbarsVisible(bool visible);
+    void setScrollbarsVisible(bool visible) { bScrollbarsVisible = visible; }
     void updateScrollbars() {}
 
 

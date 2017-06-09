@@ -49,8 +49,6 @@ ofxMTApp::ofxMTApp()
 
             // Load the saved view positions:
             auto viewsXml = appPrefsXml.findFirst("//App_Preferences/Views").getChildren();
-
-
             for (auto & view : viewsXml)
             {
                 ofParameterGroup thisView;
@@ -68,6 +66,7 @@ ofxMTApp::ofxMTApp()
         addEventListener(modelLoadedEvent.newListener([this]()
         {
             modelDidLoad();
+#ifndef TARGET_RASPBERRY_PI
             for (auto view : views)
             {
                 view->enqueueUpdateOperation([view]()
@@ -75,6 +74,12 @@ ofxMTApp::ofxMTApp()
                     view->modelDidLoad();
                 });
             }
+#else
+            mainView->enqueueUpdateOperation([this]()
+            {
+                mainView->modelDidLoad();
+            });
+#endif
         }));
     }
 }
@@ -144,8 +149,7 @@ void ofxMTApp::initialize()
 void ofxMTApp::createAppViews()
 {
     mainView = shared_ptr<ofxMTView>(new ofxMTView("Main_View"));
-    ofGLFWWindowSettings windowSettings;
-    windowSettings.setGLVersion(2, 1);
+    ofGLWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
     createWindowForView(mainView, windowSettings);
@@ -211,10 +215,16 @@ MTAppModeName ofxMTApp::getCurrentMode()
     return currentMode;
 }
 
-void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings)
+void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings)
 {
 
-    shared_ptr<ofAppBaseWindow> window = ofCreateWindow(settings);
+#ifndef TARGET_RASPBERRY_PI
+    ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings) settings;
+    shared_ptr<ofAppBaseWindow> window = ofCreateWindow(glfwWS);
+#else
+    ofGLESWindowSettings esWS = (ofGLESWindowSettings) settings;
+    shared_ptr<ofAppBaseWindow> window = ofCreateWindow(esWS);
+#endif
     view->setWindow(window);
 
 //    ofAddListener(ofxMTApp::modelLoadedEvent, view.get(), &ofxMTView::modelDidLoadInternal, OF_EVENT_ORDER_BEFORE_APP-100);
@@ -383,7 +393,7 @@ bool ofxMTApp::openImpl(string filePath)
         model->deserialize(serializer);
         if (model == nullptr)
         {
-            ofLog(OF_LOG_ERROR, "Failed Loading Model");
+            ofLogError("ofxMTApp", "Failed Loading Model");
             ofSystemAlertDialog("Failed Loading Model");
         }
         else
@@ -394,7 +404,7 @@ bool ofxMTApp::openImpl(string filePath)
             mainView->getWindow()->setWindowTitle(fileName);
             saveAppPreferences();
             modelLoadedEvent.notify(this);
-//			mainView->modelDidLoad();
+            ofLogVerbose("ofxMTApp", "File loaded.");
             return true;
         } //End load model
     } //End loadLastFile

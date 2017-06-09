@@ -84,7 +84,10 @@ void ofxMTView::update(ofEventArgs & args)
         updateOpQueue.pop();
     }
     //I should do something here to update the size of the contentFrame and the scroll bars when necessary
+
     update(); //Call user's update()
+
+    if (ofxMTApp::sharedApp->autoUpdateAppModes) currentAppMode->update();
 }
 
 void ofxMTView::draw(ofEventArgs & args)
@@ -105,6 +108,8 @@ void ofxMTView::draw(ofEventArgs & args)
 
     //Call the user's draw() function
     draw();
+
+    if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
     ofPopView();
 
