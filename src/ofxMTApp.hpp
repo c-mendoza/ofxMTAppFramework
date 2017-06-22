@@ -48,6 +48,11 @@ public:
         eventListeners.push_back(move(el));
     }
 
+    void clearEventListeners()
+    {
+        eventListeners.clear();
+    }
+
     static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
     static ofEvent<void> modelLoadedEvent;
 
@@ -57,7 +62,7 @@ public:
     //// UI
     shared_ptr<ofAppBaseWindow> getMainWindow();
     shared_ptr<ofxMTView> getMainView();
-    void createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings);
+    void createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings);
 
     ///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
     ///have any ofxMTView partner.

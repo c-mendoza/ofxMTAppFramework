@@ -27,7 +27,7 @@
 #include "ofxMTApp.hpp"
 #include "ofxMTModel.hpp"
 #include "ofxMTView.hpp"
-#include "ofxDatGui.h"
+//#include "ofxDatGui.h"
 #include "MTProcedure.h"
 
 #endif /* ofxMTAppFramework_h */

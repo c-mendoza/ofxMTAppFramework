@@ -144,8 +144,7 @@ void ofxMTApp::initialize()
 void ofxMTApp::createAppViews()
 {
     mainView = shared_ptr<ofxMTView>(new ofxMTView("Main_View"));
-    ofGLFWWindowSettings windowSettings;
-    windowSettings.setGLVersion(2, 1);
+    ofGLWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
     createWindowForView(mainView, windowSettings);
@@ -211,10 +210,16 @@ MTAppModeName ofxMTApp::getCurrentMode()
     return currentMode;
 }
 
-void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofGLFWWindowSettings settings)
+void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings)
 {
 
-    shared_ptr<ofAppBaseWindow> window = ofCreateWindow(settings);
+#ifndef TARGET_OPENGLES
+    ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings) settings;
+    shared_ptr<ofAppBaseWindow> window = ofCreateWindow(glfwWS);
+#else
+    ofGLESWindowSettings esWS = (ofGLESWindowSettings) settings;
+    shared_ptr<ofAppBaseWindow> window = ofCreateWindow(esWS);
+#endif
     view->setWindow(window);
 
 //    ofAddListener(ofxMTApp::modelLoadedEvent, view.get(), &ofxMTView::modelDidLoadInternal, OF_EVENT_ORDER_BEFORE_APP-100);
