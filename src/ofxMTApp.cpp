@@ -218,7 +218,7 @@ MTAppModeName ofxMTApp::getCurrentMode()
 void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings)
 {
 
-#ifndef TARGET_RASPBERRY_PI
+#ifndef TARGET_OPENGLES
     ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings) settings;
     shared_ptr<ofAppBaseWindow> window = ofCreateWindow(glfwWS);
 #else
