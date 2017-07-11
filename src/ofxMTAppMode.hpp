@@ -10,7 +10,7 @@
 #define ofxMTAppMode_hpp
 
 #include "ofxMTAppFramework.h"
-class ofxMTView;
+class ofxMTWindow;
 
 class ofxMTAppMode  {
 
@@ -19,7 +19,7 @@ public:
     ~ofxMTAppMode();
     std::string getName() { return name; }
     void setName(string name) { this->name = name; }
-    virtual void setup(ofxMTView* view) = 0;
+    virtual void setup(ofxMTWindow* view) = 0;
     virtual void exit() = 0;
     virtual void update(){};
     virtual void draw(){};
@@ -37,7 +37,7 @@ public:
     //	virtual void dragEvent(ofDragInfo dragInfo);
     //	virtual void gotMessage(ofMessage msg);
 protected:
-    ofxMTView* view;
+    ofxMTWindow* view;
     std::string name;
 private:
     vector <ofEventListener> eventListeners;
@@ -47,7 +47,7 @@ class MTAppModeVoid : public ofxMTAppMode
 {
 public:
     MTAppModeVoid() : ofxMTAppMode("App Mode Void"){}
-    virtual void setup(ofxMTView* view) {}
+    virtual void setup(ofxMTWindow* view) {}
     virtual void exit() {}
 };
 

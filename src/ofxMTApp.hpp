@@ -3,7 +3,7 @@
 
 #include "ofxMTAppFramework.h"
 
-class ofxMTView;
+class ofxMTWindow;
 class ofxMTModel;
 class ofxMTAppMode;
 
@@ -61,19 +61,19 @@ public:
 
     //// UI
     shared_ptr<ofAppBaseWindow> getMainWindow();
-    shared_ptr<ofxMTView> getMainView();
-    void createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings);
+    shared_ptr<ofxMTWindow> getMainView();
+    void createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSettings& settings);
 
     ///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
     ///have any ofxMTView partner.
-    shared_ptr<ofxMTView> getMTViewForWindow(shared_ptr<ofAppBaseWindow> window);
+    shared_ptr<ofxMTWindow> getMTViewForWindow(shared_ptr<ofAppBaseWindow> window);
 
     ///Returns the mouse x-position in local coordinates of the current window
     int getLocalMouseX();
     ///Returns the mouse y-position in local coordinates of the current window
     int getLocalMouseY();
 
-    void viewClosing(ofxMTView* view);
+    void viewClosing(ofxMTWindow* view);
 
     /////// FILE HANDLING
     void saveAs();
@@ -128,7 +128,7 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-    shared_ptr<ofxMTView> mainView;
+    shared_ptr<ofxMTWindow> mainView;
     shared_ptr<ofxMTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
@@ -137,7 +137,7 @@ protected:
 
     //TODO: make these private?
     vector<shared_ptr<ofAppBaseWindow>> windows;
-    vector<shared_ptr<ofxMTView>> views;
+    vector<shared_ptr<ofxMTWindow>> views;
 
     virtual void keyPressed(ofKeyEventArgs &key);
     virtual void keyReleased(ofKeyEventArgs &key);

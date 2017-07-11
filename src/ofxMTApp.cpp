@@ -148,7 +148,7 @@ void ofxMTApp::initialize()
 
 void ofxMTApp::createAppViews()
 {
-    mainView = shared_ptr<ofxMTView>(new ofxMTView("Main_View"));
+    mainView = shared_ptr<ofxMTWindow>(new ofxMTWindow("Main_View"));
     ofGLWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
@@ -215,7 +215,7 @@ MTAppModeName ofxMTApp::getCurrentMode()
     return currentMode;
 }
 
-void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings)
+void ofxMTApp::createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSettings& settings)
 {
 
 #ifndef TARGET_OPENGLES
@@ -288,7 +288,7 @@ shared_ptr<ofAppBaseWindow> ofxMTApp::getMainWindow()
     return mainView->getWindow();
 }
 
-shared_ptr<ofxMTView> ofxMTApp::getMainView()
+shared_ptr<ofxMTWindow> ofxMTApp::getMainView()
 {
     return mainView;
 }
@@ -443,7 +443,7 @@ bool ofxMTApp::saveAppPreferences()
     {
         auto thisView = viewsGroup.getGroup(i);
 
-        auto it = std::find_if(views.begin(), views.end(), [&](std::shared_ptr<ofxMTView> const& current) {
+        auto it = std::find_if(views.begin(), views.end(), [&](std::shared_ptr<ofxMTWindow> const& current) {
             return current->getName() == thisView.getName();
         });
 
@@ -461,7 +461,7 @@ bool ofxMTApp::saveAppPreferences()
 
 //// EVENTS
 
-void ofxMTApp::viewClosing(ofxMTView* view)
+void ofxMTApp::viewClosing(ofxMTWindow* view)
 {
     cout << "Closing " << view->getName() << "\n";
     auto window = view->getWindow();
@@ -510,7 +510,7 @@ void ofxMTApp::exit()
 //	windows.clear();
 }
 
-shared_ptr<ofxMTView> ofxMTApp::getMTViewForWindow(shared_ptr<ofAppBaseWindow> window)
+shared_ptr<ofxMTWindow> ofxMTApp::getMTViewForWindow(shared_ptr<ofAppBaseWindow> window)
 {
     for (auto mtView : views)
     {

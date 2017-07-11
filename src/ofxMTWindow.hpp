@@ -14,11 +14,16 @@
 class ofxMTModel;
 class MTAppModeChangeArgs;
 
-class ofxMTView {
-
+#ifndef TARGET_OPENGLES
+class ofxMTWindow : public ofAppGLFWWindow
+{
+#else
+class ofxMTView : public ofAppBaseGLESWindow
+{
+#endif
 public:
-    ofxMTView(string _name);
-    ~ofxMTView();
+    ofxMTWindow(string _name);
+    ~ofxMTWindow();
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
     void setName(string viewName);
