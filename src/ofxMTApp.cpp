@@ -1,9 +1,9 @@
 #include "ofxMTApp.hpp"
 
 const string ofxMTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
-const string ofxMTApp::NSPrefsViewsGroupName = "Views";
-const string ofxMTApp::NSPrefsViewPositionName = "Position";
-const string ofxMTApp::NSPrefsViewSizeName = "Size";
+const string ofxMTApp::MTPrefsViewsGroupName = "Views";
+const string ofxMTApp::MTPrefsViewPositionName = "Position";
+const string ofxMTApp::MTPrefsViewSizeName = "Size";
 
 ofEvent<MTAppModeChangeArgs> ofxMTApp::appChangeModeEvent;
 ofEvent<void> ofxMTApp::modelLoadedEvent;
@@ -20,7 +20,7 @@ ofxMTApp::ofxMTApp()
         NSPrefLastFile.set("NSPrefLastFile", "");
         NSPrefAutoloadLastFile.set("NSPrefAutoloadLastFile", false);
         NSPrefLaunchInFullScreen.set("NSPrefLaunchInFullScreen", false);
-        NSPrefsViewsGroup.setName(NSPrefsViewsGroupName);
+        NSPrefsViewsGroup.setName(MTPrefsViewsGroupName);
         NSPrefsViewsGroup.setSerializable(true);
         appPreferences.setName("App Preferences");
         appPreferences.add(NSPrefLaunchInFullScreen,
@@ -55,8 +55,8 @@ ofxMTApp::ofxMTApp()
                 thisView.setName(view.getName());
                 ofLogVerbose("View in XML: " + view.getName());
                 ofParameter<ofPoint> pos, size;
-                pos.set(NSPrefsViewPositionName, view.getChild("Position").getValue<ofVec3f>());
-                size.set(NSPrefsViewSizeName, view.getChild("Size").getValue<ofVec3f>());
+                pos.set(MTPrefsViewPositionName, view.getChild("Position").getValue<ofVec3f>());
+                size.set(MTPrefsViewSizeName, view.getChild("Size").getValue<ofVec3f>());
                 thisView.add(pos, size);
                 NSPrefsViewsGroup.add(thisView);
             }
@@ -75,9 +75,9 @@ ofxMTApp::ofxMTApp()
                 });
             }
 #else
-            mainView->enqueueUpdateOperation([this]()
+            mainWindow->enqueueUpdateOperation([this]()
             {
-                mainView->modelDidLoad();
+                mainWindow->modelDidLoad();
             });
 #endif
         }));
@@ -143,21 +143,21 @@ void ofxMTApp::initialize()
     // These should be overriden sometime
 //	model = shared_ptr<ofxMTModel>(new ofxMTModel("default"));
     model = nullptr;
-    createAppViews();
+    createAppWindows();
 }
 
-void ofxMTApp::createAppViews()
+void ofxMTApp::createAppWindows()
 {
-    mainView = shared_ptr<ofxMTWindow>(new ofxMTWindow("Main_View"));
+    mainWindow = shared_ptr<ofxMTWindow>(new ofxMTWindow("Main_View"));
     ofGLWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
-    createWindowForView(mainView, windowSettings);
+    createWindowForView(mainWindow, windowSettings);
 }
 
 void ofxMTApp::run()
 {
-    ofRunApp(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
+    ofRunApp(mainWindow->getWindow(), shared_ptr<ofBaseApp>(this));
 //	ofGetMainLoop()->run(std::shared_ptr<ofBaseApp> (this));
     ofAddListener(ofEvents().keyPressed, this, &ofxMTApp::keyPressed);
     isInitialized = false;
@@ -215,6 +215,50 @@ MTAppModeName ofxMTApp::getCurrentMode()
     return currentMode;
 }
 
+void ofxMTApp::addWindow(shared_ptr<ofxMTWindow> window, ofWindowSettings& settings)
+{
+    ofGetMainLoop()->addWindow(window);
+
+    // Add the "global" keyboard event listener:
+    ofAddListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
+    ofAddListener(window->events().keyReleased, this, &ofxMTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
+
+    ofParameterGroup* thisView;
+
+    if(NSPrefsViewsGroup.contains(window->getName()))
+    {
+        thisView = &NSPrefsViewsGroup.getGroup(window->getName());
+        auto pos = thisView->getVec3f(MTPrefsViewPositionName);
+        auto size = thisView->getVec3f(MTPrefsViewSizeName);
+        window->setWindowShape(size->x, size->y);
+        window->setWindowPosition(pos->x, pos->y);
+    }
+    else
+    {
+        thisView = new ofParameterGroup();
+        thisView->setName(window->getName());
+        ofParameter<ofPoint>* pos = new ofParameter<ofPoint>();
+        ofParameter<ofPoint>* size = new ofParameter<ofPoint>();
+        pos->set(MTPrefsViewPositionName, window->getWindowPosition());
+        size->set(MTPrefsViewSizeName, window->getWindowSize());
+        thisView->add(*pos, *size);
+        NSPrefsViewsGroup.add(*thisView);
+    }
+
+
+//	The ofApp system only notifies setup for the first window it creates, the rest are on their own aparently.
+//	So we check if we have initilized the ofApp system, and if we have, then that means that we need
+//	to notify setup for the window we are creating
+    if(!ofAppInitialized)
+    {
+        ofAppInitialized = true;
+    }
+    else
+    {
+        window->events().notifySetup();
+    }
+}
+
 void ofxMTApp::createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSettings& settings)
 {
 
@@ -240,8 +284,8 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSetting
     if(NSPrefsViewsGroup.contains(view->getName()))
     {
         thisView = &NSPrefsViewsGroup.getGroup(view->getName());
-        auto pos = thisView->getVec3f(NSPrefsViewPositionName);
-        auto size = thisView->getVec3f(NSPrefsViewSizeName);
+        auto pos = thisView->getVec3f(MTPrefsViewPositionName);
+        auto size = thisView->getVec3f(MTPrefsViewSizeName);
         window->setWindowShape(size->x, size->y);
         window->setWindowPosition(pos->x, pos->y);
     }
@@ -251,8 +295,8 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSetting
         thisView->setName(view->getName());
         ofParameter<ofPoint>* pos = new ofParameter<ofPoint>();
         ofParameter<ofPoint>* size = new ofParameter<ofPoint>();
-        pos->set(NSPrefsViewPositionName, view->getWindow()->getWindowPosition());
-        size->set(NSPrefsViewSizeName, view->getWindow()->getWindowSize());
+        pos->set(MTPrefsViewPositionName, view->getWindow()->getWindowPosition());
+        size->set(MTPrefsViewSizeName, view->getWindow()->getWindowSize());
         thisView->add(*pos, *size);
         NSPrefsViewsGroup.add(*thisView);
     }
@@ -270,7 +314,7 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSetting
         window->events().notifySetup();
     }
 
-    if (view == mainView)
+    if (view == mainWindow)
     {
         windows.insert(windows.begin(), window);
         views.insert(views.begin(), view);
@@ -283,9 +327,9 @@ void ofxMTApp::createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSetting
 }
 
 //// UI
-shared_ptr<ofAppBaseWindow> ofxMTApp::getMainWindow()
+shared_ptr<ofxMTWindow> ofxMTApp::getMainWindow()
 {
-    return mainView->getWindow();
+    return mainWindow;
 }
 
 shared_ptr<ofxMTWindow> ofxMTApp::getMainView()
@@ -351,7 +395,7 @@ bool ofxMTApp::saveAsImpl(string filePath)
 
     fileName = ofFilePath::getFileName(filePath);
     isInitialized = true;
-    mainView->getWindow()->setWindowTitle(fileName);
+    mainWindow->setWindowTitle(fileName);
     //Fire the change value event?
     return true;
 }
@@ -401,7 +445,7 @@ bool ofxMTApp::openImpl(string filePath)
             NSPrefLastFile = filePath;
             fileName = ofFilePath::getFileName(filePath);
             isInitialized = true;
-            mainView->getWindow()->setWindowTitle(fileName);
+            mainWindow->setWindowTitle(fileName);
             saveAppPreferences();
             modelLoadedEvent.notify(this);
             ofLogVerbose("ofxMTApp", "File loaded.");
@@ -421,7 +465,7 @@ void ofxMTApp::newFile()
     NSPrefLastFile = "";
     fileName = "";
     isInitialized = true;
-    mainView->getWindow()->setWindowTitle(fileName);
+    mainWindow->setWindowTitle(fileName);
 
     setAppMode(defaultMode);
 
@@ -437,7 +481,7 @@ bool ofxMTApp::revert()
 /// Saves!
 bool ofxMTApp::saveAppPreferences()
 {
-    auto viewsGroup = appPreferences.getGroup(NSPrefsViewsGroupName);
+    auto viewsGroup = appPreferences.getGroup(MTPrefsViewsGroupName);
 
     for (int i = 0; i < viewsGroup.size(); i++)
     {
@@ -449,8 +493,8 @@ bool ofxMTApp::saveAppPreferences()
 
         if (it != views.end())
         {
-            thisView.getVec3f(NSPrefsViewPositionName).set(glm::vec3((*it)->getWindow()->getWindowPosition(), 0));
-            thisView.getVec3f(NSPrefsViewSizeName).set(glm::vec3((*it)->getWindow()->getWindowSize(), 0));
+            thisView.getVec3f(MTPrefsViewPositionName).set(glm::vec3((*it)->getWindow()->getWindowPosition(), 0));
+            thisView.getVec3f(MTPrefsViewSizeName).set(glm::vec3((*it)->getWindow()->getWindowSize(), 0));
         }
     }
 //	NSPrefsViewsGroup.setParent(appPreferences);

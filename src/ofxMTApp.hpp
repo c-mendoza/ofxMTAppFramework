@@ -28,7 +28,7 @@ public:
 
     /// Creates the app's views at initialization. This will set up your windows when the program launches or when
     /// a new MTModel (a document) is loaded. Override this to create your views.
-    virtual void createAppViews();
+    virtual void createAppWindows();
 
     virtual void run();
 
@@ -63,6 +63,7 @@ public:
     shared_ptr<ofAppBaseWindow> getMainWindow();
     shared_ptr<ofxMTWindow> getMainView();
     void createWindowForView(shared_ptr<ofxMTWindow> view, ofWindowSettings& settings);
+    void addWindow(shared_ptr<ofxMTWindow> view, ofWindowSettings& settings);
 
     ///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
     ///have any ofxMTView partner.
@@ -128,7 +129,7 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-    shared_ptr<ofxMTWindow> mainView;
+    shared_ptr<ofxMTWindow> mainWindow;
     shared_ptr<ofxMTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
@@ -136,8 +137,8 @@ protected:
     ofParameterGroup NSPrefsViewsGroup;
 
     //TODO: make these private?
-    vector<shared_ptr<ofAppBaseWindow>> windows;
-    vector<shared_ptr<ofxMTWindow>> views;
+//    vector<shared_ptr<ofAppBaseWindow>> windows;
+//    vector<shared_ptr<ofxMTWindow>> views;
 
     virtual void keyPressed(ofKeyEventArgs &key);
     virtual void keyReleased(ofKeyEventArgs &key);
@@ -170,9 +171,9 @@ private:
     //UI / Convenience
 //	void storeViewParameters(ofxMTView* view);
 
-    const static string NSPrefsViewsGroupName;
-    const static string NSPrefsViewPositionName;
-    const static string NSPrefsViewSizeName;
+    const static string MTPrefsViewsGroupName;
+    const static string MTPrefsViewPositionName;
+    const static string MTPrefsViewSizeName;
 
     ofEventListener exitHandler;
     vector<ofEventListener> eventListeners;

@@ -12,49 +12,49 @@
 
 ofxMTWindow::ofxMTWindow(string _name)
 {
-    ofLogVerbose("View Construct: ") << _name;
-    window = nullptr;
+    ofLogVerbose("Window Construct: ") << _name;
     name = _name;
 //	contentPosition.set("Content Position", ofVec2f());
     contentScale.set("Content Scale", 1);
     scrollbarColor.set("Scrollbar Color", ofColor(110));
-    bScrollbarsVisible = true;
+    scrollbarsVisible.set("Scrollbars Visible", false);
+    bScrollbarsVisible = false;
 }
 
 ofxMTWindow::~ofxMTWindow()
 {
     for (auto& el : eventListeners)
     {
-        el.unsubscribe();
+        el.unsubscribe(); //?
     }
 
-    eventListeners.clear();
+    eventListeners.clear(); //Should this be in exit()?
     removeAllEvents();
-    ofLogVerbose("View Destruct: ") << getName();
+    ofLogVerbose("Window Destruct: ") << getName();
 }
 
-void ofxMTWindow::setWindow(shared_ptr<ofAppBaseWindow> window)
-{
-    if (!this->window)
-    {
-        this->window = window;
-        window->setWindowTitle(name);
+//void ofxMTWindow::setWindow(shared_ptr<ofAppBaseWindow> window)
+//{
+//    if (!this->window)
+//    {
+//        this->window = window;
+//        window->setWindowTitle(name);
 
-        //Preliminarily set the Content Frame to the size of the window:
-        setContentFrame(ofRectangle(0, 0, window->getWidth(), window->getHeight()));
-        addAllEvents();
-    }
-    else
-    {
-        //TODO: this currently crashes
-        ofEventArgs args;
-        exit(args);
-        this->window->close();
-        removeAllEvents();
-        this->window = window;
-        addAllEvents();
-    }
-}
+//        //Preliminarily set the Content Frame to the size of the window:
+//        setContentFrame(ofRectangle(0, 0, window->getWidth(), window->getHeight()));
+//        addAllEvents();
+//    }
+//    else
+//    {
+//        //TODO: this currently crashes
+//        ofEventArgs args;
+//        exit(args);
+//        this->window->close();
+//        removeAllEvents();
+//        this->window = window;
+//        addAllEvents();
+//    }
+//}
 
 //void ofxMTView::setModel(ofPtr<ofxMTModel> model)
 //{
@@ -64,16 +64,13 @@ void ofxMTWindow::setWindow(shared_ptr<ofAppBaseWindow> window)
 void ofxMTWindow::setName(string newName)
 {
     name = newName;
-    if(window)
-    {
-        window->setWindowTitle(name);
-    }
+    setWindowTitle(name);
 }
 
-shared_ptr<ofAppBaseWindow> ofxMTWindow::getWindow()
-{
-    return window;
-}
+//shared_ptr<ofAppBaseWindow> ofxMTWindow::getWindow()
+//{
+//    return window;
+//}
 
 void ofxMTWindow::update(ofEventArgs & args)
 {

@@ -28,7 +28,6 @@ public:
 //	shared_ptr<ofxMTModel> getModel() { return model; }
     void setName(string viewName);
     string getName() { return name; }
-    void setWindow(shared_ptr<ofAppBaseWindow> window);
 
     /// Use this to add event listeners that should be destroyed when this view is destroyed.
     void addEventListener(ofEventListener&& el) { eventListeners.push_back(move(el)); }
@@ -274,7 +273,7 @@ protected:
 
     vector<ofEventListener> eventListeners;
 
-    bool bScrollbarsVisible = false;
+    ofParameter<bool> scrollbarsVisible;
 
     //Transform
     ofRectangle contentFrame;
