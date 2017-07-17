@@ -36,6 +36,10 @@ public:
     // EVENTS: METHODS TO OVERRIDE //
     //-----------------------------//
 
+    //-----------------------------//
+    // EVENTS: METHODS TO OVERRIDE //
+    //-----------------------------//
+
     /// Called once the model is successfully loaded from file.
     /// Default implementation does nothing.
     virtual void modelDidLoad(){}
@@ -102,6 +106,15 @@ public:
     virtual void touchDoubleTap(int x, int y, int id) {};
     virtual void touchCancelled(int x, int y, int id) {};
 
+    //------------------------------------------------------//
+    // INTERNAL EVENT LISTENERS
+    //
+    // You do not need to call these methods
+    //------------------------------------------------------//
+    void setup(ofEventArgs & args) final;
+    void update(ofEventArgs & args) final;
+    void draw(ofEventArgs & args) final;
+    void exit(ofEventArgs & args) final;
 
     int mouseX, mouseY;			// for processing heads
 
