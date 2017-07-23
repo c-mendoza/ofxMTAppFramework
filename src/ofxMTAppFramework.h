@@ -23,11 +23,32 @@
 
 #include "ofMain.h"
 
+
+class MTEventListenerStore
+{
+public:
+    MTEventListenerStore(){}
+    ~MTEventListenerStore()
+    {
+        eventListeners.clear(); //Check to see if this is necessary
+    }
+
+    /// \brief Adds event listeners that should be destroyed when this
+    /// object is destroyed.
+    void addEventListener(ofEventListener &&e)
+    {
+        eventListeners.push_back(std::move(e));
+    }
+
+protected:
+    vector<ofEventListener> eventListeners;
+};
+
 #include "ofxMTAppMode.hpp"
 #include "ofxMTApp.hpp"
 #include "ofxMTModel.hpp"
 #include "ofxMTView.hpp"
-//#include "ofxDatGui.h"
 #include "MTProcedure.h"
 
-#endif /* ofxMTAppFramework_h */
+
+#endif

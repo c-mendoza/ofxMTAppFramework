@@ -10,10 +10,11 @@
 #define ofxMTAppMode_hpp
 
 #include "ofxMTAppFramework.h"
+
 class ofxMTView;
 
-class ofxMTAppMode  {
-
+class ofxMTAppMode : public MTEventListenerStore
+{
 public:
     ofxMTAppMode(string name) { this->name = name; }
     ~ofxMTAppMode();
@@ -33,14 +34,11 @@ public:
     virtual void mouseExited(int x, int y){};
     virtual void windowResized(int w, int h){};
 
-    void addEventListener(ofEventListener&& e);
     //	virtual void dragEvent(ofDragInfo dragInfo);
     //	virtual void gotMessage(ofMessage msg);
 protected:
     ofxMTView* view;
     std::string name;
-private:
-    vector <ofEventListener> eventListeners;
 };
 
 class MTAppModeVoid : public ofxMTAppMode

@@ -11,7 +11,8 @@ typedef string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
-class ofxMTApp : public ofBaseApp
+class ofxMTApp : public ofBaseApp,
+        public MTEventListenerStore
 {
 
 public:
@@ -41,23 +42,10 @@ public:
         appModes.push_back(mode);
     }
 
-    //------ EVENTS
-
-    void addEventListener(ofEventListener&& el)
-    {
-        eventListeners.push_back(move(el));
-    }
-
-    void clearEventListeners()
-    {
-        eventListeners.clear();
-    }
-
     static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
     static ofEvent<void> modelLoadedEvent;
 
     virtual void exit();
-
 
     //// UI
     shared_ptr<ofAppBaseWindow> getMainWindow();
@@ -128,7 +116,7 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-    shared_ptr<ofxMTView> mainView;
+    weak_ptr<ofxMTWindow> mainWindow;
     shared_ptr<ofxMTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
@@ -189,7 +177,6 @@ public:
 
 int mtGetLocalMouseX();
 int mtGetLocalMouseY();
-
 
 
 #endif

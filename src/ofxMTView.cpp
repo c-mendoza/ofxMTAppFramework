@@ -14,63 +14,165 @@ ofxMTView::ofxMTView(string _name)
 {
     ofLogVerbose("View Construct: ") << _name;
     window = nullptr;
-    name = _name;
+    name.set("View Name", _name);
+    superview = nullptr;
 //	contentPosition.set("Content Position", ofVec2f());
     contentScale.set("Content Scale", 1);
-    scrollbarColor.set("Scrollbar Color", ofColor(110));
-    bScrollbarsVisible = true;
+    backgroundColor.set("Background Color",
+                        ofFloatColor(1.0, 1.0, 1.0, 1.0));
 }
 
 ofxMTView::~ofxMTView()
 {
-    for (auto& el : eventListeners)
-    {
-        el.unsubscribe();
-    }
-
+    // Not sure if I need to be that explicit here
+    // TODO check ~MTView
     eventListeners.clear();
     removeAllEvents();
+    subviews.clear();
+    superview = nullptr;
     ofLogVerbose("View Destruct: ") << getName();
 }
 
-void ofxMTView::setWindow(shared_ptr<ofAppBaseWindow> window)
-{
-    if (!this->window)
-    {
-        this->window = window;
-        window->setWindowTitle(name);
+//------------------------------------------------------//
+// FRAME AND CONTENT                                    //
+//------------------------------------------------------//
 
-        //Preliminarily set the Content Frame to the size of the window:
-        setContentFrame(ofRectangle(0, 0, window->getWidth(), window->getHeight()));
-        addAllEvents();
-    }
-    else
+void ofxMTView::setFrame(ofRectangle newFrame)
+{
+    frame = newFrame;
+    frameChangedInternal();
+}
+
+void ofxMTView::setFrameOrigin(glm::vec3 pos)
+{
+    frame.setPosition(pos);
+    frameChangedInternal();
+}
+
+void ofxMTView::setFrameSize(glm::vec2 size)
+{
+    setFrameSize(size.x, size.y);
+}
+
+void ofxMTView::setFrameSize(float width, float height)
+{
+    setFrameSize(width, height);
+    frameChanged();
+}
+
+const glm::vec3& ofxMTView::getFrameOrigin()
+{
+    return frame.getPositionion();
+}
+
+glm::vec2 ofxMTView::getFrameSize()
+{
+    return glm::vec2(frame.getWidth(), frame.getHeight());
+}
+
+void ofxMTView::setContent(ofRectangle newContentRect)
+{
+    content = newContentRect;
+    contentChangedInternal();
+}
+
+void ofxMTView::setContentOrigin(glm::vec3 pos)
+{
+    content.setPosition(pos);
+    contentChangedInternal();
+}
+
+const glm::vec3& ofxMTView::getContentOrigin()
+{
+    return content.getPosition();
+}
+
+void ofxMTView::setContentSize(glm::vec2 size)
+{
+    setContentSize(size.x, size.y);
+}
+
+void ofxMTView::setContentSize(float width, float height)
+{
+    content.setSize(width, height);
+    contentChangedInternal();
+}
+
+glm::vec2 ofxMTView::getContentSize()
+{
+    return glm::vec2(content.getWidth(), content.getHeight());
+}
+
+void ofxMTView::frameChangedInternal()
+{
+    frameChanged();
+
+    for (auto sv : subviews)
     {
-        //TODO: this currently crashes
-        ofEventArgs args;
-        exit(args);
-        this->window->close();
-        removeAllEvents();
-        this->window = window;
-        addAllEvents();
+        sv->superviewFrameChanged();
     }
 }
 
-//void ofxMTView::setModel(ofPtr<ofxMTModel> model)
-//{
-//	this->model = model;
-//}
-
-void ofxMTView::setName(string newName)
+void ofxMTView::contentChangedInternal()
 {
-    name = newName;
-    if(window)
+    contentChanged();
+
+    for (auto sv : subviews)
     {
-        window->setWindowTitle(name);
+        sv->superviewContentChanged();
     }
 }
 
-shared_ptr<ofAppBaseWindow> ofxMTView::getWindow()
+//------------------------------------------------------//
+// VIEW HEIRARCHY                                       //
+//------------------------------------------------------//
+
+std::weak_ptr<ofxMTView> getSuperview()
+{
+    return superview;
+}
+
+/// \brief Adds a subview.
+
+void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
+{
+    subviews.push_back(subview);
+    subview->thisView = subview;
+    subview->superview = thisView;
+}
+
+vector<shared_ptr<ofxMTView>>& getSubviews()
+{
+    return subviews;
+}
+
+/// \returns True if successful.
+bool removeFromSuperview()
+{
+    if (superview != nullptr)
+    {
+        auto sv = getSuperview()->getSubviews();
+        auto iter = std::find(sv.begin(), sv.end(), thisView);
+        if (iter != sv.end())
+        {
+            superview = nullptr;
+            sv.erase(iter);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/// \returns True if there was a view to be removed.
+bool removeLastSubview()
+{
+
+}
+
+void removeAllSubviews();
+
+shared_ptr<ofxMTWindow> ofxMTView::getWindow()
 {
     return window;
 }
@@ -95,6 +197,17 @@ void ofxMTView::draw(ofEventArgs & args)
 //	ofPushView();
 //	ofViewport(viewport);
 
+    ofPushView();
+    ofViewport(frame);
+
+    ofSetupScreen();
+//    ofSetupScreenOrtho(ofGetViewportWidth(),
+//                       ofGetViewportHeight());
+
+    ofLoadIdentityMatrix();
+    ofLoadMatrix(frameMatrix * contentMatrix);
+    ofBackground(0);
+
     while (!drawOpQueue.empty())
     {
         auto op = drawOpQueue.front();
@@ -102,88 +215,31 @@ void ofxMTView::draw(ofEventArgs & args)
         drawOpQueue.pop();
     }
 
-    ofPushView();
-    ofSetupScreenOrtho(ofGetViewportWidth(), ofGetViewportHeight());
-    ofLoadMatrix(transMatrix);
-
     //Call the user's draw() function
     draw();
 
     if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
     ofPopView();
-
-    //Draw in screen coordinates:
-
-    if (bScrollbarsVisible)
-    {
-        int hDiff = contentFrame.width - ofGetWidth();
-        int vDiff = contentFrame.height - ofGetHeight();
-
-        //If there is more content than window, draw the scrollbars:
-        if (hDiff > 0)
-        {
-            float barWidth = ofGetWidth() * ((float)ofGetWidth() / contentFrame.width);
-            ofFill();
-            ofSetColor(scrollbarColor);
-            ofDrawRectangle(-contentPosition.x, ofGetHeight() - 10, barWidth, 10);
-        }
-
-        if (vDiff > 0)
-        {
-            float barHeight = ofGetHeight() * ((float)ofGetHeight() / contentFrame.height);
-            ofFill();
-            ofSetColor(scrollbarColor);
-            ofDrawRectangle(ofGetWidth() - 10, -contentPosition.y, 10, barHeight);
-        }
-
-    }
 }
 
 void ofxMTView::exit(ofEventArgs &args)
 {
     removeAllEvents();
     exit();
-    ofxMTApp::sharedApp->viewClosing(this);
-
 }
 
-void ofxMTView::updateMatrix()
+void ofxMTView::updateMatrices()
 {
-    transMatrix.makeIdentityMatrix();
-    transMatrix.scale(contentScale, contentScale, 1);
-//	transMatrix.translate(ofGetViewportWidth()/2, ofGetViewportHeight()/2, 0);
+    frameMatrix = glm::translate(glm::mat4(), frame.getPosition());
 
-//	transMatrix.translate(-ofGetViewportWidth()/2, -ofGetViewportHeight()/2, 0);
-    transMatrix.translate(contentPosition.x, contentPosition.y, 0);
-    invTransMatrix = transMatrix.getInverse();
+    contentMatrix = glm::translate(frameMatrix, content.getPosition());
+    if (contentScale > 1)
+    {
+        contentMatrix = glm::scale(contentMatrix, glm::vec3(contentScale, contentScale, 1));
+    }
 }
 
-void ofxMTView::scrollBy(float dx, float dy)
-{
-    contentPosition.x += dx;
-    contentPosition.y += dy;
-    updateMatrix();
-}
-
-void ofxMTView::scrollTo(float x, float y)
-{
-    contentPosition.x = x;
-    contentPosition.y = y;
-    updateMatrix();
-}
-
-void ofxMTView::zoomTo(float zoom)
-{
-    contentScale = zoom;
-    updateMatrix();
-}
-
-void ofxMTView::zoomBy(float zoomChange)
-{
-    contentScale += zoomChange;
-    updateMatrix();
-}
 
 void ofxMTView::addAllEvents()
 {

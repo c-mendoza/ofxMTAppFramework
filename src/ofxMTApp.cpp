@@ -148,17 +148,19 @@ void ofxMTApp::initialize()
 
 void ofxMTApp::createAppViews()
 {
-    mainView = shared_ptr<ofxMTView>(new ofxMTView("Main_View"));
+    mainWindow = shared_ptr<ofxMTWindow>(new ofxMTWindow("MTApp"));
     ofGLWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
-    createWindowForView(mainView, windowSettings);
+    ofGetMainLoop()->addWindow(mainWindow);
+    mainWindow->setup(settings);
 }
 
 void ofxMTApp::run()
 {
-    ofRunApp(mainView->getWindow(), shared_ptr<ofBaseApp>(this));
-//	ofGetMainLoop()->run(std::shared_ptr<ofBaseApp> (this));
+    initialize();
+    createAppViews();
+    ofRunApp(mainWindow, shared_ptr<ofBaseApp>(this));
     ofAddListener(ofEvents().keyPressed, this, &ofxMTApp::keyPressed);
     isInitialized = false;
 
@@ -215,7 +217,7 @@ MTAppModeName ofxMTApp::getCurrentMode()
     return currentMode;
 }
 
-void ofxMTApp::createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings)
+void ofxMTApp:: createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings)
 {
 
 #ifndef TARGET_OPENGLES
