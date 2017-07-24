@@ -3,6 +3,7 @@
 
 #include "ofxMTAppFramework.h"
 
+class ofxMTWindow;
 class ofxMTView;
 class ofxMTModel;
 class ofxMTAppMode;
@@ -11,8 +12,7 @@ typedef string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
-class ofxMTApp : public ofBaseApp,
-        public MTEventListenerStore
+class ofxMTApp : public ofBaseApp, public MTEventListenerStore
 {
 
 public:
@@ -50,7 +50,7 @@ public:
     //// UI
     shared_ptr<ofAppBaseWindow> getMainWindow();
     shared_ptr<ofxMTView> getMainView();
-    void createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings);
+    shared_ptr<ofxMTWindow> createWindow(string windowName, ofWindowSettings& settings);
 
     ///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
     ///have any ofxMTView partner.
@@ -84,7 +84,7 @@ public:
 
     /// Makes an ofPath from a stringified representation.
     static ofPath pathFromString(string s);
-    ofParameter<string> NSPrefLastFile;
+    ofParameter<string> MTPrefLastFile;
     ofParameter<bool> NSPrefAutoloadLastFile;
     ofParameter<bool> NSPrefLaunchInFullScreen;
 
@@ -121,11 +121,10 @@ protected:
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
     ofParameterGroup appPreferences;
-    ofParameterGroup NSPrefsViewsGroup;
+    ofParameterGroup MTPrefsWindowsGroup;
 
     //TODO: make these private?
-    vector<shared_ptr<ofAppBaseWindow>> windows;
-    vector<shared_ptr<ofxMTView>> views;
+    vector<shared_ptr<ofxMTWindow>> windows;
 
     virtual void keyPressed(ofKeyEventArgs &key);
     virtual void keyReleased(ofKeyEventArgs &key);
@@ -158,9 +157,9 @@ private:
     //UI / Convenience
 //	void storeViewParameters(ofxMTView* view);
 
-    const static string NSPrefsViewsGroupName;
-    const static string NSPrefsViewPositionName;
-    const static string NSPrefsViewSizeName;
+    const static string MTPrefsWindowsGroupName;
+    const static string MTPrefsWindowPositionName;
+    const static string MTPrefsWindowSizeName;
 
     ofEventListener exitHandler;
     vector<ofEventListener> eventListeners;

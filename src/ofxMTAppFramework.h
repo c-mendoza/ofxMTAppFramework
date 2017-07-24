@@ -27,11 +27,11 @@
 class MTEventListenerStore
 {
 public:
-    MTEventListenerStore(){}
-    ~MTEventListenerStore()
-    {
-        eventListeners.clear(); //Check to see if this is necessary
-    }
+//    MTEventListenerStore(){}
+//    ~MTEventListenerStore()
+//    {
+//        eventListeners.clear(); //Check to see if this is necessary
+//    }
 
     /// \brief Adds event listeners that should be destroyed when this
     /// object is destroyed.
@@ -44,10 +44,11 @@ protected:
     vector<ofEventListener> eventListeners;
 };
 
-#include "ofxMTAppMode.hpp"
-#include "ofxMTApp.hpp"
-#include "ofxMTModel.hpp"
-#include "ofxMTView.hpp"
+//#include "ofxMTAppMode.hpp"
+//#include "ofxMTApp.hpp"
+//#include "ofxMTModel.hpp"
+//#include "ofxMTView.hpp"
+//#include "ofxMTWindow.hpp"
 #include "MTProcedure.h"
 
 

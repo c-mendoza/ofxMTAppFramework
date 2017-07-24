@@ -283,11 +283,10 @@ public:
     }
 
     friend class ofxMTWindow;
-protected:
-//	shared_ptr<ofxMTModel> model;
 
-    weak_ptr<ofxMTWindow> window;
-    weak_ptr<ofxMTView> superview;
+protected:
+    std::weak_ptr<ofxMTWindow> window;
+    std::weak_ptr<ofxMTView> superview;
     vector<shared_ptr<ofxMTView>> subviews;
 
     /// \brief The rectangle that specifies the size and position of

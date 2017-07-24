@@ -7,15 +7,16 @@
 //
 
 #include "ofxMTView.hpp"
-
-//int	ofGetMouseY();
+#include "ofxMTApp.hpp"
+#include "ofxMTModel.hpp"
+#include "ofxMTWindow.hpp"
 
 ofxMTView::ofxMTView(string _name)
 {
     ofLogVerbose("View Construct: ") << _name;
-    window = nullptr;
+//    window = nullptr;
     name.set("View Name", _name);
-    superview = nullptr;
+//    superview = nullptr;
 //	contentPosition.set("Content Position", ofVec2f());
     contentScale.set("Content Scale", 1);
     backgroundColor.set("Background Color",
@@ -30,7 +31,7 @@ ofxMTView::~ofxMTView()
     removeAllEvents();
     subviews.clear();
     superview = nullptr;
-    ofLogVerbose("View Destruct: ") << getName();
+    ofLogVerbose("View Destruct: ") << name;
 }
 
 //------------------------------------------------------//
@@ -62,7 +63,7 @@ void ofxMTView::setFrameSize(float width, float height)
 
 const glm::vec3& ofxMTView::getFrameOrigin()
 {
-    return frame.getPositionion();
+    return frame.getPosition();
 }
 
 glm::vec2 ofxMTView::getFrameSize()

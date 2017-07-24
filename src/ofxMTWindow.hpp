@@ -27,7 +27,7 @@ class ofxMTWindow :
 {
 #endif
 public:
-    ofxMTWindow();
+    ofxMTWindow(string name);
     ~ofxMTWindow();
 
    ofParameter<string> name;
@@ -41,6 +41,8 @@ public:
 
     bool isMouseDown = false;
     bool isMouseDragging = true;
+
+    virtual void modelDidLoad();
 
     //DO NOT OVERRIDE:
     virtual void setup(ofEventArgs & args);

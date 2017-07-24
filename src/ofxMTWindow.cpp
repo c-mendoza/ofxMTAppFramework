@@ -6,36 +6,21 @@
 //
 //
 
-#ifndef ofxMTAppFramework_h
-#define ofxMTAppFramework_h
+#ifndef ofxMTWindow_h
+#define ofxMTWindow_h
 
-
-//This is sadly the only way that I can think of overriding "of..." globals.
-//This will cause ofGetMouseX and ofGetMouseY to return "local" view coordinates.
-//In addition to this define, you must enable Prefix headers and use the supplied .pch file.
-#define OFXMTAPP_USE_LOCAL_MOUSE 1
-
-
-//#ifdef OFXMTAPP_USE_LOCAL_MOUSE
-//	#define ofGetMouseX mtGetLocalMouseX
-//	#define ofGetMouseY mtGetLocalMouseY
-//#endif
-
-#include "ofMain.h"
-
+#include "ofxMTWindow.hpp"
 #include "ofxMTAppMode.hpp"
 #include "ofxMTApp.hpp"
 #include "ofxMTModel.hpp"
 #include "ofxMTView.hpp"
-//#include "ofxDatGui.h"
-#include "MTProcedure.h"
 
-#endif /* ofxMTAppFramework_h */
 
-ofxMTWindow::ofxMTWindow()
+ofxMTWindow::ofxMTWindow(string name)
 {
     contentView = shared_ptr<ofxMTView>(new ofxMTView("Content View"));
     contentView->window(std::make_shared(this));
+    this->name.set("Window Name", name);
 }
 
 void ofxMTWindow::setup(ofEventArgs & args)
@@ -58,7 +43,20 @@ void ofxMTWindow::exit(ofEventArgs & args)
     contentView = nullptr;
 }
 
-void ofxMTWindow::windowResized(ofResizeEventArgs & resize);
+void ofxMTWindow::windowResized(ofResizeEventArgs & resize)
+{
+    contentView->setFrameSize(resize.width, resize.height);
+    for (auto view : contentView->subviews)
+    {
+        view->windowResized(ofResizeEventArgs & resize);
+    }
+}
+
+void ofxMTWindow::modelDidLoad()
+{
+    contentView->modelDidLoad();
+}
+
 void ofxMTWindow::keyPressed( ofKeyEventArgs & key );
 void ofxMTWindow::keyReleased( ofKeyEventArgs & key );
 void ofxMTWindow::mouseMoved( ofMouseEventArgs & mouse );
@@ -77,3 +75,6 @@ void ofxMTWindow::touchMoved(ofTouchEventArgs & touch);
 void ofxMTWindow::touchUp(ofTouchEventArgs & touch);
 void ofxMTWindow::touchDoubleTap(ofTouchEventArgs & touch);
 void ofxMTWindow::touchCancelled(ofTouchEventArgs & touch);
+
+
+#endif /* ofxMTWindow_h */
