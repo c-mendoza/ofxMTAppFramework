@@ -106,15 +106,6 @@ public:
     virtual void touchDoubleTap(int x, int y, int id) {};
     virtual void touchCancelled(int x, int y, int id) {};
 
-    //------------------------------------------------------//
-    // INTERNAL EVENT LISTENERS
-    //
-    // You do not need to call these methods
-    //------------------------------------------------------//
-    void setup(ofEventArgs & args) final;
-    void update(ofEventArgs & args) final;
-    void draw(ofEventArgs & args) final;
-    void exit(ofEventArgs & args) final;
 
     int mouseX, mouseY;			// for processing heads
 
@@ -182,7 +173,7 @@ public:
     //------------------------------------------------------//
 
     /// \brief Gets this view's superview if there is one.
-    std::weak_ptr<ofxMTView> getSuperview();
+	std::shared_ptr<ofxMTView> getSuperview();
 
     /// \brief Adds a subview.
     /// \return A reference to the added view.
@@ -205,7 +196,7 @@ public:
 
     virtual void appModeChanged(MTAppModeChangeArgs & modeChange){}
 
-    weak_ptr<ofxMTWindow> getWindow();
+	std::weak_ptr<ofxMTWindow> getWindow();
 
     ///Returns the mouse position in content (local) coordinates
 //    const ofVec3f & getContentMouse() { return contentMouse; }

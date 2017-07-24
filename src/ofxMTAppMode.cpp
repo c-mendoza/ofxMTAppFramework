@@ -8,12 +8,12 @@
 
 #include "ofxMTAppMode.hpp"
 
-ofxMTAppMode::~ofxMTAppMode()
-{
-	eventListeners.clear();
-}
+//ofxMTAppMode::~ofxMTAppMode()
+//{
+//	eventListeners.clear();
+//}
 
-void ofxMTAppMode::addEventListener(ofEventListener &&e)
-{
-	eventListeners.push_back(move(e));
-}
+//void ofxMTAppMode::addEventListener(ofEventListener &&e)
+//{
+//	eventListeners.push_back(move(e));
+//}

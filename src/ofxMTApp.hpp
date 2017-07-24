@@ -116,7 +116,7 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-    weak_ptr<ofxMTWindow> mainWindow;
+	shared_ptr<ofxMTWindow> mainWindow;
     shared_ptr<ofxMTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;

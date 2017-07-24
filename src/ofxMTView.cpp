@@ -128,7 +128,7 @@ void ofxMTView::contentChangedInternal()
 // VIEW HEIRARCHY                                       //
 //------------------------------------------------------//
 
-std::weak_ptr<ofxMTView> getSuperview()
+std::weak_ptr<ofxMTView> ofxMTView::getSuperview()
 {
     return superview;
 }
@@ -142,21 +142,21 @@ void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
     subview->superview = thisView;
 }
 
-vector<shared_ptr<ofxMTView>>& getSubviews()
+vector<shared_ptr<ofxMTView>>& ofxMTView::getSubviews()
 {
     return subviews;
 }
 
 /// \returns True if successful.
-bool removeFromSuperview()
+bool ofxMTView::removeFromSuperview()
 {
-    if (superview != nullptr)
+	if (auto s = superview.lock())
     {
-        auto sv = getSuperview()->getSubviews();
+		auto sv = s->getSubviews();
         auto iter = std::find(sv.begin(), sv.end(), thisView);
         if (iter != sv.end())
         {
-            superview = nullptr;
+//            superview = nullptr;
             sv.erase(iter);
             return true;
         }
@@ -166,14 +166,17 @@ bool removeFromSuperview()
 }
 
 /// \returns True if there was a view to be removed.
-bool removeLastSubview()
+bool ofxMTView::removeLastSubview()
 {
 
 }
 
-void removeAllSubviews();
+void ofxMTView::removeAllSubviews()
+{
 
-shared_ptr<ofxMTWindow> ofxMTView::getWindow()
+}
+
+std::weak_ptr<ofxMTWindow> ofxMTView::getWindow()
 {
     return window;
 }

@@ -14,15 +14,15 @@ ofxMTModel::ofxMTModel(string _name)
     parameters.setName(name);
 }
 
-ofxMTModel::~ofxMTModel()
-{
-    for (auto &el : eventListeners)
-    {
-        el.unsubscribe();
-    }
+//ofxMTModel::~ofxMTModel()
+//{
+//    for (auto &el : eventListeners)
+//    {
+//        el.unsubscribe();
+//    }
 
-    eventListeners.clear();
-}
+//    eventListeners.clear();
+//}
 
 string ofxMTModel::getName()
 {
@@ -38,11 +38,6 @@ void ofxMTModel::setName(string n)
 ofParameterGroup& ofxMTModel::getParameters()
 {
     return parameters;
-}
-
-void ofxMTModel::addEventListener(ofEventListener&& el)
-{
-    eventListeners.push_back(move(el));
 }
 
 void ofxMTModel::serialize(ofXml& serializer)
