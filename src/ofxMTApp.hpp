@@ -48,20 +48,15 @@ public:
     virtual void exit();
 
     //// UI
-    shared_ptr<ofAppBaseWindow> getMainWindow();
-    shared_ptr<ofxMTView> getMainView();
+    weak_ptr<ofAppBaseWindow> getMainWindow();
     shared_ptr<ofxMTWindow> createWindow(string windowName, ofWindowSettings& settings);
-
-    ///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
-    ///have any ofxMTView partner.
-    shared_ptr<ofxMTView> getMTViewForWindow(shared_ptr<ofAppBaseWindow> window);
 
     ///Returns the mouse x-position in local coordinates of the current window
     int getLocalMouseX();
     ///Returns the mouse y-position in local coordinates of the current window
     int getLocalMouseY();
 
-    void viewClosing(ofxMTView* view);
+    void windowClosing(ofxMTWindow* view);
 
     /////// FILE HANDLING
     void saveAs();
@@ -76,7 +71,7 @@ public:
 
     void registerAppPreference(ofAbstractParameter& preference);
 
-    virtual shared_ptr<ofxMTModel> getModel() { return model; };
+    virtual shared_ptr<ofxMTModel> getModel() { return model; }
 
     /////// UTILITY
     /// Stringifies a path.
@@ -116,7 +111,7 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-	shared_ptr<ofxMTWindow> mainWindow;
+    shared_ptr<ofxMTWindow> mainWindow;
     shared_ptr<ofxMTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
@@ -124,7 +119,7 @@ protected:
     ofParameterGroup MTPrefsWindowsGroup;
 
     //TODO: make these private?
-    vector<shared_ptr<ofxMTWindow>> windows;
+    std::vector<std::shared_ptr<ofxMTWindow>> windows;
 
     virtual void keyPressed(ofKeyEventArgs &key);
     virtual void keyReleased(ofKeyEventArgs &key);

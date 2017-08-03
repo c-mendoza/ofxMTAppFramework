@@ -15,13 +15,14 @@
 class ofxMTModel;
 class ofxMTWindow;
 class MTAppModeChangeArgs;
+class ofxMTAppMode;
 
 class ofxMTView : public MTEventListenerStore
 {
 
 public:
     ofxMTView(string _name);
-    ~ofxMTView();
+    virtual ~ofxMTView(){}
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
 //    void setWindow(shared_ptr<ofxMTWindow> window);
@@ -100,11 +101,11 @@ public:
     virtual void gotMessage(ofMessage msg){ }
 
     //TODO: Touch Events
-    virtual void touchDown(int x, int y, int id) {};
-    virtual void touchMoved(int x, int y, int id) {};
-    virtual void touchUp(int x, int y, int id) {};
-    virtual void touchDoubleTap(int x, int y, int id) {};
-    virtual void touchCancelled(int x, int y, int id) {};
+    virtual void touchDown(int x, int y, int id) {}
+    virtual void touchMoved(int x, int y, int id) {}
+    virtual void touchUp(int x, int y, int id) {}
+    virtual void touchDoubleTap(int x, int y, int id) {}
+    virtual void touchCancelled(int x, int y, int id) {}
 
 
     int mouseX, mouseY;			// for processing heads
@@ -172,8 +173,10 @@ public:
     // VIEW HEIRARCHY                                       //
     //------------------------------------------------------//
 
+    void setWindow(std::weak_ptr<ofxMTWindow> window);
+
     /// \brief Gets this view's superview if there is one.
-	std::shared_ptr<ofxMTView> getSuperview();
+    std::weak_ptr<ofxMTView> getSuperview();
 
     /// \brief Adds a subview.
     /// \return A reference to the added view.
@@ -190,17 +193,14 @@ public:
 
     void removeAllSubviews();
 
+    std::weak_ptr<ofxMTWindow> getWindow();
+
+
     //------------------------------------------------------//
     // APP MODES                                            //
     //------------------------------------------------------//
 
     virtual void appModeChanged(MTAppModeChangeArgs & modeChange){}
-
-	std::weak_ptr<ofxMTWindow> getWindow();
-
-    ///Returns the mouse position in content (local) coordinates
-//    const ofVec3f & getContentMouse() { return contentMouse; }
-//    shared_ptr<ofxMTAppMode> currentAppMode; //?
 
     //------------------------------------------------------//
     // INTERNAL EVENT LISTENERS
@@ -292,6 +292,8 @@ protected:
     std::weak_ptr<ofxMTWindow> window;
     std::weak_ptr<ofxMTView> superview;
     vector<shared_ptr<ofxMTView>> subviews;
+
+    std::shared_ptr<ofxMTAppMode> currentAppMode;
 
     /// \brief The rectangle that specifies the size and position of
     /// the actual content of the view.

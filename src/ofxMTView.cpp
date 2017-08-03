@@ -10,6 +10,7 @@
 #include "ofxMTApp.hpp"
 #include "ofxMTModel.hpp"
 #include "ofxMTWindow.hpp"
+#include "ofxMTAppMode.hpp"
 
 ofxMTView::ofxMTView(string _name)
 {
@@ -30,13 +31,17 @@ ofxMTView::~ofxMTView()
     eventListeners.clear();
     removeAllEvents();
     subviews.clear();
-    superview = nullptr;
     ofLogVerbose("View Destruct: ") << name;
 }
 
 //------------------------------------------------------//
 // FRAME AND CONTENT                                    //
 //------------------------------------------------------//
+
+void ofxMTView::setWindow(std::weak_ptr<ofxMTWindow> window)
+{
+    this->window = window;
+}
 
 void ofxMTView::setFrame(ofRectangle newFrame)
 {
@@ -137,9 +142,11 @@ std::weak_ptr<ofxMTView> ofxMTView::getSuperview()
 
 void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
 {
-    subviews.push_back(subview);
     subview->thisView = subview;
     subview->superview = thisView;
+    subview->window = window;
+    subviews.push_back(subview);
+
 }
 
 vector<shared_ptr<ofxMTView>>& ofxMTView::getSubviews()
@@ -150,10 +157,10 @@ vector<shared_ptr<ofxMTView>>& ofxMTView::getSubviews()
 /// \returns True if successful.
 bool ofxMTView::removeFromSuperview()
 {
-	if (auto s = superview.lock())
+    if (auto s = superview.lock())
     {
-		auto sv = s->getSubviews();
-        auto iter = std::find(sv.begin(), sv.end(), thisView);
+        auto sv = s->getSubviews();
+        auto iter = std::find(sv.begin(), sv.end(), thisView.lock());
         if (iter != sv.end())
         {
 //            superview = nullptr;
@@ -179,6 +186,17 @@ void ofxMTView::removeAllSubviews()
 std::weak_ptr<ofxMTWindow> ofxMTView::getWindow()
 {
     return window;
+}
+
+//------------------------------------------------------//
+// INTERNAL EVENT LISTENERS
+//
+// You do not need to call these methods
+//------------------------------------------------------//
+
+void ofxMTView::setup(ofEventArgs & args)
+{
+    setup();
 }
 
 void ofxMTView::update(ofEventArgs & args)
@@ -233,6 +251,40 @@ void ofxMTView::exit(ofEventArgs &args)
     exit();
 }
 
+void ofxMTView::keyPressed(ofKeyEventArgs & key)
+{
+
+}
+
+void ofxMTView::keyReleased(ofKeyEventArgs & key)
+{
+
+}
+
+void ofxMTView::mouseMoved(ofMouseEventArgs & mouse)
+{
+
+}
+
+void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
+{
+
+}
+
+void ofxMTView::mousePressed(ofMouseEventArgs & mouse)
+{
+
+}
+
+void ofxMTView::windowResized(ofResizeEventArgs & resize)
+{
+    windowResized(resize.width, resize.height);
+    for (auto view : subviews)
+    {
+        view->windowResized(resize);
+    }
+}
+
 void ofxMTView::updateMatrices()
 {
     frameMatrix = glm::translate(glm::mat4(), frame.getPosition());
@@ -247,54 +299,60 @@ void ofxMTView::updateMatrices()
 
 void ofxMTView::addAllEvents()
 {
-    window->events().enable();
-    ofAddListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().keyPressed,this, &ofxMTView::keyPressed,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().keyReleased,this, &ofxMTView::keyReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mouseMoved,this, &ofxMTView::mouseMoved,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mouseDragged,this, &ofxMTView::mouseDragged,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mousePressed,this, &ofxMTView::mousePressed,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mouseReleased,this, &ofxMTView::mouseReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mouseScrolled,this, &ofxMTView::mouseScrolled,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mouseEntered,this, &ofxMTView::mouseEntered,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().mouseExited,this, &ofxMTView::mouseExited,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().windowResized,this, &ofxMTView::windowResized,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().messageEvent,this, &ofxMTView::messageReceived,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().fileDragEvent,this, &ofxMTView::dragged,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
-    ofAddListener(window->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
+    if (auto w = window.lock())
+    {
+    w->events().enable();
+    ofAddListener(w->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().keyPressed,this, &ofxMTView::keyPressed,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().keyReleased,this, &ofxMTView::keyReleased,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseMoved,this, &ofxMTView::mouseMoved,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseDragged,this, &ofxMTView::mouseDragged,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mousePressed,this, &ofxMTView::mousePressed,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseReleased,this, &ofxMTView::mouseReleased,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseScrolled,this, &ofxMTView::mouseScrolled,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseEntered,this, &ofxMTView::mouseEntered,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseExited,this, &ofxMTView::mouseExited,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().windowResized,this, &ofxMTView::windowResized,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().messageEvent,this, &ofxMTView::messageReceived,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().fileDragEvent,this, &ofxMTView::dragged,OF_EVENT_ORDER_APP);
+//    ofAddListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
+//    ofAddListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
+//    ofAddListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
+//    ofAddListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
+//    ofAddListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
     ofAddListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    }
 
 }
 void ofxMTView::removeAllEvents()
 {
-    ofRemoveListener(window->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().keyPressed,this, &ofxMTView::keyPressed,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().keyReleased,this, &ofxMTView::keyReleased,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mouseMoved,this, &ofxMTView::mouseMoved,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mouseDragged,this, &ofxMTView::mouseDragged,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mousePressed,this, &ofxMTView::mousePressed,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mouseReleased,this, &ofxMTView::mouseReleased,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mouseScrolled,this, &ofxMTView::mouseScrolled,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mouseEntered,this, &ofxMTView::mouseEntered,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().mouseExited,this, &ofxMTView::mouseExited,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().windowResized,this, &ofxMTView::windowResized,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().messageEvent,this, &ofxMTView::messageReceived,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().fileDragEvent,this, &ofxMTView::dragged,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
-    ofRemoveListener(window->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-    ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    if (auto w = window.lock()) //Acquire the shared_ptr if it exists
+    {
+        ofRemoveListener(w->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().keyPressed,this, &ofxMTView::keyPressed,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().keyReleased,this, &ofxMTView::keyReleased,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseMoved,this, &ofxMTView::mouseMoved,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseDragged,this, &ofxMTView::mouseDragged,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mousePressed,this, &ofxMTView::mousePressed,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseReleased,this, &ofxMTView::mouseReleased,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseScrolled,this, &ofxMTView::mouseScrolled,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseEntered,this, &ofxMTView::mouseEntered,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseExited,this, &ofxMTView::mouseExited,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().windowResized,this, &ofxMTView::windowResized,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().messageEvent,this, &ofxMTView::messageReceived,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().fileDragEvent,this, &ofxMTView::dragged,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
+        ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    }
 }
 

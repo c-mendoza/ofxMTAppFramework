@@ -45,7 +45,12 @@ public:
     virtual void modelDidLoad();
 
     //DO NOT OVERRIDE:
-    virtual void setup(ofEventArgs & args);
+    /// TODO: Address TARGET_OPENGLES
+#ifndef TARGET_OPENGLES
+    virtual void setup(const ofGLFWWindowSettings & settings);
+#else
+    virtual void setup(const ofGLESWindowSettings & settings);
+#endif
     virtual void update(ofEventArgs & args);
     virtual void draw(ofEventArgs & args);
     virtual void exit(ofEventArgs & args);
@@ -121,6 +126,8 @@ private:
 
     queue<function<void()>> updateOpQueue;
     queue<function<void()>> drawOpQueue;
+
+    std::weak_ptr<ofxMTView> focusedView;
 };
 
 #endif /* ofxMTWindow_hpp */

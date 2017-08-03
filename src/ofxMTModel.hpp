@@ -17,7 +17,7 @@ class ofxMTModel : public MTEventListenerStore
 {
 public:
     ofxMTModel(string _name);
-    virtual ~ofxMTModel();
+    virtual ~ofxMTModel(){}
     string getName();
     void setName(string n);
     ofParameterGroup& getParameters();

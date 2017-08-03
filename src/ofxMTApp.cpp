@@ -2,6 +2,7 @@
 #include "ofxMTWindow.hpp"
 #include "ofxMTView.hpp"
 #include "ofxMTAppMode.hpp"
+#include "ofxMTModel.hpp"
 
 const string ofxMTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
 const string ofxMTApp::MTPrefsWindowsGroupName = "Views";
@@ -152,11 +153,11 @@ void ofxMTApp::initialize()
 void ofxMTApp::createAppViews()
 {
     mainWindow = shared_ptr<ofxMTWindow>(new ofxMTWindow("MTApp"));
-    ofWindowSettings windowSettings;
+    ofGLFWWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
-    ofGetMainLoop()->addWindow(std::dynamic_pointer_cast<ofAppBaseWindow>(mainWindow));
-    mainWindow->setup(settings);
+    ofGetMainLoop()->addWindow(/*std::dynamic_pointer_cast<ofAppBaseGLWindow>*/(mainWindow));
+    mainWindow->setup(windowSettings);
 }
 
 void ofxMTApp::run()
@@ -220,9 +221,10 @@ shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettin
 {
 
     auto window = shared_ptr<ofxMTWindow>(new ofxMTWindow(windowName));
+    window->contentView->setWindow(window);
 #ifndef TARGET_OPENGLES
     ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings) settings;
-    window->setup(glfwWs);
+    window->setup(glfwWS);
 #else
     ofGLESWindowSettings esWS = (ofGLESWindowSettings) settings;
     window->setup(esWs);
@@ -239,9 +241,9 @@ shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettin
     windows.push_back(window);
     ofParameterGroup* thisWindow;
 
-    if(MTPrefsWindowsGroup.contains(window->getName()))
+    if(MTPrefsWindowsGroup.contains(window->name))
     {
-        thisWindow = &MTPrefsWindowsGroup.getGroup(window->getName());
+        thisWindow = &MTPrefsWindowsGroup.getGroup(window->name);
         auto pos = thisWindow->getVec3f(MTPrefsWindowPositionName);
         auto size = thisWindow->getVec3f(MTPrefsWindowSizeName);
         window->setWindowShape(size->x, size->y);
@@ -250,13 +252,13 @@ shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettin
     else
     {
         thisWindow = new ofParameterGroup();
-        thisWindow->setName(window->getName());
+        thisWindow->setName(window->name);
         ofParameter<ofPoint>* pos = new ofParameter<ofPoint>();
         ofParameter<ofPoint>* size = new ofParameter<ofPoint>();
         pos->set(MTPrefsWindowPositionName, window->getWindowPosition());
         size->set(MTPrefsWindowSizeName, window->getWindowSize());
         thisWindow->add(*pos, *size);
-        MTPrefsWindowsGroup.add(*thisView);
+        MTPrefsWindowsGroup.add(*thisWindow);
     }
 
 
@@ -280,7 +282,7 @@ shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettin
 //// UI
 weak_ptr<ofAppBaseWindow> ofxMTApp::getMainWindow()
 {
-    return mainView;
+    return mainWindow;
 }
 
 //// FILE HANDLING
@@ -433,14 +435,14 @@ bool ofxMTApp::saveAppPreferences()
     {
         auto thisWindow = windowsGroup.getGroup(i);
 
-        auto it = std::find_if(views.begin(), views.end(), [&](std::shared_ptr<ofxMTView> const& current) {
-            return current->getName() == thisView.getName();
-        });
+        auto it = std::find_if(windows.begin(), windows.end(),
+                               [&thisWindow](std::shared_ptr<ofxMTWindow> current)
+        { return current->name.get() == thisWindow.getName(); });
 
-        if (it != views.end())
+        if (it != windows.end())
         {
-            thisWindow.getVec3f(MTPrefsWindowPositionName).set(glm::vec3((*it)->getWindow()->getWindowPosition(), 0));
-            thisWindow.getVec3f(MTPrefsWindowSizeName).set(glm::vec3((*it)->getWindow()->getWindowSize(), 0));
+            thisWindow.getVec3f(MTPrefsWindowPositionName).set(glm::vec3((*it)->getWindowPosition(), 0));
+            thisWindow.getVec3f(MTPrefsWindowSizeName).set(glm::vec3((*it)->getWindowSize(), 0));
         }
     }
 //	NSPrefsViewsGroup.setParent(appPreferences);
@@ -451,29 +453,17 @@ bool ofxMTApp::saveAppPreferences()
 
 //// EVENTS
 
-void ofxMTApp::viewClosing(ofxMTView* view)
+void ofxMTApp::windowClosing(ofxMTWindow* window)
 {
-    cout << "Closing " << view->getName() << "\n";
-    auto window = view->getWindow();
+    ofLogVerbose() << "Closing " << window->name;
 
     ofRemoveListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
     ofRemoveListener(window->events().keyReleased, this, &ofxMTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
 //    ofRemoveListener(modelLoadedEvent, view, &ofxMTView::modelDidLoadInternal, OF_EVENT_ORDER_AFTER_APP);
 
-    //One way to find for stuff:
-    for (auto i = views.begin(); i < views.end(); ++i)
-    {
-        if (i->get() == view)
-        {
-            saveAppPreferences();
-            views.erase(i);
-            break;
-        }
-    }
-
     //This is another:
     auto it = std::find_if(windows.begin(), windows.end(), [&](std::shared_ptr<ofAppBaseWindow> const& current) {
-        return current.get() == window.get();
+        return current.get() == window;
     });
 
     if (it != windows.end())
@@ -503,31 +493,35 @@ void ofxMTApp::exit()
 
 int ofxMTApp::getLocalMouseX()
 {
-    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
-    if (mtView != nullptr)
-    {
-        return mtView->getContentMouse().x;
-    }
-    else
-    {
-        ofLogNotice("ofxMTApp") << "getLocalMouseX: Could not find MTView for window";
-        return -1;
-    }
+    ///TODO: Get local mouse
+    ofLogNotice() << "Not implemented yet!!";
+//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+//    if (mtView != nullptr)
+//    {
+//        return mtView->getContentMouse().x;
+//    }
+//    else
+//    {
+//        ofLogNotice("ofxMTApp") << "getLocalMouseX: Could not find MTView for window";
+//        return -1;
+//    }
 }
 
 
 int ofxMTApp::getLocalMouseY()
 {
-    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
-    if (mtView != nullptr)
-    {
-        return mtView->getContentMouse().y;
-    }
-    else
-    {
-        ofLogNotice("ofxMTApp") << "getLocalMouseY: Could not find MTView for window";
-        return -1;
-    }
+    ///TODO: Get local mouse
+    ofLogNotice() << "Not implemented yet!!";
+//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+//    if (mtView != nullptr)
+//    {
+//        return mtView->getContentMouse().y;
+//    }
+//    else
+//    {
+//        ofLogNotice("ofxMTApp") << "getLocalMouseY: Could not find MTView for window";
+//        return -1;
+//    }
 }
 
 int mtGetLocalMouseX()
