@@ -10,7 +10,7 @@
 #define ofxMTView_hpp
 
 #include "ofxMTAppFramework.h"
-#include "glm.hpp"
+#include "glm/glm.hpp"
 
 class ofxMTModel;
 class ofxMTWindow;
@@ -22,7 +22,7 @@ class ofxMTView : public MTEventListenerStore
 
 public:
     ofxMTView(string _name);
-    virtual ~ofxMTView(){}
+    virtual ~ofxMTView();
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
 //    void setWindow(shared_ptr<ofxMTWindow> window);
@@ -168,6 +168,12 @@ public:
     void setContentSize(float width, float height);
     glm::vec2 getContentSize();
 
+    /// \brief Sets the size of both the frame and the content
+    void setSize(glm::vec2 size);
+
+    /// \brief Sets the size of both the frame and the content
+    void setSize(float width, float height);
+
 
     //------------------------------------------------------//
     // VIEW HEIRARCHY                                       //
@@ -218,42 +224,20 @@ public:
     virtual void keyReleased( ofKeyEventArgs & key ) final;
     virtual void mouseMoved( ofMouseEventArgs & mouse ) final;
     virtual void mouseDragged( ofMouseEventArgs & mouse ) final;
-    virtual void mousePressed( ofMouseEventArgs & mouse ) final {
-        //        mouseX=mouse.x;
-        //        mouseY=mouse.y;
-        //        contentMouse = viewToContent(mouse);
-        //        isMouseDown = true;
-        //        mousePressed(mouse.x,mouse.y,mouse.button);
-    }
-    virtual void mouseReleased(ofMouseEventArgs & mouse) final {
+    virtual void mousePressed( ofMouseEventArgs & mouse ) final;
+    virtual void mouseReleased(ofMouseEventArgs & mouse) final;// {
 //        mouseX=mouse.x;
 //        mouseY=mouse.y;
 //        contentMouse = viewToContent(mouse);
 //        isMouseDown = false;
 //        mouseReleased(mouse.x,mouse.y,mouse.button);
 //        isMouseDragging = false;
-    }
-    virtual void mouseScrolled( ofMouseEventArgs & mouse ) final {
-        mouseScrolled(mouse.x, mouse.y, mouse.scrollX, mouse.scrollY);
-    }
-    virtual void mouseEntered( ofMouseEventArgs & mouse ) final {
-//        mouseEntered(mouse.x,mouse.y);
-//        mouseX=mouse.x;
-//        mouseY=mouse.y;
-//        contentMouse = viewToContent(mouse);
-    }
-    virtual void mouseExited( ofMouseEventArgs & mouse ) final {
-//        mouseX=mouse.x;
-//        mouseY=mouse.y;
-//        contentMouse = viewToContent(mouse);
-//        mouseExited(mouse.x,mouse.y);
-    }
-    virtual void dragged(ofDragInfo & drag) final {
-        dragEvent(drag);
-    }
-    virtual void messageReceived(ofMessage & message) final {
-        gotMessage(message);
-    }
+//    }
+    virtual void mouseScrolled( ofMouseEventArgs & mouse ) final;
+    virtual void mouseEntered( ofMouseEventArgs & mouse ) final;
+    virtual void mouseExited( ofMouseEventArgs & mouse ) final;
+    virtual void dragged(ofDragInfo & drag) final;
+    virtual void messageReceived(ofMessage & message) final;
 
     //TODO: Touch
 //    virtual void touchDown(ofTouchEventArgs & touch) {

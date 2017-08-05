@@ -22,34 +22,58 @@ ofxMTWindow::ofxMTWindow(string name)
     this->name.set("Window Name", name);
 }
 
+ofxMTWindow::~ofxMTWindow()
+{
+
+}
+
 //void ofxMTWindow::setup(ofEventArgs & args)
 //{
 //    contentView->setup(args);
 //}
 
+#ifndef TARGET_OPENGLES
+void ofxMTWindow::setup(const ofGLFWWindowSettings & settings)
+{
+    ofAppGLFWWindow::setup(settings);
+}
+#else
+void ofxMTWindow::setup(const ofGLESWindowSettings & settings)
+{
+    ofAppGLESWindow::setup(settings);
+}
+#endif
+
+//void ofxMTWindow::update()
+//{
+//	ofAppGLFWWindow::update();
+//}
+//
+//void ofxMTWindow::draw()
+//{
+//	ofAppGLFWWindow::draw();
+//}
+
 void ofxMTWindow::update(ofEventArgs & args)
 {
-    contentView->update(args);
+	contentView->update(args);
 }
 
 void ofxMTWindow::draw(ofEventArgs & args)
 {
-    contentView->draw(args);
+	contentView->draw(args);
 }
 
 void ofxMTWindow::exit(ofEventArgs & args)
 {
-    contentView = nullptr;
+	contentView->exit(args);
+	contentView = nullptr;
 }
 
 void ofxMTWindow::windowResized(ofResizeEventArgs & resize)
 {
     contentView->setFrameSize(resize.width, resize.height);
     contentView->windowResized(resize);
-//    for (auto view : contentView->subviews)
-//    {
-//        view->windowResized(resize);
-//    }
 }
 
 void ofxMTWindow::modelDidLoad()
@@ -66,10 +90,27 @@ void ofxMTWindow::keyPressed( ofKeyEventArgs & key )
     }
 }
 
-void ofxMTWindow::keyReleased( ofKeyEventArgs & key ){}
-void ofxMTWindow::mouseMoved( ofMouseEventArgs & mouse ){}
+void ofxMTWindow::keyReleased( ofKeyEventArgs & key )
+{
+    auto fv = focusedView.lock();
+    if (fv)
+    {
+        fv->keyReleased(key);
+    }
+    this->keyReleased(key.key);
+}
+
+void ofxMTWindow::mouseMoved( ofMouseEventArgs & mouse )
+{
+
+}
+
 void ofxMTWindow::mouseDragged( ofMouseEventArgs & mouse ){}
-void ofxMTWindow::mousePressed( ofMouseEventArgs & mouse ){}
+void ofxMTWindow::mousePressed( ofMouseEventArgs & mouse )
+{
+    contentView->mousePressed(mouse);
+}
+
 void ofxMTWindow::mouseReleased(ofMouseEventArgs & mouse){}
 void ofxMTWindow::mouseScrolled( ofMouseEventArgs & mouse ){}
 void ofxMTWindow::mouseEntered( ofMouseEventArgs & mouse ){}
@@ -84,5 +125,14 @@ void ofxMTWindow::touchUp(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchDoubleTap(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchCancelled(ofTouchEventArgs & touch){}
 
+void ofxMTWindow::removeAllEvents()
+{
+
+}
+
+void ofxMTWindow::addAllEvents()
+{
+
+}
 
 #endif /* ofxMTWindow_h */

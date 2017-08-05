@@ -29,7 +29,8 @@ ofxMTApp::ofxMTApp()
         appPreferences.setName("App Preferences");
         appPreferences.add(NSPrefLaunchInFullScreen,
                            MTPrefLastFile,
-                           NSPrefAutoloadLastFile);
+                           NSPrefAutoloadLastFile,
+                           MTPrefsWindowsGroup);
         ofxMTApp::sharedApp = this;
         currentMode = defaultMode;
         registerMode(defaultMode);
@@ -47,24 +48,26 @@ ofxMTApp::ofxMTApp()
 //			ofSystemAlertDialog("App Preferences could not be loaded, creating a new file.");
             saveAppPreferences();
         }
-        else
-        {
-            ofDeserialize(appPrefsXml, appPreferences);
-
-            // Load the saved view positions:
-            auto viewsXml = appPrefsXml.findFirst("//App_Preferences/Views").getChildren();
-            for (auto & view : viewsXml)
-            {
-                ofParameterGroup thisView;
-                thisView.setName(view.getName());
-                ofLogVerbose("View in XML: " + view.getName());
-                ofParameter<ofPoint> pos, size;
-                pos.set(MTPrefsWindowPositionName, view.getChild("Position").getValue<ofVec3f>());
-                size.set(MTPrefsWindowSizeName, view.getChild("Size").getValue<ofVec3f>());
-                thisView.add(pos, size);
-                MTPrefsWindowsGroup.add(thisView);
-            }
-        }
+		else
+		{
+			ofDeserialize(appPrefsXml, appPreferences);
+			
+			// Load the saved view positions:
+			auto viewsXml = appPrefsXml.find("//App_Preferences/Views/View");
+			
+				for (auto & view : viewsXml)
+				{
+					ofParameterGroup thisView;
+					thisView.setName(view.getChild("Name").getValue());
+					ofLogVerbose("View in XML: " + view.getName());
+					ofParameter<ofPoint> pos, size;
+					pos.set(MTPrefsWindowPositionName, view.getChild("Position").getValue<ofVec3f>());
+					size.set(MTPrefsWindowSizeName, view.getChild("Size").getValue<ofVec3f>());
+					thisView.add(pos, size);
+					MTPrefsWindowsGroup.add(thisView);
+				}
+		}
+		
         appPreferences.add(MTPrefsWindowsGroup);
 
         addEventListener(modelLoadedEvent.newListener([this]()
@@ -147,17 +150,14 @@ void ofxMTApp::initialize()
     // These should be overriden sometime
 //	model = shared_ptr<ofxMTModel>(new ofxMTModel("default"));
     model = nullptr;
-    createAppViews();
 }
 
 void ofxMTApp::createAppViews()
 {
-    mainWindow = shared_ptr<ofxMTWindow>(new ofxMTWindow("MTApp"));
     ofGLFWWindowSettings windowSettings;
     windowSettings.width = 1280;
     windowSettings.height = 800;
-    ofGetMainLoop()->addWindow(/*std::dynamic_pointer_cast<ofAppBaseGLWindow>*/(mainWindow));
-    mainWindow->setup(windowSettings);
+	mainWindow = createWindow("Main Window", windowSettings);
 }
 
 void ofxMTApp::run()
@@ -495,6 +495,7 @@ int ofxMTApp::getLocalMouseX()
 {
     ///TODO: Get local mouse
     ofLogNotice() << "Not implemented yet!!";
+    return 0;
 //    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
 //    if (mtView != nullptr)
 //    {
@@ -512,6 +513,7 @@ int ofxMTApp::getLocalMouseY()
 {
     ///TODO: Get local mouse
     ofLogNotice() << "Not implemented yet!!";
+    return 0;
 //    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
 //    if (mtView != nullptr)
 //    {

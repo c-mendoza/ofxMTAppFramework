@@ -62,7 +62,7 @@ void ofxMTView::setFrameSize(glm::vec2 size)
 
 void ofxMTView::setFrameSize(float width, float height)
 {
-    setFrameSize(width, height);
+    frame.setSize(width, height);
     frameChanged();
 }
 
@@ -107,6 +107,17 @@ void ofxMTView::setContentSize(float width, float height)
 glm::vec2 ofxMTView::getContentSize()
 {
     return glm::vec2(content.getWidth(), content.getHeight());
+}
+
+void ofxMTView::setSize(float width, float height)
+{
+    setContentSize(width, height);
+    setFrameSize(width, height);
+}
+
+void ofxMTView::setSize(glm::vec2 size)
+{
+    setSize(size.x, size.y);
 }
 
 void ofxMTView::frameChangedInternal()
@@ -175,12 +186,20 @@ bool ofxMTView::removeFromSuperview()
 /// \returns True if there was a view to be removed.
 bool ofxMTView::removeLastSubview()
 {
-
+    if (subviews.size() > 0)
+    {
+        subviews.pop_back();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void ofxMTView::removeAllSubviews()
 {
-
+    subviews.clear();
 }
 
 std::weak_ptr<ofxMTWindow> ofxMTView::getWindow()
@@ -212,6 +231,11 @@ void ofxMTView::update(ofEventArgs & args)
     update(); //Call user's update()
 
     if (ofxMTApp::sharedApp->autoUpdateAppModes) currentAppMode->update();
+	
+	for (auto sv : subviews)
+	{
+		sv->update(args);
+	}
 }
 
 void ofxMTView::draw(ofEventArgs & args)
@@ -222,13 +246,14 @@ void ofxMTView::draw(ofEventArgs & args)
     ofPushView();
     ofViewport(frame);
 
-    ofSetupScreen();
+    ofSetupScreenOrtho(content.width, content.height, -1, 1);
 //    ofSetupScreenOrtho(ofGetViewportWidth(),
 //                       ofGetViewportHeight());
 
     ofLoadIdentityMatrix();
     ofLoadMatrix(frameMatrix * contentMatrix);
-    ofBackground(0);
+
+    ofBackground(backgroundColor.get());
 
     while (!drawOpQueue.empty())
     {
@@ -243,12 +268,26 @@ void ofxMTView::draw(ofEventArgs & args)
     if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
     ofPopView();
+	
+	for (auto sv : subviews)
+	{
+		sv->draw(args);
+	}
 }
 
 void ofxMTView::exit(ofEventArgs &args)
 {
     removeAllEvents();
     exit();
+}
+
+void ofxMTView::windowResized(ofResizeEventArgs & resize)
+{
+    windowResized(resize.width, resize.height);
+    for (auto view : subviews)
+    {
+        view->windowResized(resize);
+    }
 }
 
 void ofxMTView::keyPressed(ofKeyEventArgs & key)
@@ -273,16 +312,49 @@ void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
 
 void ofxMTView::mousePressed(ofMouseEventArgs & mouse)
 {
+    for (auto it = subviews.end()-1; it >= subviews.begin(); --it)
+    {
+        auto sv = it->get();
+        if (sv->frame.inside(mouse))
+        {
+            sv->mousePressed(mouse);
+            return;
+        }
+    }
+
+    //If we haven't found another hit in the subviews,
+    //this view should consume the event:
+    mousePressed(mouse.x, mouse.y, mouse.button);
+}
+
+void ofxMTView::mouseReleased(ofMouseEventArgs & mouse)
+{
 
 }
 
-void ofxMTView::windowResized(ofResizeEventArgs & resize)
+void ofxMTView::mouseScrolled( ofMouseEventArgs & mouse )
 {
-    windowResized(resize.width, resize.height);
-    for (auto view : subviews)
-    {
-        view->windowResized(resize);
-    }
+
+}
+
+void ofxMTView::mouseEntered( ofMouseEventArgs & mouse )
+{
+
+}
+
+void ofxMTView::mouseExited( ofMouseEventArgs & mouse )
+{
+
+}
+
+void ofxMTView::dragged(ofDragInfo & drag)
+{
+
+}
+
+void ofxMTView::messageReceived(ofMessage & message)
+{
+
 }
 
 void ofxMTView::updateMatrices()

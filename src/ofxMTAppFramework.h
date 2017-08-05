@@ -44,11 +44,11 @@ protected:
     vector<ofEventListener> eventListeners;
 };
 
-//#include "ofxMTAppMode.hpp"
-//#include "ofxMTApp.hpp"
-//#include "ofxMTModel.hpp"
-//#include "ofxMTView.hpp"
-//#include "ofxMTWindow.hpp"
+#include "ofxMTAppMode.hpp"
+#include "ofxMTApp.hpp"
+#include "ofxMTModel.hpp"
+#include "ofxMTView.hpp"
+#include "ofxMTWindow.hpp"
 #include "MTProcedure.h"
 
 

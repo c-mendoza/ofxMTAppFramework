@@ -34,46 +34,23 @@ public:
 
    shared_ptr<ofxMTView> contentView;
 
-    virtual void dragEvent(ofDragInfo dragInfo) { }
-    virtual void gotMessage(ofMessage msg){ }
-
     int mouseX, mouseY;			// for processing heads
 
     bool isMouseDown = false;
     bool isMouseDragging = true;
 
+    ////////////////////////////////
+    /// Events to override if needed
+    ////////////////////////////////
+
+    /// \brief Default implementation calls modelDidLoad() of
+    ///  the content view
     virtual void modelDidLoad();
 
-    //DO NOT OVERRIDE:
-    /// TODO: Address TARGET_OPENGLES
-#ifndef TARGET_OPENGLES
-    virtual void setup(const ofGLFWWindowSettings & settings);
-#else
-    virtual void setup(const ofGLESWindowSettings & settings);
-#endif
-    virtual void update(ofEventArgs & args);
-    virtual void draw(ofEventArgs & args);
-    virtual void exit(ofEventArgs & args);
 
-    virtual void windowResized(ofResizeEventArgs & resize);
-    virtual void keyPressed( ofKeyEventArgs & key );
-    virtual void keyReleased( ofKeyEventArgs & key );
-    virtual void mouseMoved( ofMouseEventArgs & mouse );
-    virtual void mouseDragged( ofMouseEventArgs & mouse );
-    virtual void mousePressed( ofMouseEventArgs & mouse );
-    virtual void mouseReleased(ofMouseEventArgs & mouse);
-    virtual void mouseScrolled( ofMouseEventArgs & mouse );
-    virtual void mouseEntered( ofMouseEventArgs & mouse );
-    virtual void mouseExited( ofMouseEventArgs & mouse );
-    virtual void dragged(ofDragInfo & drag);
-    virtual void messageReceived(ofMessage & message);
-
-    //TODO: Touch
-    virtual void touchDown(ofTouchEventArgs & touch);
-    virtual void touchMoved(ofTouchEventArgs & touch);
-    virtual void touchUp(ofTouchEventArgs & touch);
-    virtual void touchDoubleTap(ofTouchEventArgs & touch);
-    virtual void touchCancelled(ofTouchEventArgs & touch);
+    virtual void windowResized(int w, int h){}
+    virtual void keyPressed( int key ){}
+    virtual void keyReleased( int key ){}
 
     /// \brief Called when the app mode has been changed.
     /// Default implementation does nothing. Override this
@@ -82,6 +59,40 @@ public:
 
 
     ////// INTERNALS
+    //  DO NOT OVERRIDE:
+    // TODO: Address TARGET_OPENGLES
+#ifndef TARGET_OPENGLES
+    virtual void setup(const ofGLFWWindowSettings & settings);
+#else
+    virtual void setup(const ofGLESWindowSettings & settings);
+#endif
+//	void setup();
+//	void update();
+//	void draw();
+//	void exit();
+    void update(ofEventArgs & args);
+    void draw(ofEventArgs & args);
+    void exit(ofEventArgs & args);
+
+    void windowResized(ofResizeEventArgs & resize);
+    void keyPressed( ofKeyEventArgs & key );
+    void keyReleased( ofKeyEventArgs & key );
+    void mouseMoved( ofMouseEventArgs & mouse );
+    void mouseDragged( ofMouseEventArgs & mouse );
+    void mousePressed( ofMouseEventArgs & mouse );
+    void mouseReleased(ofMouseEventArgs & mouse);
+    void mouseScrolled( ofMouseEventArgs & mouse );
+    void mouseEntered( ofMouseEventArgs & mouse );
+    void mouseExited( ofMouseEventArgs & mouse );
+    void dragged(ofDragInfo & drag);
+    void messageReceived(ofMessage & message);
+
+    //TODO: Touch
+    virtual void touchDown(ofTouchEventArgs & touch);
+    virtual void touchMoved(ofTouchEventArgs & touch);
+    virtual void touchUp(ofTouchEventArgs & touch);
+    virtual void touchDoubleTap(ofTouchEventArgs & touch);
+    virtual void touchCancelled(ofTouchEventArgs & touch);
 
     void enqueueDrawOperation(function<void()> funct)
     {
@@ -107,7 +118,7 @@ protected:
     void removeAllEvents();
     void addAllEvents();
 
-    void updateMatrix();
+//    void updateMatrix();
 
 
 private:
