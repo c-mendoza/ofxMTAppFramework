@@ -138,9 +138,15 @@ protected:
     //APP MODES
     MTAppModeName currentMode;
     vector<MTAppModeName> appModes;
-    //UI
-
-
+	
+	//////////////////////////////
+	//	CONVENIENCE
+	//////////////////////////////
+	
+	/// \brief Adds the standard event listeners to a window
+	void addAllEvents(ofxMTWindow* w);
+	void removeAllEvents(ofxMTWindow* w);
+	
 private:
     bool ofAppInitialized = false;
 

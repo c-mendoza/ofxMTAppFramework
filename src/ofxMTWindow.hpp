@@ -60,7 +60,6 @@ public:
 
     ////// INTERNALS
     //  DO NOT OVERRIDE:
-    // TODO: Address TARGET_OPENGLES
 #ifndef TARGET_OPENGLES
     virtual void setup(const ofGLFWWindowSettings & settings);
 #else
@@ -70,6 +69,7 @@ public:
 //	void update();
 //	void draw();
 //	void exit();
+	void setupInternal(ofEventArgs & args);
     void update(ofEventArgs & args);
     void draw(ofEventArgs & args);
     void exit(ofEventArgs & args);

@@ -12,6 +12,13 @@
 #include "ofxMTWindow.hpp"
 #include "ofxMTAppMode.hpp"
 
+std::shared_ptr<ofxMTView> ofxMTView::createView(string name)
+{
+	auto view = shared_ptr<ofxMTView>(new ofxMTView(name));
+	view->thisView = view;
+	return view;
+}
+
 ofxMTView::ofxMTView(string _name)
 {
     ofLogVerbose("View Construct: ") << _name;
@@ -22,6 +29,7 @@ ofxMTView::ofxMTView(string _name)
     contentScale.set("Content Scale", 1);
     backgroundColor.set("Background Color",
                         ofFloatColor(1.0, 1.0, 1.0, 1.0));
+	currentAppMode = std::shared_ptr<ofxMTAppMode>(new MTAppModeVoid);
 }
 
 ofxMTView::~ofxMTView()
@@ -64,6 +72,7 @@ void ofxMTView::setFrameSize(float width, float height)
 {
     frame.setSize(width, height);
     frameChanged();
+	frameChangedInternal();
 }
 
 const glm::vec3& ofxMTView::getFrameOrigin()
@@ -122,16 +131,38 @@ void ofxMTView::setSize(glm::vec2 size)
 
 void ofxMTView::frameChangedInternal()
 {
-    frameChanged();
+	updateMatrices();
+	
+	if (auto super = superview.lock())
+	{
+		glm::vec4 screenFramePosition = super->frameMatrix * glm::vec4(frame.getPosition(), 1);
+		screenFrame.setPosition(screenFramePosition.xyz());
+		///TODO: Scale
+		screenFrame.setSize(frame.width, frame.height);
+	}
+	else
+	{
+		screenFrame = frame;
+	}
+
+//	ofLogVerbose() << name << " " << screenFrame;
+	
+	//Call User's frameChanged:
+	frameChanged();
 
     for (auto sv : subviews)
     {
+		sv->frameChangedInternal();
         sv->superviewFrameChanged();
     }
 }
 
 void ofxMTView::contentChangedInternal()
 {
+	updateMatrices();
+	
+	///TODO
+	
     contentChanged();
 
     for (auto sv : subviews)
@@ -149,15 +180,19 @@ std::weak_ptr<ofxMTView> ofxMTView::getSuperview()
     return superview;
 }
 
+void ofxMTView::setSuperview(shared_ptr<ofxMTView> view)
+{
+	superview = view;
+	frameChangedInternal();
+}
 /// \brief Adds a subview.
 
 void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
 {
     subview->thisView = subview;
-    subview->superview = thisView;
+	subview->setSuperview(thisView.lock());
     subview->window = window;
     subviews.push_back(subview);
-
 }
 
 vector<shared_ptr<ofxMTView>>& ofxMTView::getSubviews()
@@ -243,17 +278,22 @@ void ofxMTView::draw(ofEventArgs & args)
 //	ofPushView();
 //	ofViewport(viewport);
 
-    ofPushView();
-    ofViewport(frame);
+//    ofPushView();
+    ofViewport(screenFrame);
 
-    ofSetupScreenOrtho(content.width, content.height, -1, 1);
+	ofSetupScreenPerspective(screenFrame.width,
+							 screenFrame.height);
+							 
+//    ofSetupScreenOrtho(content.width, content.height, -1, 1);
 //    ofSetupScreenOrtho(ofGetViewportWidth(),
 //                       ofGetViewportHeight());
 
-    ofLoadIdentityMatrix();
-    ofLoadMatrix(frameMatrix * contentMatrix);
+//    ofLoadIdentityMatrix();
+//    ofLoadMatrix(frameMatrix * contentMatrix);
 
-    ofBackground(backgroundColor.get());
+	ofFill();
+	ofSetColor(backgroundColor.get());
+	ofDrawRectangle(0, 0, frame.width, frame.height);
 
     while (!drawOpQueue.empty())
     {
@@ -267,12 +307,14 @@ void ofxMTView::draw(ofEventArgs & args)
 
     if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
-    ofPopView();
+//    ofPopView();
 	
 	for (auto sv : subviews)
 	{
 		sv->draw(args);
 	}
+	
+//	ofPopView();
 }
 
 void ofxMTView::exit(ofEventArgs &args)
@@ -312,15 +354,18 @@ void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
 
 void ofxMTView::mousePressed(ofMouseEventArgs & mouse)
 {
-    for (auto it = subviews.end()-1; it >= subviews.begin(); --it)
-    {
-        auto sv = it->get();
-        if (sv->frame.inside(mouse))
-        {
-            sv->mousePressed(mouse);
-            return;
-        }
-    }
+	if (subviews.size() > 0)
+	{
+		for (auto it = subviews.end()-1; it >= subviews.begin(); --it)
+		{
+			auto sv = it->get();
+			if (sv->screenFrame.inside(mouse))
+			{
+				sv->mousePressed(mouse);
+				return;
+			}
+		}
+	}
 
     //If we haven't found another hit in the subviews,
     //this view should consume the event:
@@ -360,12 +405,15 @@ void ofxMTView::messageReceived(ofMessage & message)
 void ofxMTView::updateMatrices()
 {
     frameMatrix = glm::translate(glm::mat4(), frame.getPosition());
+	invFrameMatrix = glm::inverse(frameMatrix);
 
     contentMatrix = glm::translate(frameMatrix, content.getPosition());
     if (contentScale > 1)
     {
         contentMatrix = glm::scale(contentMatrix, glm::vec3(contentScale, contentScale, 1));
     }
+	
+	invContentMatrix = glm::inverse(contentMatrix);
 }
 
 

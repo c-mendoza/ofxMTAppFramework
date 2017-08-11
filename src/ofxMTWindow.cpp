@@ -18,7 +18,7 @@
 
 ofxMTWindow::ofxMTWindow(string name)
 {
-    contentView = shared_ptr<ofxMTView>(new ofxMTView("Content View"));
+	contentView = ofxMTView::createView("Content View");
     this->name.set("Window Name", name);
 }
 
@@ -54,6 +54,12 @@ void ofxMTWindow::setup(const ofGLESWindowSettings & settings)
 //	ofAppGLFWWindow::draw();
 //}
 
+void ofxMTWindow::setupInternal(ofEventArgs & args)
+{
+	contentView->setSize(this->getWidth(), this->getHeight());
+	contentView->setup(args);
+}
+
 void ofxMTWindow::update(ofEventArgs & args)
 {
 	contentView->update(args);
@@ -61,6 +67,7 @@ void ofxMTWindow::update(ofEventArgs & args)
 
 void ofxMTWindow::draw(ofEventArgs & args)
 {
+	ofBackground(0);
 	contentView->draw(args);
 }
 

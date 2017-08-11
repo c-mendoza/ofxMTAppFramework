@@ -21,7 +21,7 @@ class ofxMTView : public MTEventListenerStore
 {
 
 public:
-    ofxMTView(string _name);
+	static std::shared_ptr<ofxMTView> createView(string name);
     virtual ~ofxMTView();
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
@@ -46,7 +46,7 @@ public:
     virtual void modelDidLoad(){}
     virtual void setup(){}
     virtual void update(){}
-    virtual void draw(){}
+	virtual void draw(){}
     virtual void exit(){}
     virtual void windowResized(int w, int h){}
     virtual void superviewFrameChanged(){}
@@ -68,7 +68,7 @@ public:
     /// \brief Called on the active view when a mouse button is pressed.
     ///
     /// Position is given in local coordinates.
-    virtual void mousePressed( int x, int y, int button ){}
+	virtual void mousePressed( int x, int y, int button ){ ofLog() << this->name; }
 
     /// \brief Called on the active view when a mouse button is released.
     ///
@@ -191,6 +191,8 @@ public:
 
     vector<shared_ptr<ofxMTView>>& getSubviews();
 
+	void setSuperview(shared_ptr<ofxMTView> view);
+	
     /// \returns True if successful.
     bool removeFromSuperview();
 
@@ -306,6 +308,8 @@ protected:
 
 
 private:
+	ofxMTView(string _name);
+
     /// This function is called internally by the framework to signal that a model
     /// has been loaded from a file. You don't need to call it.
     void modelDidLoadInternal()
@@ -319,6 +323,9 @@ private:
     glm::mat4 contentMatrix;
     glm::mat4 invContentMatrix; //Just a cached value
     glm::mat4 frameMatrix;
+	glm::mat4 invFrameMatrix;
+	
+	ofRectangle screenFrame; //The Frame in screen coordinates and scale
 
     queue<function<void()>> updateOpQueue;
     queue<function<void()>> drawOpQueue;

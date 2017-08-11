@@ -17,7 +17,7 @@ class ofxMTAppMode : public MTEventListenerStore
 {
 public:
     ofxMTAppMode(string name) { this->name = name; }
-    ~ofxMTAppMode();
+	~ofxMTAppMode(){}
     std::string getName() { return name; }
     void setName(string name) { this->name = name; }
     virtual void setup(ofxMTView* view) = 0;
