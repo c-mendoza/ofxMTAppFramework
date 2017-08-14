@@ -37,9 +37,6 @@ public:
     // EVENTS: METHODS TO OVERRIDE //
     //-----------------------------//
 
-    //-----------------------------//
-    // EVENTS: METHODS TO OVERRIDE //
-    //-----------------------------//
 
     /// Called once the model is successfully loaded from file.
     /// Default implementation does nothing.
@@ -68,7 +65,7 @@ public:
     /// \brief Called on the active view when a mouse button is pressed.
     ///
     /// Position is given in local coordinates.
-	virtual void mousePressed( int x, int y, int button ){ ofLog() << this->name; }
+	virtual void mousePressed( int x, int y, int button ){}
 
     /// \brief Called on the active view when a mouse button is released.
     ///
@@ -107,11 +104,51 @@ public:
     virtual void touchDoubleTap(int x, int y, int id) {}
     virtual void touchCancelled(int x, int y, int id) {}
 
+	//--------------------------------------------------//
+	// EVENTS: LAMBDAS
+	//
+	// If you don't want to override a whole class,
+	// you can instead use these lambdas. They work
+	// just like their equivalent event methods.
+	// Make sure to assign the right signature to the
+	// event lambda you want to use.
+	//
+	// These lambdas are executed after their corresponding
+	// override, so if you override an event method and
+	// provide a lambda, the override will be called first.
+	//
+	//--------------------------------------------------//
+	
+	std::function<void()> onModelDidLoad = []{};
+	std::function<void()> onSetup = []{};
+	std::function<void()> onUpdate = []{};
+	std::function<void()> onDraw = []{};
+	std::function<void()> onExit = []{};
+	std::function<void(int, int)> onWindowResized = [](int w, int h){};
+	std::function<void()> onSuperviewFrameChanged = []{};
+	std::function<void()> onFrameChanged = []{};
+	std::function<void()> onSuperviewContentChanged = []{};
+	std::function<void(int)> onKeyPressed = [](int key){};
+	std::function<void(int)> onKeyReleased = [](int key){};
+	std::function<void(int, int)> onMouseMoved = [](int x, int y){};
+	std::function<void(int, int, int)> onMouseDragged = [](int x, int y, int button){};
+	std::function<void(int, int, int)> onMousePressed = [](int x, int y, int button){};
+	std::function<void(int, int, int)> onMouseReleased = [](int x, int y, int button){};
+	std::function<void(int, int, float, float)> onMouseScrolled = [](int x, int y,
+															   float scrollX,
+															   float scrollY){};
+	std::function<void(int, int)> onMouseEntered = [](int x, int y){};
+	std::function<void(int, int)> onMouseExited = [](int x, int y){};
 
+	
+
+	
     int mouseX, mouseY;			// for processing heads
 
     bool isMouseDown = false;
     bool isMouseDragging = false;
+	
+	bool hasFocus();
 
 //    ///Transform a point from view-coordinate to content-coordinate
 //    glm::vec3 viewToContent(glm::vec3 viewCoord)
@@ -258,6 +295,23 @@ public:
 //        touchCancelled(touch.x, touch.y, touch.id);
 //    }
 
+	//------------------------------------------------------//
+	// EVENTS												//
+	//------------------------------------------------------//
+	
+	ofEvent<ofEventArgs> focusGained;
+	ofEvent<ofEventArgs> focusLost;
+	ofEvent<ofMouseEventArgs> mouseMovedEvent;
+	ofEvent<ofMouseEventArgs> mouseDraggedEvent;
+	ofEvent<ofMouseEventArgs> mousePressedEvent;
+	ofEvent<ofMouseEventArgs> mouseReleasedEvent;
+	ofEvent<ofMouseEventArgs> mouseScrolledEvent;
+	ofEvent<ofMouseEventArgs> mouseEnteredEvent;
+	ofEvent<ofMouseEventArgs> mouseExitedEvent;
+	ofEvent<ofDragInfo> draggedEvent;
+	ofEvent<ofMessage> messageEvent;
+	
+	
     //------------------------------------------------------//
     // OPERATION QUEUES
     //------------------------------------------------------//
@@ -319,6 +373,10 @@ private:
             modelDidLoad();
         });
     }
+	
+	//------------------------------------------------------//
+	// VIEW and MATRICES										//
+	//------------------------------------------------------//
 
     glm::mat4 contentMatrix;
     glm::mat4 invContentMatrix; //Just a cached value
@@ -327,13 +385,27 @@ private:
 	
 	ofRectangle screenFrame; //The Frame in screen coordinates and scale
 
+	//------------------------------------------------------//
+	// QUEUES												//
+	//------------------------------------------------------//
+	
     queue<function<void()>> updateOpQueue;
     queue<function<void()>> drawOpQueue;
 
-    void frameChangedInternal();
+	//------------------------------------------------------//
+	// INTERNALS / CONVENIENCE								//
+	//------------------------------------------------------//
+	
+	void frameChangedInternal();
     void contentChangedInternal();
 
-    /// \brief Gets the
+	//------------------------------------------------------//
+	// EVENTS												//
+	//------------------------------------------------------//
+	
+	bool isFocused = false;
+	
+	/// \brief Internal shared pointer
     std::weak_ptr<ofxMTView> thisView;
 };
 

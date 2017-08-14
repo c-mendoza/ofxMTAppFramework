@@ -15,6 +15,7 @@
 #include "ofxMTModel.hpp"
 #include "ofxMTView.hpp"
 
+static ofEventArgs voidEventArgs;
 
 ofxMTWindow::ofxMTWindow(string name)
 {
@@ -67,6 +68,8 @@ void ofxMTWindow::update(ofEventArgs & args)
 
 void ofxMTWindow::draw(ofEventArgs & args)
 {
+	ofSetupScreenPerspective(getWidth(),
+							 getHeight());
 	ofBackground(0);
 	contentView->draw(args);
 }
@@ -112,13 +115,26 @@ void ofxMTWindow::mouseMoved( ofMouseEventArgs & mouse )
 
 }
 
-void ofxMTWindow::mouseDragged( ofMouseEventArgs & mouse ){}
+void ofxMTWindow::mouseDragged( ofMouseEventArgs & mouse )
+{
+	if (!isMouseDragging)
+	{
+		isMouseDragging = true;
+	}
+}
+
 void ofxMTWindow::mousePressed( ofMouseEventArgs & mouse )
 {
+	isMouseDown = true;
+	mouseDownPos = mouse.xy();
     contentView->mousePressed(mouse);
 }
 
-void ofxMTWindow::mouseReleased(ofMouseEventArgs & mouse){}
+void ofxMTWindow::mouseReleased(ofMouseEventArgs & mouse)
+{
+	isMouseDown = false;
+	isMouseDragging = false;
+}
 void ofxMTWindow::mouseScrolled( ofMouseEventArgs & mouse ){}
 void ofxMTWindow::mouseEntered( ofMouseEventArgs & mouse ){}
 void ofxMTWindow::mouseExited( ofMouseEventArgs & mouse ){}
@@ -131,6 +147,20 @@ void ofxMTWindow::touchMoved(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchUp(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchDoubleTap(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchCancelled(ofTouchEventArgs & touch){}
+
+void ofxMTWindow::setFocusedView(std::shared_ptr<ofxMTView> view)
+{
+	auto fv = focusedView.lock();
+	if (fv)
+	{
+		if (fv != view)
+		{
+			focusedView = view;
+			view->focusGained.notify(voidEventArgs);
+			fv->focusLost.notify(voidEventArgs);
+		}
+	}
+}
 
 void ofxMTWindow::removeAllEvents()
 {
