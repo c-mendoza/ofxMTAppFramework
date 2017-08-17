@@ -14,9 +14,9 @@
 
 std::shared_ptr<ofxMTView> ofxMTView::createView(string name)
 {
-	auto view = shared_ptr<ofxMTView>(new ofxMTView(name));
-	view->thisView = view;
-	return view;
+    auto view = shared_ptr<ofxMTView>(new ofxMTView(name));
+    view->thisView = view;
+    return view;
 }
 
 ofxMTView::ofxMTView(string _name)
@@ -29,7 +29,7 @@ ofxMTView::ofxMTView(string _name)
     contentScale.set("Content Scale", 1);
     backgroundColor.set("Background Color",
                         ofFloatColor(1.0, 1.0, 1.0, 1.0));
-	currentAppMode = std::shared_ptr<ofxMTAppMode>(new MTAppModeVoid);
+    currentAppMode = std::shared_ptr<ofxMTAppMode>(new MTAppModeVoid);
 }
 
 ofxMTView::~ofxMTView()
@@ -72,7 +72,7 @@ void ofxMTView::setFrameSize(float width, float height)
 {
     frame.setSize(width, height);
     frameChanged();
-	frameChangedInternal();
+    frameChangedInternal();
 }
 
 const glm::vec3& ofxMTView::getFrameOrigin()
@@ -131,38 +131,38 @@ void ofxMTView::setSize(glm::vec2 size)
 
 void ofxMTView::frameChangedInternal()
 {
-	updateMatrices();
-	
-	if (auto super = superview.lock())
-	{
-		glm::vec4 screenFramePosition = super->frameMatrix * glm::vec4(frame.getPosition(), 1);
-		screenFrame.setPosition(screenFramePosition.xyz());
-		///TODO: Scale
-		screenFrame.setSize(frame.width, frame.height);
-	}
-	else
-	{
-		screenFrame = frame;
-	}
+    updateMatrices();
 
-	ofLogVerbose() << name << " " << screenFrame;
-	
-	//Call User's frameChanged:
-	frameChanged();
+    if (auto super = superview.lock())
+    {
+        glm::vec4 screenFramePosition = super->frameMatrix * glm::vec4(frame.getPosition(), 1);
+        screenFrame.setPosition(screenFramePosition.xyz());
+        ///TODO: Scale
+        screenFrame.setSize(frame.width, frame.height);
+    }
+    else
+    {
+        screenFrame = frame;
+    }
+
+//    ofLogVerbose() << name << " " << screenFrame;
+
+    //Call User's frameChanged:
+    frameChanged();
 
     for (auto sv : subviews)
     {
-		sv->frameChangedInternal();
+        sv->frameChangedInternal();
         sv->superviewFrameChanged();
     }
 }
 
 void ofxMTView::contentChangedInternal()
 {
-	updateMatrices();
-	
-	///TODO
-	
+    updateMatrices();
+
+    //TODO: content changed internal?
+
     contentChanged();
 
     for (auto sv : subviews)
@@ -171,6 +171,13 @@ void ofxMTView::contentChangedInternal()
     }
 }
 
+//TODO: Check to see if transformPoint works
+glm::vec2 ofxMTView::transformPoint(glm::vec2& coords,
+                                    const ofxMTView* toView)
+{
+    auto windowCoords = invFrameMatrix * glm::vec4(coords.x, coords.y, 1, 1);
+    return (toView->frameMatrix * windowCoords).xy();
+}
 //------------------------------------------------------//
 // VIEW HEIRARCHY                                       //
 //------------------------------------------------------//
@@ -182,15 +189,15 @@ std::weak_ptr<ofxMTView> ofxMTView::getSuperview()
 
 void ofxMTView::setSuperview(shared_ptr<ofxMTView> view)
 {
-	superview = view;
-	frameChangedInternal();
+    superview = view;
+    frameChangedInternal();
 }
 /// \brief Adds a subview.
 
 void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
 {
     subview->thisView = subview;
-	subview->setSuperview(thisView.lock());
+    subview->setSuperview(thisView.lock());
     subview->window = window;
     subviews.push_back(subview);
 }
@@ -264,25 +271,26 @@ void ofxMTView::update(ofEventArgs & args)
     //I should do something here to update the size of the contentFrame and the scroll bars when necessary
 
     update(); //Call user's update()
+    onUpdate();
 
     if (ofxMTApp::sharedApp->autoUpdateAppModes) currentAppMode->update();
-	
-	for (auto sv : subviews)
-	{
-		sv->update(args);
-	}
+
+    for (auto sv : subviews)
+    {
+        sv->update(args);
+    }
 }
 
 void ofxMTView::draw(ofEventArgs & args)
 {
 
-	ofPushMatrix();
-	ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
-	ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
-	
-	ofFill();
-	ofSetColor(backgroundColor.get());
-	ofDrawRectangle(0, 0, frame.width, frame.height);
+    ofPushMatrix();
+    ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
+    ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
+
+    ofFill();
+    ofSetColor(backgroundColor.get());
+    ofDrawRectangle(0, 0, frame.width, frame.height);
 
     while (!drawOpQueue.empty())
     {
@@ -293,15 +301,17 @@ void ofxMTView::draw(ofEventArgs & args)
 
     //Call the user's draw() function
     draw();
+    onDraw();
 
     if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
 //    ofPopView();
-	ofPopMatrix();
-	for (auto sv : subviews)
-	{
-		sv->draw(args);
-	}
+    ofPopMatrix();
+    for (auto sv : subviews)
+    {
+        sv->draw(args);
+    }
+
 	
 //	ofPopView();
 }
@@ -310,6 +320,7 @@ void ofxMTView::exit(ofEventArgs &args)
 {
     removeAllEvents();
     exit();
+    onExit();
 }
 
 void ofxMTView::windowResized(ofResizeEventArgs & resize)
@@ -319,108 +330,127 @@ void ofxMTView::windowResized(ofResizeEventArgs & resize)
     {
         view->windowResized(resize);
     }
+    onWindowResized(resize.width, resize.height);
 }
 
 void ofxMTView::keyPressed(ofKeyEventArgs & key)
 {
-	keyPressed(key.key);
+    ofLogVerbose(name, "Pressed: %c", (char)key.key);
+    keyPressed(key.key);
+    onKeyPressed(key.key);
 }
 
 void ofxMTView::keyReleased(ofKeyEventArgs & key)
 {
-	keyReleased(key.key);
+    ofLogVerbose(name, "Released: %c", (char)key.key);
+    keyReleased(key.key);
+    onKeyReleased(key.key);
 }
 
 void ofxMTView::mouseMoved(ofMouseEventArgs & mouse)
 {
-	mouseMoved(mouse.x, mouse.y);
+    localMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    mouseMoved(mouse.x, mouse.y);
+    onMouseMoved(mouse.x, mouse.y);
 }
 
 void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
 {
-	mouseDragged(mouse.x, mouse.y, mouse.button);
+	localMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    if (!isDragging)
+    {
+        isDragging = true;
+        localMouseDragStart = localMouseDown;
+    }
+	
+    mouseDragged(localMouse.x, localMouse.y, mouse.button);
+    onMouseDragged(mouse.x, mouse.y, mouse.button);
 }
 
 void ofxMTView::mousePressed(ofMouseEventArgs & mouse)
 {
-	if (subviews.size() > 0)
-	{
-		for (auto it = subviews.end()-1; it >= subviews.begin(); --it)
-		{
-			auto sv = it->get();
-			if (sv->screenFrame.inside(mouse))
-			{
-				sv->mousePressed(mouse);
-				return;
-			}
-		}
-	}
+    localMouseDown =  (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    mousePressed(localMouse.x, localMouse.y, mouse.button);
+    onMousePressed(localMouse.x, localMouse.y, mouse.button);
+}
 
-    //If we haven't found another hit in the subviews,
-    //this view should consume the event and become key:
-	if (auto w = window.lock())
-	{
-		w->setFocusedView(thisView.lock());
-	}
-    mousePressed(mouse.x, mouse.y, mouse.button);
-	onMousePressed(mouse.x, mouse.y, mouse.button);
+std::shared_ptr<ofxMTView> ofxMTView::hitTest(glm::vec2 &windowCoord)
+{
+    if (subviews.size() > 0)
+    {
+        for (auto it = subviews.end()-1; it >= subviews.begin(); --it)
+        {
+            auto sv = it->get();
+            if (sv->screenFrame.inside(windowCoord))
+            {
+                return sv->hitTest(windowCoord);
+            }
+        }
+    }
+
+    return thisView.lock();
 }
 
 void ofxMTView::mouseReleased(ofMouseEventArgs & mouse)
 {
-
+    localMouseUp = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    mouseReleased(mouse.x, mouse.y, mouse.button);
+    onMouseReleased(mouse.x, mouse.y, mouse.button);
 }
 
 void ofxMTView::mouseScrolled( ofMouseEventArgs & mouse )
 {
-
+    mouseScrolled(mouse.x, mouse.y, mouse.scrollX, mouse.scrollY);
+    onMouseScrolled(mouse.x, mouse.y, mouse.scrollX, mouse.scrollY);
 }
 
 void ofxMTView::mouseEntered( ofMouseEventArgs & mouse )
 {
-
+    mouseEntered(localMouse.x, localMouse.y);
+    onMouseEntered(localMouse.x, localMouse.y);
 }
 
 void ofxMTView::mouseExited( ofMouseEventArgs & mouse )
 {
-
+    mouseExited(mouse.x, mouse.y);
+    onMouseExited(mouse.x, mouse.y);
 }
 
 void ofxMTView::dragged(ofDragInfo & drag)
 {
-
+    ofLogNotice() << "ofxMTView::dragged not yet implemented";
 }
 
 void ofxMTView::messageReceived(ofMessage & message)
 {
-
+    ofLogNotice() << "ofxMTView::messageReceived not yet implemented";
 }
 
 bool ofxMTView::hasFocus()
 {
-	return isFocused;
+    return isFocused;
 }
 
 void ofxMTView::updateMatrices()
 {
-	if (auto sv = superview.lock())
-	{
-		frameMatrix = glm::translate(sv->frameMatrix, frame.getPosition());
-	}
-	else
-	{
-		frameMatrix = glm::translate(glm::mat4(), frame.getPosition());
-	}
-	
-	invFrameMatrix = glm::inverse(frameMatrix);
+    if (auto sv = superview.lock())
+    {
+        frameMatrix = glm::translate(sv->frameMatrix, frame.getPosition());
+    }
+    else
+    {
+        frameMatrix = glm::translate(glm::mat4(), frame.getPosition());
+    }
+
+    invFrameMatrix = glm::inverse(frameMatrix);
 
     contentMatrix = glm::translate(frameMatrix, content.getPosition());
     if (contentScale > 1)
     {
         contentMatrix = glm::scale(contentMatrix, glm::vec3(contentScale, contentScale, 1));
     }
-	
-	invContentMatrix = glm::inverse(contentMatrix);
+
+    invContentMatrix = glm::inverse(contentMatrix);
 }
 
 

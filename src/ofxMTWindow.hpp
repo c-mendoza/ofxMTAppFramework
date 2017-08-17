@@ -35,48 +35,48 @@ public:
    shared_ptr<ofxMTView> contentView;
 
     int mouseX, mouseY;			// for processing heads
-	
-	//------------------------------------------------------//
-	// EVENTS INTERNALS										//
-	// DO NOT OVERRIDE										//
-	//------------------------------------------------------//
-#ifndef TARGET_OPENGLES
-	virtual void setup(const ofGLFWWindowSettings & settings);
-#else
-	virtual void setup(const ofGLESWindowSettings & settings);
-#endif
-	//	void setup();
-	//	void update();
-	//	void draw();
-	//	void exit();
-	void setupInternal(ofEventArgs & args);
-	void update(ofEventArgs & args);
-	void draw(ofEventArgs & args);
-	void exit(ofEventArgs & args);
-	
-	void windowResized(ofResizeEventArgs & resize);
-	void keyPressed( ofKeyEventArgs & key );
-	void keyReleased( ofKeyEventArgs & key );
-	void mouseMoved( ofMouseEventArgs & mouse );
-	void mouseDragged( ofMouseEventArgs & mouse );
-	void mousePressed( ofMouseEventArgs & mouse );
-	void mouseReleased(ofMouseEventArgs & mouse);
-	void mouseScrolled( ofMouseEventArgs & mouse );
-	void mouseEntered( ofMouseEventArgs & mouse );
-	void mouseExited( ofMouseEventArgs & mouse );
-	void dragged(ofDragInfo & drag);
-	void messageReceived(ofMessage & message);
-	
-	//TODO: Touch
-	virtual void touchDown(ofTouchEventArgs & touch);
-	virtual void touchMoved(ofTouchEventArgs & touch);
-	virtual void touchUp(ofTouchEventArgs & touch);
-	virtual void touchDoubleTap(ofTouchEventArgs & touch);
-	virtual void touchCancelled(ofTouchEventArgs & touch);
 
-	//------------------------------------------------------//
-	// EVENTS / OVERRIDABLE									//
-	//------------------------------------------------------//
+    //------------------------------------------------------//
+    // EVENTS INTERNALS										//
+    // DO NOT OVERRIDE										//
+    //------------------------------------------------------//
+#ifndef TARGET_OPENGLES
+    virtual void setup(const ofGLFWWindowSettings & settings);
+#else
+    virtual void setup(const ofGLESWindowSettings & settings);
+#endif
+    //	void setup();
+    //	void update();
+    //	void draw();
+    //	void exit();
+    void setupInternal(ofEventArgs & args);
+    void update(ofEventArgs & args);
+    void draw(ofEventArgs & args);
+    void exit(ofEventArgs & args);
+
+    void windowResized(ofResizeEventArgs & resize);
+    void keyPressed( ofKeyEventArgs & key );
+    void keyReleased( ofKeyEventArgs & key );
+    void mouseMoved( ofMouseEventArgs & mouse );
+    void mouseDragged( ofMouseEventArgs & mouse );
+    void mousePressed( ofMouseEventArgs & mouse );
+    void mouseReleased(ofMouseEventArgs & mouse);
+    void mouseScrolled( ofMouseEventArgs & mouse );
+    void mouseEntered( ofMouseEventArgs & mouse );
+    void mouseExited( ofMouseEventArgs & mouse );
+    void dragged(ofDragInfo & drag);
+    void messageReceived(ofMessage & message);
+
+    //TODO: Touch
+    virtual void touchDown(ofTouchEventArgs & touch);
+    virtual void touchMoved(ofTouchEventArgs & touch);
+    virtual void touchUp(ofTouchEventArgs & touch);
+    virtual void touchDoubleTap(ofTouchEventArgs & touch);
+    virtual void touchCancelled(ofTouchEventArgs & touch);
+
+    //------------------------------------------------------//
+    // EVENTS / OVERRIDABLE									//
+    //------------------------------------------------------//
 
     /// \brief Default implementation calls modelDidLoad() of
     ///  the content view
@@ -91,13 +91,13 @@ public:
     /// Default implementation does nothing. Override this
     /// method if you want to respond to mode changes.
     virtual void appModeChanged(MTAppModeChangeArgs & modeChange){}
-	
-	void setFocusedView(std::shared_ptr<ofxMTView> view);
 
-	//------------------------------------------------------//
-	// OP QUEUES											//
-	//------------------------------------------------------//
-	
+    void setFocusedView(std::shared_ptr<ofxMTView> view);
+
+    //------------------------------------------------------//
+    // OP QUEUES											//
+    //------------------------------------------------------//
+
     void enqueueDrawOperation(function<void()> funct)
     {
         drawOpQueue.push(funct);
@@ -107,8 +107,12 @@ public:
     {
         updateOpQueue.push(f);
     }
-	
-	
+
+    //------------------------------------------------------//
+    // OFBASEWINDOW OVERRIDES								//
+    //------------------------------------------------------//
+    int getWidth();
+    int getHeight();
 
 
 protected:
@@ -142,11 +146,14 @@ private:
     queue<function<void()>> drawOpQueue;
 
     std::weak_ptr<ofxMTView> focusedView;
-	
-	
-	bool isMouseDown = false;
-	bool isMouseDragging = false;
-	glm::vec2 mouseDownPos;
+    std::weak_ptr<ofxMTView> mouseOverView;
+
+
+    bool isMouseDown = false;
+    bool isMouseDragging = false;
+    glm::vec2 mouseDownPos;
+    glm::vec2 mouseUpPos;
+    glm::vec2 mouseDragStart;
 };
 
 #endif /* ofxMTWindow_hpp */

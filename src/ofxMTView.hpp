@@ -21,7 +21,7 @@ class ofxMTView : public MTEventListenerStore
 {
 
 public:
-	static std::shared_ptr<ofxMTView> createView(string name);
+    static std::shared_ptr<ofxMTView> createView(string name);
     virtual ~ofxMTView();
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
@@ -43,7 +43,7 @@ public:
     virtual void modelDidLoad(){}
     virtual void setup(){}
     virtual void update(){}
-	virtual void draw(){}
+    virtual void draw(){}
     virtual void exit(){}
     virtual void windowResized(int w, int h){}
     virtual void superviewFrameChanged(){}
@@ -65,7 +65,7 @@ public:
     /// \brief Called on the active view when a mouse button is pressed.
     ///
     /// Position is given in local coordinates.
-	virtual void mousePressed( int x, int y, int button ){}
+    virtual void mousePressed( int x, int y, int button ){}
 
     /// \brief Called on the active view when a mouse button is released.
     ///
@@ -104,51 +104,51 @@ public:
     virtual void touchDoubleTap(int x, int y, int id) {}
     virtual void touchCancelled(int x, int y, int id) {}
 
-	//--------------------------------------------------//
-	// EVENTS: LAMBDAS
-	//
-	// If you don't want to override a whole class,
-	// you can instead use these lambdas. They work
-	// just like their equivalent event methods.
-	// Make sure to assign the right signature to the
-	// event lambda you want to use.
-	//
-	// These lambdas are executed after their corresponding
-	// override, so if you override an event method and
-	// provide a lambda, the override will be called first.
-	//
-	//--------------------------------------------------//
-	
-	std::function<void()> onModelDidLoad = []{};
-	std::function<void()> onSetup = []{};
-	std::function<void()> onUpdate = []{};
-	std::function<void()> onDraw = []{};
-	std::function<void()> onExit = []{};
-	std::function<void(int, int)> onWindowResized = [](int w, int h){};
-	std::function<void()> onSuperviewFrameChanged = []{};
-	std::function<void()> onFrameChanged = []{};
-	std::function<void()> onSuperviewContentChanged = []{};
-	std::function<void(int)> onKeyPressed = [](int key){};
-	std::function<void(int)> onKeyReleased = [](int key){};
-	std::function<void(int, int)> onMouseMoved = [](int x, int y){};
-	std::function<void(int, int, int)> onMouseDragged = [](int x, int y, int button){};
-	std::function<void(int, int, int)> onMousePressed = [](int x, int y, int button){};
-	std::function<void(int, int, int)> onMouseReleased = [](int x, int y, int button){};
-	std::function<void(int, int, float, float)> onMouseScrolled = [](int x, int y,
-															   float scrollX,
-															   float scrollY){};
-	std::function<void(int, int)> onMouseEntered = [](int x, int y){};
-	std::function<void(int, int)> onMouseExited = [](int x, int y){};
+    //--------------------------------------------------//
+    // EVENTS: LAMBDAS
+    //
+    // If you don't want to override a whole class,
+    // you can instead use these lambdas. They work
+    // just like their equivalent event methods.
+    // Make sure to assign the right signature to the
+    // event lambda you want to use.
+    //
+    // These lambdas are executed after their corresponding
+    // override, so if you override an event method and
+    // provide a lambda, the override will be called first.
+    //
+    //--------------------------------------------------//
 
-	
+    std::function<void()> onModelDidLoad = []{};
+    std::function<void()> onSetup = []{};
+    std::function<void()> onUpdate = []{};
+    std::function<void()> onDraw = []{};
+    std::function<void()> onExit = []{};
+    std::function<void(int, int)> onWindowResized = [](int w, int h){};
+    std::function<void()> onSuperviewFrameChanged = []{};
+    std::function<void()> onFrameChanged = []{};
+    std::function<void()> onSuperviewContentChanged = []{};
+    std::function<void(int)> onKeyPressed = [](int key){};
+    std::function<void(int)> onKeyReleased = [](int key){};
+    std::function<void(int, int)> onMouseMoved = [](int x, int y){};
+    std::function<void(int, int, int)> onMouseDragged = [](int x, int y, int button){};
+    std::function<void(int, int, int)> onMousePressed = [](int x, int y, int button){};
+    std::function<void(int, int, int)> onMouseReleased = [](int x, int y, int button){};
+    std::function<void(int, int, float, float)> onMouseScrolled = [](int x, int y,
+                                                               float scrollX,
+                                                               float scrollY){};
+    std::function<void(int, int)> onMouseEntered = [](int x, int y){};
+    std::function<void(int, int)> onMouseExited = [](int x, int y){};
 
-	
+
+
+
     int mouseX, mouseY;			// for processing heads
 
     bool isMouseDown = false;
     bool isMouseDragging = false;
-	
-	bool hasFocus();
+
+    bool hasFocus();
 
 //    ///Transform a point from view-coordinate to content-coordinate
 //    glm::vec3 viewToContent(glm::vec3 viewCoord)
@@ -211,6 +211,32 @@ public:
     /// \brief Sets the size of both the frame and the content
     void setSize(float width, float height);
 
+    /// \brief Returns the deepest subview that occupies the specified
+    /// window coordinate.
+    std::shared_ptr<ofxMTView> hitTest(glm::vec2 &windowCoord);
+
+    /// \brief Gets the mouse in local coordinates.
+    /// This will only report a useful number if the mouse
+    /// is over the view instance. Other cases are undefined for the
+    /// moment.
+    const glm::vec2 & getLocalMouse() { return localMouse; }
+
+    /// \brief Returns the mouse down position in local coordinates.
+    /// This will only report a useful number if the mouse
+    /// is over the view instance. Other cases are undefined for the
+    /// moment.
+    const glm::vec2 & getLocalMouseDown() { return localMouseDown; }
+
+    /// \brief Returns the last mouse up position in local coordinates.
+    /// This will only report a useful number if the mouse
+    /// is over the view instance. Other cases are undefined for the
+    /// moment.
+    const glm::vec2 & getLocalMouseUp() { return localMouseUp; }
+
+    /// \brief Transforms the passed point from its local
+    /// coordinates to the coordinate system of a given MTView
+    glm::vec2 transformPoint(glm::vec2& coords,
+                             const ofxMTView* toView);
 
     //------------------------------------------------------//
     // VIEW HEIRARCHY                                       //
@@ -228,8 +254,8 @@ public:
 
     vector<shared_ptr<ofxMTView>>& getSubviews();
 
-	void setSuperview(shared_ptr<ofxMTView> view);
-	
+    void setSuperview(shared_ptr<ofxMTView> view);
+
     /// \returns True if successful.
     bool removeFromSuperview();
 
@@ -295,23 +321,23 @@ public:
 //        touchCancelled(touch.x, touch.y, touch.id);
 //    }
 
-	//------------------------------------------------------//
-	// EVENTS												//
-	//------------------------------------------------------//
-	
-	ofEvent<ofEventArgs> focusGained;
-	ofEvent<ofEventArgs> focusLost;
-	ofEvent<ofMouseEventArgs> mouseMovedEvent;
-	ofEvent<ofMouseEventArgs> mouseDraggedEvent;
-	ofEvent<ofMouseEventArgs> mousePressedEvent;
-	ofEvent<ofMouseEventArgs> mouseReleasedEvent;
-	ofEvent<ofMouseEventArgs> mouseScrolledEvent;
-	ofEvent<ofMouseEventArgs> mouseEnteredEvent;
-	ofEvent<ofMouseEventArgs> mouseExitedEvent;
-	ofEvent<ofDragInfo> draggedEvent;
-	ofEvent<ofMessage> messageEvent;
-	
-	
+    //------------------------------------------------------//
+    // EVENTS												//
+    //------------------------------------------------------//
+
+    ofEvent<ofEventArgs> focusGained;
+    ofEvent<ofEventArgs> focusLost;
+    ofEvent<ofMouseEventArgs> mouseMovedEvent;
+    ofEvent<ofMouseEventArgs> mouseDraggedEvent;
+    ofEvent<ofMouseEventArgs> mousePressedEvent;
+    ofEvent<ofMouseEventArgs> mouseReleasedEvent;
+    ofEvent<ofMouseEventArgs> mouseScrolledEvent;
+    ofEvent<ofMouseEventArgs> mouseEnteredEvent;
+    ofEvent<ofMouseEventArgs> mouseExitedEvent;
+    ofEvent<ofDragInfo> draggedEvent;
+    ofEvent<ofMessage> messageEvent;
+
+
     //------------------------------------------------------//
     // OPERATION QUEUES
     //------------------------------------------------------//
@@ -362,7 +388,7 @@ protected:
 
 
 private:
-	ofxMTView(string _name);
+    ofxMTView(string _name);
 
     /// This function is called internally by the framework to signal that a model
     /// has been loaded from a file. You don't need to call it.
@@ -373,39 +399,56 @@ private:
             modelDidLoad();
         });
     }
-	
-	//------------------------------------------------------//
-	// VIEW and MATRICES										//
-	//------------------------------------------------------//
+
+    //------------------------------------------------------//
+    // VIEW and MATRICES									//
+    //------------------------------------------------------//
 
     glm::mat4 contentMatrix;
     glm::mat4 invContentMatrix; //Just a cached value
     glm::mat4 frameMatrix;
-	glm::mat4 invFrameMatrix;
-	
-	ofRectangle screenFrame; //The Frame in screen coordinates and scale
+    glm::mat4 invFrameMatrix;
 
-	//------------------------------------------------------//
-	// QUEUES												//
-	//------------------------------------------------------//
-	
+    ofRectangle screenFrame; //The Frame in screen coordinates and scale
+
+
+    //------------------------------------------------------//
+    // MOUSE            									//
+    //------------------------------------------------------//
+    //The mouse position in local coordinates
+    glm::vec2 localMouse;
+
+    //The mouse down position in local coordinates
+    glm::vec2 localMouseDown;
+
+    //The mouse up position in local coordinates
+    glm::vec2 localMouseUp;
+
+    glm::vec2 localMouseDragStart;
+
+    bool isDragging = false;
+
+    //------------------------------------------------------//
+    // QUEUES												//
+    //------------------------------------------------------//
+
     queue<function<void()>> updateOpQueue;
     queue<function<void()>> drawOpQueue;
 
-	//------------------------------------------------------//
-	// INTERNALS / CONVENIENCE								//
-	//------------------------------------------------------//
-	
-	void frameChangedInternal();
+    //------------------------------------------------------//
+    // INTERNALS / CONVENIENCE								//
+    //------------------------------------------------------//
+
+    void frameChangedInternal();
     void contentChangedInternal();
 
-	//------------------------------------------------------//
-	// EVENTS												//
-	//------------------------------------------------------//
-	
-	bool isFocused = false;
-	
-	/// \brief Internal shared pointer
+    //------------------------------------------------------//
+    // EVENTS												//
+    //------------------------------------------------------//
+
+    bool isFocused = false;
+
+    /// \brief Internal shared pointer
     std::weak_ptr<ofxMTView> thisView;
 };
 
