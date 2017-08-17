@@ -288,6 +288,15 @@ void ofxMTView::draw(ofEventArgs & args)
     ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
     ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
 
+//    if (auto super = superview.lock())
+//    {
+//        glEnable(GL_SCISSOR_TEST);
+//        glScissor(super->frame.x,
+//                  super->frame.y + super->frame.height,
+//                  super->frame.width,
+//                  super->frame.height);
+//    }
+
     ofFill();
     ofSetColor(backgroundColor.get());
     ofDrawRectangle(0, 0, frame.width, frame.height);
@@ -302,7 +311,7 @@ void ofxMTView::draw(ofEventArgs & args)
     //Call the user's draw() function
     draw();
     onDraw();
-
+//    glDisable(GL_SCISSOR_TEST);
     if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
 //    ofPopView();
@@ -312,7 +321,7 @@ void ofxMTView::draw(ofEventArgs & args)
         sv->draw(args);
     }
 
-	
+
 //	ofPopView();
 }
 
@@ -356,13 +365,13 @@ void ofxMTView::mouseMoved(ofMouseEventArgs & mouse)
 
 void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
 {
-	localMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    localMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     if (!isDragging)
     {
         isDragging = true;
         localMouseDragStart = localMouseDown;
     }
-	
+
     mouseDragged(localMouse.x, localMouse.y, mouse.button);
     onMouseDragged(mouse.x, mouse.y, mouse.button);
 }
