@@ -4,7 +4,7 @@
 #include "ofxMTAppFramework.h"
 
 class ofxMTWindow;
-class ofxMTView;
+class MTView;
 class ofxMTModel;
 class ofxMTAppMode;
 

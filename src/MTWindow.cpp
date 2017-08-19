@@ -10,16 +10,16 @@
 #define ofxMTWindow_h
 
 #include "ofxMTWindow.hpp"
-#include "ofxMTAppMode.hpp"
-#include "ofxMTApp.hpp"
-#include "ofxMTModel.hpp"
-#include "ofxMTView.hpp"
+#include "MTAppMode.hpp"
+#include "MTApp.hpp"
+#include "MTModel.hpp"
+#include "MTView.hpp"
 
 static ofEventArgs voidEventArgs;
 
 ofxMTWindow::ofxMTWindow(string name)
 {
-    contentView = std::make_shared<ofxMTView>("root");
+    contentView = std::make_shared<MTView>("root");
     focusedView = contentView;
     mouseOverView = contentView;
     this->name.set("Window Name", name);
@@ -173,7 +173,7 @@ void ofxMTWindow::touchUp(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchDoubleTap(ofTouchEventArgs & touch){}
 void ofxMTWindow::touchCancelled(ofTouchEventArgs & touch){}
 
-void ofxMTWindow::setFocusedView(std::shared_ptr<ofxMTView> view)
+void ofxMTWindow::setFocusedView(std::shared_ptr<MTView> view)
 {
     auto fv = focusedView.lock();
     if (fv)

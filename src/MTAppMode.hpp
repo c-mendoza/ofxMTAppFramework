@@ -11,7 +11,7 @@
 
 #include "ofxMTAppFramework.h"
 
-class ofxMTView;
+class MTView;
 
 class ofxMTAppMode : public MTEventListenerStore
 {
@@ -20,7 +20,7 @@ public:
 	~ofxMTAppMode(){}
     std::string getName() { return name; }
     void setName(string name) { this->name = name; }
-    virtual void setup(ofxMTView* view) = 0;
+    virtual void setup(MTView* view) = 0;
     virtual void exit() = 0;
     virtual void update(){};
     virtual void draw(){};
@@ -37,7 +37,7 @@ public:
     //	virtual void dragEvent(ofDragInfo dragInfo);
     //	virtual void gotMessage(ofMessage msg);
 protected:
-    ofxMTView* view;
+    MTView* view;
     std::string name;
 };
 
@@ -45,7 +45,7 @@ class MTAppModeVoid : public ofxMTAppMode
 {
 public:
     MTAppModeVoid() : ofxMTAppMode("App Mode Void"){}
-    virtual void setup(ofxMTView* view) {}
+    virtual void setup(MTView* view) {}
     virtual void exit() {}
 };
 

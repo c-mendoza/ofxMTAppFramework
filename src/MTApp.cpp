@@ -1,8 +1,8 @@
 #include "ofxMTApp.hpp"
-#include "ofxMTWindow.hpp"
-#include "ofxMTView.hpp"
+#include "MTWindow.hpp"
+#include "MTView.hpp"
 #include "ofxMTAppMode.hpp"
-#include "ofxMTModel.hpp"
+#include "MTModel.hpp"
 
 const string ofxMTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
 const string ofxMTApp::MTPrefsWindowsGroupName = "Views";

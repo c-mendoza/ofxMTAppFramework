@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef ofxMTView_hpp
-#define ofxMTView_hpp
+#ifndef MTView_hpp
+#define MTView_hpp
 
 #include "ofxMTAppFramework.h"
 #include "glm/glm.hpp"
@@ -17,15 +17,15 @@ class ofxMTWindow;
 class MTAppModeChangeArgs;
 class ofxMTAppMode;
 
-class ofxMTView :
+class MTView :
         public MTEventListenerStore,
-        public std::enable_shared_from_this<ofxMTView>
+        public std::enable_shared_from_this<MTView>
 {
 
 public:
 //    static std::shared_ptr<ofxMTView> createView(string name);
-    ofxMTView(string _name);
-    virtual ~ofxMTView();
+    MTView(string _name);
+    virtual ~MTView();
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
 //    void setWindow(shared_ptr<ofxMTWindow> window);
@@ -222,7 +222,7 @@ public:
 
     /// \brief Returns the deepest subview that occupies the specified
     /// window coordinate.
-    std::shared_ptr<ofxMTView> hitTest(glm::vec2 &windowCoord);
+    std::shared_ptr<MTView> hitTest(glm::vec2 &windowCoord);
 
     /// \brief Gets the mouse in local coordinates.
     /// This will only report a useful number if the mouse
@@ -245,7 +245,7 @@ public:
     /// \brief Transforms the passed point from its local
     /// coordinates to the coordinate system of a given MTView
     glm::vec2 transformPoint(glm::vec2& coords,
-                             const ofxMTView* toView);
+                             const MTView* toView);
 
     //------------------------------------------------------//
     // VIEW HEIRARCHY                                       //
@@ -254,16 +254,16 @@ public:
     void setWindow(std::weak_ptr<ofxMTWindow> window);
 
     /// \brief Gets this view's superview if there is one.
-    std::weak_ptr<ofxMTView> getSuperview();
+    std::weak_ptr<MTView> getSuperview();
 
     /// \brief Adds a subview.
     /// \return A reference to the added view.
     /// \note Uses move semantics, object takes ownership of the passed value
-    void addSubview(shared_ptr<ofxMTView> subview);
+    void addSubview(shared_ptr<MTView> subview);
 
-    vector<shared_ptr<ofxMTView>>& getSubviews();
+    vector<shared_ptr<MTView>>& getSubviews();
 
-    void setSuperview(shared_ptr<ofxMTView> view);
+    void setSuperview(shared_ptr<MTView> view);
 
     /// \returns True if successful.
     bool removeFromSuperview();
@@ -366,8 +366,8 @@ public:
 
 protected:
     std::weak_ptr<ofxMTWindow> window;
-    std::weak_ptr<ofxMTView> superview;
-    vector<shared_ptr<ofxMTView>> subviews;
+    std::weak_ptr<MTView> superview;
+    vector<shared_ptr<MTView>> subviews;
 
     std::shared_ptr<ofxMTAppMode> currentAppMode;
 
@@ -458,8 +458,8 @@ private:
     bool isFocused = false;
 
     /// \brief Internal shared pointer
-    std::weak_ptr<ofxMTView> thisView;
+    std::weak_ptr<MTView> thisView;
 };
 
-#endif /* ofxMTView_hpp */
+#endif /* MTView_hpp */
 

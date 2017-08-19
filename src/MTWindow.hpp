@@ -13,7 +13,7 @@
 
 class ofxMTModel;
 class MTAppModeChangeArgs;
-class ofxMTView;
+class MTView;
 
 #ifndef TARGET_OPENGLES
 class ofxMTWindow :
@@ -32,7 +32,7 @@ public:
 
    ofParameter<string> name;
 
-   shared_ptr<ofxMTView> contentView;
+   shared_ptr<MTView> contentView;
 
     int mouseX, mouseY;			// for processing heads
 
@@ -92,7 +92,7 @@ public:
     /// method if you want to respond to mode changes.
     virtual void appModeChanged(MTAppModeChangeArgs & modeChange){}
 
-    void setFocusedView(std::shared_ptr<ofxMTView> view);
+    void setFocusedView(std::shared_ptr<MTView> view);
 
     //------------------------------------------------------//
     // OP QUEUES											//
@@ -145,8 +145,8 @@ private:
     queue<function<void()>> updateOpQueue;
     queue<function<void()>> drawOpQueue;
 
-    std::weak_ptr<ofxMTView> focusedView;
-    std::weak_ptr<ofxMTView> mouseOverView;
+    std::weak_ptr<MTView> focusedView;
+    std::weak_ptr<MTView> mouseOverView;
 
 
     bool isMouseDown = false;

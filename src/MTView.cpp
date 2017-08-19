@@ -6,11 +6,11 @@
 //
 //
 
-#include "ofxMTView.hpp"
-#include "ofxMTApp.hpp"
-#include "ofxMTModel.hpp"
-#include "ofxMTWindow.hpp"
-#include "ofxMTAppMode.hpp"
+#include "MTView.hpp"
+#include "MTApp.hpp"
+#include "MTModel.hpp"
+#include "MTWindow.hpp"
+#include "MTAppMode.hpp"
 
 //std::shared_ptr<ofxMTView> ofxMTView::createView(string name)
 //{
@@ -19,7 +19,7 @@
 //    return view;
 //}
 
-ofxMTView::ofxMTView(string _name)
+MTView::MTView(string _name)
 {
     ofLogVerbose("View Construct: ") << _name;
 //    window = nullptr;
@@ -32,7 +32,7 @@ ofxMTView::ofxMTView(string _name)
     currentAppMode = std::shared_ptr<ofxMTAppMode>(new MTAppModeVoid);
 }
 
-ofxMTView::~ofxMTView()
+MTView::~MTView()
 {
     // Not sure if I need to be that explicit here
     // TODO check ~MTView
@@ -46,101 +46,101 @@ ofxMTView::~ofxMTView()
 // FRAME AND CONTENT                                    //
 //------------------------------------------------------//
 
-void ofxMTView::setWindow(std::weak_ptr<ofxMTWindow> window)
+void MTView::setWindow(std::weak_ptr<ofxMTWindow> window)
 {
     this->window = window;
 }
 
-void ofxMTView::setFrame(ofRectangle newFrame)
+void MTView::setFrame(ofRectangle newFrame)
 {
     frame = newFrame;
     frameChangedInternal();
 }
 
-void ofxMTView::setFrameOrigin(glm::vec3 pos)
+void MTView::setFrameOrigin(glm::vec3 pos)
 {
     frame.setPosition(pos);
     frameChangedInternal();
 }
 
-void ofxMTView::setFrameCenter(glm::vec3 pos)
+void MTView::setFrameCenter(glm::vec3 pos)
 {
     frame.setFromCenter(pos, frame.width, frame.height);
     frameChangedInternal();
 }
 
-void ofxMTView::setFrameSize(glm::vec2 size)
+void MTView::setFrameSize(glm::vec2 size)
 {
     setFrameSize(size.x, size.y);
 }
 
-void ofxMTView::setFrameSize(float width, float height)
+void MTView::setFrameSize(float width, float height)
 {
     frame.setSize(width, height);
     frameChanged();
     frameChangedInternal();
 }
 
-const glm::vec3& ofxMTView::getFrameOrigin()
+const glm::vec3& MTView::getFrameOrigin()
 {
     return frame.getPosition();
 }
 
-glm::vec2 ofxMTView::getFrameSize()
+glm::vec2 MTView::getFrameSize()
 {
     return glm::vec2(frame.getWidth(), frame.getHeight());
 }
 
-glm::vec2 ofxMTView::getFrameCenter()
+glm::vec2 MTView::getFrameCenter()
 {
     return frame.getCenter().xy();
 }
 
-void ofxMTView::setContent(ofRectangle newContentRect)
+void MTView::setContent(ofRectangle newContentRect)
 {
     content = newContentRect;
     contentChangedInternal();
 }
 
-void ofxMTView::setContentOrigin(glm::vec3 pos)
+void MTView::setContentOrigin(glm::vec3 pos)
 {
     content.setPosition(pos);
     contentChangedInternal();
 }
 
-const glm::vec3& ofxMTView::getContentOrigin()
+const glm::vec3& MTView::getContentOrigin()
 {
     return content.getPosition();
 }
 
-void ofxMTView::setContentSize(glm::vec2 size)
+void MTView::setContentSize(glm::vec2 size)
 {
     setContentSize(size.x, size.y);
 }
 
-void ofxMTView::setContentSize(float width, float height)
+void MTView::setContentSize(float width, float height)
 {
     content.setSize(width, height);
     contentChangedInternal();
 }
 
-glm::vec2 ofxMTView::getContentSize()
+glm::vec2 MTView::getContentSize()
 {
     return glm::vec2(content.getWidth(), content.getHeight());
 }
 
-void ofxMTView::setSize(float width, float height)
+void MTView::setSize(float width, float height)
 {
     setContentSize(width, height);
     setFrameSize(width, height);
 }
 
-void ofxMTView::setSize(glm::vec2 size)
+void MTView::setSize(glm::vec2 size)
 {
     setSize(size.x, size.y);
 }
 
-void ofxMTView::frameChangedInternal()
+void MTView::frameChangedInternal()
 {
     updateMatrices();
 
@@ -172,7 +172,7 @@ void ofxMTView::frameChangedInternal()
     }
 }
 
-void ofxMTView::contentChangedInternal()
+void MTView::contentChangedInternal()
 {
     updateMatrices();
 
@@ -187,8 +187,8 @@ void ofxMTView::contentChangedInternal()
 }
 
 //TODO: Check to see if transformPoint works
-glm::vec2 ofxMTView::transformPoint(glm::vec2& coords,
-                                    const ofxMTView* toView)
+glm::vec2 MTView::transformPoint(glm::vec2& coords,
+                                    const MTView* toView)
 {
     auto windowCoords = invFrameMatrix * glm::vec4(coords.x, coords.y, 1, 1);
     return (toView->frameMatrix * windowCoords).xy();
@@ -197,19 +197,19 @@ glm::vec2 ofxMTView::transformPoint(glm::vec2& coords,
 // VIEW HEIRARCHY                                       //
 //------------------------------------------------------//
 
-std::weak_ptr<ofxMTView> ofxMTView::getSuperview()
+std::weak_ptr<MTView> MTView::getSuperview()
 {
     return superview;
 }
 
-void ofxMTView::setSuperview(shared_ptr<ofxMTView> view)
+void MTView::setSuperview(shared_ptr<MTView> view)
 {
     superview = view;
     frameChangedInternal();
 }
 /// \brief Adds a subview.
 
-void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
+void MTView::addSubview(shared_ptr<MTView> subview)
 {
     subview->thisView = subview;
     subview->setSuperview(shared_from_this());
@@ -217,13 +217,13 @@ void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
     subviews.push_back(subview);
 }
 
-vector<shared_ptr<ofxMTView>>& ofxMTView::getSubviews()
+vector<shared_ptr<MTView>>& MTView::getSubviews()
 {
     return subviews;
 }
 
 /// \returns True if successful.
-bool ofxMTView::removeFromSuperview()
+bool MTView::removeFromSuperview()
 {
     if (auto s = superview.lock())
     {
@@ -241,7 +241,7 @@ bool ofxMTView::removeFromSuperview()
 }
 
 /// \returns True if there was a view to be removed.
-bool ofxMTView::removeLastSubview()
+bool MTView::removeLastSubview()
 {
     if (subviews.size() > 0)
     {
@@ -254,12 +254,12 @@ bool ofxMTView::removeLastSubview()
     }
 }
 
-void ofxMTView::removeAllSubviews()
+void MTView::removeAllSubviews()
 {
     subviews.clear();
 }
 
-std::weak_ptr<ofxMTWindow> ofxMTView::getWindow()
+std::weak_ptr<ofxMTWindow> MTView::getWindow()
 {
     return window;
 }
@@ -270,7 +270,7 @@ std::weak_ptr<ofxMTWindow> ofxMTView::getWindow()
 // You do not need to call these methods
 //------------------------------------------------------//
 
-void ofxMTView::setup(ofEventArgs & args)
+void MTView::setup(ofEventArgs & args)
 {
     setup();
     for (auto sv : subviews)
@@ -279,7 +279,7 @@ void ofxMTView::setup(ofEventArgs & args)
     }
 }
 
-void ofxMTView::update(ofEventArgs & args)
+void MTView::update(ofEventArgs & args)
 {
     while (!updateOpQueue.empty())
     {
@@ -300,7 +300,7 @@ void ofxMTView::update(ofEventArgs & args)
     }
 }
 
-void ofxMTView::draw(ofEventArgs & args)
+void MTView::draw(ofEventArgs & args)
 {
 
 //	glEnable(GL_SCISSOR_TEST);
@@ -340,14 +340,14 @@ void ofxMTView::draw(ofEventArgs & args)
 //	ofPopView();
 }
 
-void ofxMTView::exit(ofEventArgs &args)
+void MTView::exit(ofEventArgs &args)
 {
     removeAllEvents();
     exit();
     onExit();
 }
 
-void ofxMTView::windowResized(ofResizeEventArgs & resize)
+void MTView::windowResized(ofResizeEventArgs & resize)
 {
     windowResized(resize.width, resize.height);
     for (auto view : subviews)
@@ -357,28 +357,28 @@ void ofxMTView::windowResized(ofResizeEventArgs & resize)
     onWindowResized(resize.width, resize.height);
 }
 
-void ofxMTView::keyPressed(ofKeyEventArgs & key)
+void MTView::keyPressed(ofKeyEventArgs & key)
 {
     ofLogVerbose(name, "Pressed: %c", (char)key.key);
     keyPressed(key.key);
     onKeyPressed(key.key);
 }
 
-void ofxMTView::keyReleased(ofKeyEventArgs & key)
+void MTView::keyReleased(ofKeyEventArgs & key)
 {
     ofLogVerbose(name, "Released: %c", (char)key.key);
     keyReleased(key.key);
     onKeyReleased(key.key);
 }
 
-void ofxMTView::mouseMoved(ofMouseEventArgs & mouse)
+void MTView::mouseMoved(ofMouseEventArgs & mouse)
 {
     localMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     mouseMoved(mouse.x, mouse.y);
     onMouseMoved(mouse.x, mouse.y);
 }
 
-void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
+void MTView::mouseDragged(ofMouseEventArgs & mouse)
 {
     localMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     if (!isDragging)
@@ -391,14 +391,14 @@ void ofxMTView::mouseDragged(ofMouseEventArgs & mouse)
     onMouseDragged(mouse.x, mouse.y, mouse.button);
 }
 
-void ofxMTView::mousePressed(ofMouseEventArgs & mouse)
+void MTView::mousePressed(ofMouseEventArgs & mouse)
 {
     localMouseDown =  (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     mousePressed(localMouse.x, localMouse.y, mouse.button);
     onMousePressed(localMouse.x, localMouse.y, mouse.button);
 }
 
-std::shared_ptr<ofxMTView> ofxMTView::hitTest(glm::vec2 &windowCoord)
+std::shared_ptr<MTView> MTView::hitTest(glm::vec2 &windowCoord)
 {
     if (subviews.size() > 0)
     {
@@ -415,47 +415,47 @@ std::shared_ptr<ofxMTView> ofxMTView::hitTest(glm::vec2 &windowCoord)
     return shared_from_this();
 }
 
-void ofxMTView::mouseReleased(ofMouseEventArgs & mouse)
+void MTView::mouseReleased(ofMouseEventArgs & mouse)
 {
     localMouseUp = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     mouseReleased(mouse.x, mouse.y, mouse.button);
     onMouseReleased(mouse.x, mouse.y, mouse.button);
 }
 
-void ofxMTView::mouseScrolled( ofMouseEventArgs & mouse )
+void MTView::mouseScrolled( ofMouseEventArgs & mouse )
 {
     mouseScrolled(mouse.x, mouse.y, mouse.scrollX, mouse.scrollY);
     onMouseScrolled(mouse.x, mouse.y, mouse.scrollX, mouse.scrollY);
 }
 
-void ofxMTView::mouseEntered( ofMouseEventArgs & mouse )
+void MTView::mouseEntered( ofMouseEventArgs & mouse )
 {
     mouseEntered(localMouse.x, localMouse.y);
     onMouseEntered(localMouse.x, localMouse.y);
 }
 
-void ofxMTView::mouseExited( ofMouseEventArgs & mouse )
+void MTView::mouseExited( ofMouseEventArgs & mouse )
 {
     mouseExited(mouse.x, mouse.y);
     onMouseExited(mouse.x, mouse.y);
 }
 
-void ofxMTView::dragged(ofDragInfo & drag)
+void MTView::dragged(ofDragInfo & drag)
 {
     ofLogNotice() << "ofxMTView::dragged not yet implemented";
 }
 
-void ofxMTView::messageReceived(ofMessage & message)
+void MTView::messageReceived(ofMessage & message)
 {
     ofLogNotice() << "ofxMTView::messageReceived not yet implemented";
 }
 
-bool ofxMTView::hasFocus()
+bool MTView::hasFocus()
 {
     return isFocused;
 }
 
-void ofxMTView::updateMatrices()
+void MTView::updateMatrices()
 {
     if (auto sv = superview.lock())
     {
@@ -478,62 +478,62 @@ void ofxMTView::updateMatrices()
 }
 
 
-void ofxMTView::addAllEvents()
+void MTView::addAllEvents()
 {
     if (auto w = window.lock())
     {
     w->events().enable();
-    ofAddListener(w->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().keyPressed,this, &ofxMTView::keyPressed,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().keyReleased,this, &ofxMTView::keyReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseMoved,this, &ofxMTView::mouseMoved,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseDragged,this, &ofxMTView::mouseDragged,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mousePressed,this, &ofxMTView::mousePressed,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseReleased,this, &ofxMTView::mouseReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseScrolled,this, &ofxMTView::mouseScrolled,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseEntered,this, &ofxMTView::mouseEntered,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseExited,this, &ofxMTView::mouseExited,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().windowResized,this, &ofxMTView::windowResized,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().messageEvent,this, &ofxMTView::messageReceived,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().fileDragEvent,this, &ofxMTView::dragged,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
 //    ofAddListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
 //    ofAddListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
 //    ofAddListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
 //    ofAddListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
 //    ofAddListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-    ofAddListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    ofAddListener(ofxMTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
     }
 
 }
-void ofxMTView::removeAllEvents()
+void MTView::removeAllEvents()
 {
     if (auto w = window.lock()) //Acquire the shared_ptr if it exists
     {
-        ofRemoveListener(w->events().setup, this, &ofxMTView::setup, OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().update, this, &ofxMTView::update,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().draw, this, &ofxMTView::draw,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().exit,this, &ofxMTView::exit,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().keyPressed,this, &ofxMTView::keyPressed,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().keyReleased,this, &ofxMTView::keyReleased,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseMoved,this, &ofxMTView::mouseMoved,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseDragged,this, &ofxMTView::mouseDragged,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mousePressed,this, &ofxMTView::mousePressed,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseReleased,this, &ofxMTView::mouseReleased,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseScrolled,this, &ofxMTView::mouseScrolled,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseEntered,this, &ofxMTView::mouseEntered,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseExited,this, &ofxMTView::mouseExited,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().windowResized,this, &ofxMTView::windowResized,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().messageEvent,this, &ofxMTView::messageReceived,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().fileDragEvent,this, &ofxMTView::dragged,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
 //        ofRemoveListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
 //        ofRemoveListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
 //        ofRemoveListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
 //        ofRemoveListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
 //        ofRemoveListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-        ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &ofxMTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+        ofRemoveListener(ofxMTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
     }
 }
 
