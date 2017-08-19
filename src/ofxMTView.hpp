@@ -17,11 +17,14 @@ class ofxMTWindow;
 class MTAppModeChangeArgs;
 class ofxMTAppMode;
 
-class ofxMTView : public MTEventListenerStore
+class ofxMTView :
+        public MTEventListenerStore,
+        public std::enable_shared_from_this<ofxMTView>
 {
 
 public:
-    static std::shared_ptr<ofxMTView> createView(string name);
+//    static std::shared_ptr<ofxMTView> createView(string name);
+    ofxMTView(string _name);
     virtual ~ofxMTView();
 //	void setModel(shared_ptr<ofxMTModel> model);
 //	shared_ptr<ofxMTModel> getModel() { return model; }
@@ -197,6 +200,9 @@ public:
     void setFrameSize(float width, float height);
     glm::vec2 getFrameSize();
 
+    void setFrameCenter(glm::vec3 pos);
+    glm::vec2 getFrameCenter();
+
     void setContent(ofRectangle newContentRect);
     void setContentOrigin(glm::vec3 pos);
     const glm::vec3& getContentOrigin();
@@ -204,6 +210,9 @@ public:
     void setContentSize(glm::vec2 size);
     void setContentSize(float width, float height);
     glm::vec2 getContentSize();
+
+    ///TODO: Delete this method
+    const ofRectangle & getScreenFrame() { return screenFrame; }
 
     /// \brief Sets the size of both the frame and the content
     void setSize(glm::vec2 size);
@@ -336,6 +345,7 @@ public:
     ofEvent<ofMouseEventArgs> mouseExitedEvent;
     ofEvent<ofDragInfo> draggedEvent;
     ofEvent<ofMessage> messageEvent;
+    ofEvent<ofEventArgs> frameChangedEvent;
 
 
     //------------------------------------------------------//
@@ -388,7 +398,6 @@ protected:
 
 
 private:
-    ofxMTView(string _name);
 
     /// This function is called internally by the framework to signal that a model
     /// has been loaded from a file. You don't need to call it.

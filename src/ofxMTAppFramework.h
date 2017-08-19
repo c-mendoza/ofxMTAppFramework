@@ -40,6 +40,11 @@ public:
         eventListeners.push_back(std::move(e));
     }
 
+    void clearEventListeners()
+    {
+        eventListeners.clear();
+    }
+
 protected:
     vector<ofEventListener> eventListeners;
 };

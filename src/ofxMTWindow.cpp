@@ -19,7 +19,7 @@ static ofEventArgs voidEventArgs;
 
 ofxMTWindow::ofxMTWindow(string name)
 {
-    contentView = ofxMTView::createView("Content View");
+    contentView = std::make_shared<ofxMTView>("root");
     focusedView = contentView;
     mouseOverView = contentView;
     this->name.set("Window Name", name);
@@ -61,6 +61,7 @@ void ofxMTWindow::setupInternal(ofEventArgs & args)
 {
     contentView->setSize(ofAppGLFWWindow::getWidth(),
                          ofAppGLFWWindow::getHeight());
+    contentView->setFrameOrigin(glm::vec3(0,0,0));
     contentView->setup(args);
 }
 

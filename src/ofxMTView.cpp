@@ -12,12 +12,12 @@
 #include "ofxMTWindow.hpp"
 #include "ofxMTAppMode.hpp"
 
-std::shared_ptr<ofxMTView> ofxMTView::createView(string name)
-{
-    auto view = shared_ptr<ofxMTView>(new ofxMTView(name));
-    view->thisView = view;
-    return view;
-}
+//std::shared_ptr<ofxMTView> ofxMTView::createView(string name)
+//{
+//    auto view = shared_ptr<ofxMTView>(new ofxMTView(name));
+//    view->thisView = view;
+//    return view;
+//}
 
 ofxMTView::ofxMTView(string _name)
 {
@@ -63,6 +63,12 @@ void ofxMTView::setFrameOrigin(glm::vec3 pos)
     frameChangedInternal();
 }
 
+void ofxMTView::setFrameCenter(glm::vec3 pos)
+{
+    frame.setFromCenter(pos, frame.width, frame.height);
+    frameChangedInternal();
+}
+
 void ofxMTView::setFrameSize(glm::vec2 size)
 {
     setFrameSize(size.x, size.y);
@@ -83,6 +89,11 @@ const glm::vec3& ofxMTView::getFrameOrigin()
 glm::vec2 ofxMTView::getFrameSize()
 {
     return glm::vec2(frame.getWidth(), frame.getHeight());
+}
+
+glm::vec2 ofxMTView::getFrameCenter()
+{
+    return frame.getCenter().xy();
 }
 
 void ofxMTView::setContent(ofRectangle newContentRect)
@@ -137,7 +148,7 @@ void ofxMTView::frameChangedInternal()
     {
         glm::vec4 screenFramePosition = super->frameMatrix * glm::vec4(frame.getPosition(), 1);
         screenFrame.setPosition(screenFramePosition.xyz());
-        ///TODO: Scale
+        /// TODO: Scale
         screenFrame.setSize(frame.width, frame.height);
     }
     else
@@ -147,9 +158,13 @@ void ofxMTView::frameChangedInternal()
 
 //    ofLogVerbose() << name << " " << screenFrame;
 
-    //Call User's frameChanged:
+    // Call User's frameChanged:
     frameChanged();
 
+    // Notify listeners:
+    frameChangedEvent.notify(this, ofEventArgs());
+
+    // Notify the rest of the hierarchy:
     for (auto sv : subviews)
     {
         sv->frameChangedInternal();
@@ -197,7 +212,7 @@ void ofxMTView::setSuperview(shared_ptr<ofxMTView> view)
 void ofxMTView::addSubview(shared_ptr<ofxMTView> subview)
 {
     subview->thisView = subview;
-    subview->setSuperview(thisView.lock());
+    subview->setSuperview(shared_from_this());
     subview->window = window;
     subviews.push_back(subview);
 }
@@ -213,10 +228,10 @@ bool ofxMTView::removeFromSuperview()
     if (auto s = superview.lock())
     {
         auto sv = s->getSubviews();
-        auto iter = std::find(sv.begin(), sv.end(), thisView.lock());
+        auto iter = std::find(sv.begin(), sv.end(), shared_from_this());
         if (iter != sv.end())
         {
-//            superview = nullptr;
+            superview = nullptr;
             sv.erase(iter);
             return true;
         }
@@ -258,6 +273,10 @@ std::weak_ptr<ofxMTWindow> ofxMTView::getWindow()
 void ofxMTView::setup(ofEventArgs & args)
 {
     setup();
+    for (auto sv : subviews)
+    {
+        sv->setup(args);
+    }
 }
 
 void ofxMTView::update(ofEventArgs & args)
@@ -284,18 +303,15 @@ void ofxMTView::update(ofEventArgs & args)
 void ofxMTView::draw(ofEventArgs & args)
 {
 
-    ofPushMatrix();
+//	glEnable(GL_SCISSOR_TEST);
+//	glScissor(screenFrame.x,
+//			  screenFrame.y + screenFrame.height,
+//			  screenFrame.width,
+//			  screenFrame.height);
+
     ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
     ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
 
-//    if (auto super = superview.lock())
-//    {
-//        glEnable(GL_SCISSOR_TEST);
-//        glScissor(super->frame.x,
-//                  super->frame.y + super->frame.height,
-//                  super->frame.width,
-//                  super->frame.height);
-//    }
 
     ofFill();
     ofSetColor(backgroundColor.get());
@@ -313,13 +329,12 @@ void ofxMTView::draw(ofEventArgs & args)
     onDraw();
 //    glDisable(GL_SCISSOR_TEST);
     if (ofxMTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
-
-//    ofPopView();
-    ofPopMatrix();
     for (auto sv : subviews)
     {
         sv->draw(args);
     }
+//    ofPopView();
+
 
 
 //	ofPopView();
@@ -397,7 +412,7 @@ std::shared_ptr<ofxMTView> ofxMTView::hitTest(glm::vec2 &windowCoord)
         }
     }
 
-    return thisView.lock();
+    return shared_from_this();
 }
 
 void ofxMTView::mouseReleased(ofMouseEventArgs & mouse)
