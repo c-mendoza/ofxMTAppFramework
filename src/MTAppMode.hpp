@@ -13,11 +13,11 @@
 
 class MTView;
 
-class ofxMTAppMode : public MTEventListenerStore
+class MTAppMode : public MTEventListenerStore
 {
 public:
-    ofxMTAppMode(string name) { this->name = name; }
-	~ofxMTAppMode(){}
+    MTAppMode(string name) { this->name = name; }
+    ~MTAppMode(){}
     std::string getName() { return name; }
     void setName(string name) { this->name = name; }
     virtual void setup(MTView* view) = 0;
@@ -41,10 +41,10 @@ protected:
     std::string name;
 };
 
-class MTAppModeVoid : public ofxMTAppMode
+class MTAppModeVoid : public MTAppMode
 {
 public:
-    MTAppModeVoid() : ofxMTAppMode("App Mode Void"){}
+    MTAppModeVoid() : MTAppMode("App Mode Void"){}
     virtual void setup(MTView* view) {}
     virtual void exit() {}
 };

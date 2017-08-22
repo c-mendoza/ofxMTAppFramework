@@ -3,23 +3,23 @@
 
 #include "ofxMTAppFramework.h"
 
-class ofxMTWindow;
+class MTWindow;
 class MTView;
-class ofxMTModel;
-class ofxMTAppMode;
+class MTModel;
+class MTAppMode;
 
 typedef string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
-class ofxMTApp : public ofBaseApp, public MTEventListenerStore
+class MTApp : public ofBaseApp, public MTEventListenerStore
 {
 
 public:
-    ofxMTApp();
+    MTApp();
 
     //TODO: Proper singleton
-    static ofxMTApp* sharedApp;
+    static MTApp* sharedApp;
 
     /// Extra "constructor" for the user. It is the last thing that is called in the default ofxMTApp contructor,
     /// and before the app's setup() function. This is where you want to instantiate your Model and your View.
@@ -49,14 +49,14 @@ public:
 
     //// UI
     weak_ptr<ofAppBaseWindow> getMainWindow();
-    shared_ptr<ofxMTWindow> createWindow(string windowName, ofWindowSettings& settings);
+    shared_ptr<MTWindow> createWindow(string windowName, ofWindowSettings& settings);
 
     ///Returns the mouse x-position in local coordinates of the current window
     int getLocalMouseX();
     ///Returns the mouse y-position in local coordinates of the current window
     int getLocalMouseY();
 
-    void windowClosing(ofxMTWindow* view);
+    void windowClosing(MTWindow* view);
 
     /////// FILE HANDLING
     void saveAs();
@@ -71,7 +71,7 @@ public:
 
     void registerAppPreference(ofAbstractParameter& preference);
 
-    virtual shared_ptr<ofxMTModel> getModel() { return model; }
+    virtual shared_ptr<MTModel> getModel() { return model; }
 
     /////// UTILITY
     /// Stringifies a path.
@@ -111,15 +111,15 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-    shared_ptr<ofxMTWindow> mainWindow;
-    shared_ptr<ofxMTModel> model;
+    shared_ptr<MTWindow> mainWindow;
+    shared_ptr<MTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
     ofParameterGroup appPreferences;
     ofParameterGroup MTPrefsWindowsGroup;
 
     //TODO: make these private?
-    std::vector<std::shared_ptr<ofxMTWindow>> windows;
+    std::vector<std::shared_ptr<MTWindow>> windows;
 
     virtual void keyPressed(ofKeyEventArgs &key);
     virtual void keyReleased(ofKeyEventArgs &key);
@@ -138,15 +138,15 @@ protected:
     //APP MODES
     MTAppModeName currentMode;
     vector<MTAppModeName> appModes;
-	
-	//////////////////////////////
-	//	CONVENIENCE
-	//////////////////////////////
-	
-	/// \brief Adds the standard event listeners to a window
-	void addAllEvents(ofxMTWindow* w);
-	void removeAllEvents(ofxMTWindow* w);
-	
+
+    //////////////////////////////
+    //	CONVENIENCE
+    //////////////////////////////
+
+    /// \brief Adds the standard event listeners to a window
+    void addAllEvents(MTWindow* w);
+    void removeAllEvents(MTWindow* w);
+
 private:
     bool ofAppInitialized = false;
 

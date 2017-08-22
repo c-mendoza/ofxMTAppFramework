@@ -12,10 +12,10 @@
 #include "ofxMTAppFramework.h"
 #include "glm/glm.hpp"
 
-class ofxMTModel;
-class ofxMTWindow;
+class MTModel;
+class MTWindow;
 class MTAppModeChangeArgs;
-class ofxMTAppMode;
+class MTAppMode;
 
 class MTView :
         public MTEventListenerStore,
@@ -193,6 +193,7 @@ public:
 
     void setFrame(ofRectangle newFrame);
 
+    void setFrameOrigin(float x, float y);
     void setFrameOrigin(glm::vec3 pos);
     const glm::vec3& getFrameOrigin();
 
@@ -200,6 +201,7 @@ public:
     void setFrameSize(float width, float height);
     glm::vec2 getFrameSize();
 
+    void setFrameFromCenter(glm::vec3 pos, glm::vec2 size);
     void setFrameCenter(glm::vec3 pos);
     glm::vec2 getFrameCenter();
 
@@ -222,7 +224,7 @@ public:
 
     /// \brief Returns the deepest subview that occupies the specified
     /// window coordinate.
-    std::shared_ptr<MTView> hitTest(glm::vec2 &windowCoord);
+    virtual std::shared_ptr<MTView> hitTest(glm::vec2 &windowCoord);
 
     /// \brief Gets the mouse in local coordinates.
     /// This will only report a useful number if the mouse
@@ -251,7 +253,7 @@ public:
     // VIEW HEIRARCHY                                       //
     //------------------------------------------------------//
 
-    void setWindow(std::weak_ptr<ofxMTWindow> window);
+    void setWindow(std::weak_ptr<MTWindow> window);
 
     /// \brief Gets this view's superview if there is one.
     std::weak_ptr<MTView> getSuperview();
@@ -273,7 +275,7 @@ public:
 
     void removeAllSubviews();
 
-    std::weak_ptr<ofxMTWindow> getWindow();
+    std::weak_ptr<MTWindow> getWindow();
 
 
     //------------------------------------------------------//
@@ -362,14 +364,14 @@ public:
         updateOpQueue.push(f);
     }
 
-    friend class ofxMTWindow;
+    friend class MTWindow;
 
 protected:
-    std::weak_ptr<ofxMTWindow> window;
+    std::weak_ptr<MTWindow> window;
     std::weak_ptr<MTView> superview;
     vector<shared_ptr<MTView>> subviews;
 
-    std::shared_ptr<ofxMTAppMode> currentAppMode;
+    std::shared_ptr<MTAppMode> currentAppMode;
 
     /// \brief The rectangle that specifies the size and position of
     /// the actual content of the view.

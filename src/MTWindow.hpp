@@ -11,12 +11,12 @@
 
 #include "ofxMTAppFramework.h"
 
-class ofxMTModel;
+class MTModel;
 class MTAppModeChangeArgs;
 class MTView;
 
 #ifndef TARGET_OPENGLES
-class ofxMTWindow :
+class MTWindow :
         public ofAppGLFWWindow,
         public MTEventListenerStore
 {
@@ -27,8 +27,8 @@ class ofxMTWindow :
 {
 #endif
 public:
-    ofxMTWindow(string name);
-    ~ofxMTWindow();
+    MTWindow(string name);
+    ~MTWindow();
 
    ofParameter<string> name;
 

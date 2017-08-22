@@ -9,7 +9,7 @@
 #ifndef ofxMTWindow_h
 #define ofxMTWindow_h
 
-#include "ofxMTWindow.hpp"
+#include "MTWindow.hpp"
 #include "MTAppMode.hpp"
 #include "MTApp.hpp"
 #include "MTModel.hpp"
@@ -17,7 +17,7 @@
 
 static ofEventArgs voidEventArgs;
 
-ofxMTWindow::ofxMTWindow(string name)
+MTWindow::MTWindow(string name)
 {
     contentView = std::make_shared<MTView>("root");
     focusedView = contentView;
@@ -25,7 +25,7 @@ ofxMTWindow::ofxMTWindow(string name)
     this->name.set("Window Name", name);
 }
 
-ofxMTWindow::~ofxMTWindow()
+MTWindow::~MTWindow()
 {
 
 }
@@ -36,7 +36,7 @@ ofxMTWindow::~ofxMTWindow()
 //}
 
 #ifndef TARGET_OPENGLES
-void ofxMTWindow::setup(const ofGLFWWindowSettings & settings)
+void MTWindow::setup(const ofGLFWWindowSettings & settings)
 {
     ofAppGLFWWindow::setup(settings);
 }
@@ -57,7 +57,7 @@ void ofxMTWindow::setup(const ofGLESWindowSettings & settings)
 //	ofAppGLFWWindow::draw();
 //}
 
-void ofxMTWindow::setupInternal(ofEventArgs & args)
+void MTWindow::setupInternal(ofEventArgs & args)
 {
     contentView->setSize(ofAppGLFWWindow::getWidth(),
                          ofAppGLFWWindow::getHeight());
@@ -65,12 +65,12 @@ void ofxMTWindow::setupInternal(ofEventArgs & args)
     contentView->setup(args);
 }
 
-void ofxMTWindow::update(ofEventArgs & args)
+void MTWindow::update(ofEventArgs & args)
 {
     contentView->update(args);
 }
 
-void ofxMTWindow::draw(ofEventArgs & args)
+void MTWindow::draw(ofEventArgs & args)
 {
     ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(),
                              ofAppGLFWWindow::getHeight());
@@ -78,24 +78,24 @@ void ofxMTWindow::draw(ofEventArgs & args)
     contentView->draw(args);
 }
 
-void ofxMTWindow::exit(ofEventArgs & args)
+void MTWindow::exit(ofEventArgs & args)
 {
     contentView->exit(args);
     contentView = nullptr;
 }
 
-void ofxMTWindow::windowResized(ofResizeEventArgs & resize)
+void MTWindow::windowResized(ofResizeEventArgs & resize)
 {
     contentView->setFrameSize(resize.width, resize.height);
     contentView->windowResized(resize);
 }
 
-void ofxMTWindow::modelDidLoad()
+void MTWindow::modelDidLoad()
 {
     contentView->modelDidLoad();
 }
 
-void ofxMTWindow::keyPressed( ofKeyEventArgs & key )
+void MTWindow::keyPressed( ofKeyEventArgs & key )
 {
     auto fv = focusedView.lock();
     if (fv)
@@ -104,7 +104,7 @@ void ofxMTWindow::keyPressed( ofKeyEventArgs & key )
     }
 }
 
-void ofxMTWindow::keyReleased( ofKeyEventArgs & key )
+void MTWindow::keyReleased( ofKeyEventArgs & key )
 {
     auto fv = focusedView.lock();
     if (fv)
@@ -114,7 +114,7 @@ void ofxMTWindow::keyReleased( ofKeyEventArgs & key )
     this->keyReleased(key.key);
 }
 
-void ofxMTWindow::mouseMoved( ofMouseEventArgs & mouse )
+void MTWindow::mouseMoved( ofMouseEventArgs & mouse )
 {
     auto v = contentView->hitTest(mouse);
     auto mo = mouseOverView.lock();
@@ -129,7 +129,7 @@ void ofxMTWindow::mouseMoved( ofMouseEventArgs & mouse )
     mouseOverView.lock()->mouseMoved(mouse);
 }
 
-void ofxMTWindow::mouseDragged( ofMouseEventArgs & mouse )
+void MTWindow::mouseDragged( ofMouseEventArgs & mouse )
 {
     if (!isMouseDragging)
     {
@@ -141,7 +141,7 @@ void ofxMTWindow::mouseDragged( ofMouseEventArgs & mouse )
     mo->mouseDragged(mouse);
 }
 
-void ofxMTWindow::mousePressed( ofMouseEventArgs & mouse )
+void MTWindow::mousePressed( ofMouseEventArgs & mouse )
 {
     isMouseDown = true;
     mouseDownPos = mouse.xy();
@@ -151,7 +151,7 @@ void ofxMTWindow::mousePressed( ofMouseEventArgs & mouse )
     setFocusedView(mo);
 }
 
-void ofxMTWindow::mouseReleased(ofMouseEventArgs & mouse)
+void MTWindow::mouseReleased(ofMouseEventArgs & mouse)
 {
     isMouseDown = false;
     isMouseDragging = false;
@@ -160,20 +160,20 @@ void ofxMTWindow::mouseReleased(ofMouseEventArgs & mouse)
     mo->mouseReleased(mouse);
 }
 
-void ofxMTWindow::mouseScrolled( ofMouseEventArgs & mouse ){}
-void ofxMTWindow::mouseEntered( ofMouseEventArgs & mouse ){}
-void ofxMTWindow::mouseExited( ofMouseEventArgs & mouse ){}
-void ofxMTWindow::dragged(ofDragInfo & drag){}
-void ofxMTWindow::messageReceived(ofMessage & message){}
+void MTWindow::mouseScrolled( ofMouseEventArgs & mouse ){}
+void MTWindow::mouseEntered( ofMouseEventArgs & mouse ){}
+void MTWindow::mouseExited( ofMouseEventArgs & mouse ){}
+void MTWindow::dragged(ofDragInfo & drag){}
+void MTWindow::messageReceived(ofMessage & message){}
 
 //TODO: Touch
-void ofxMTWindow::touchDown(ofTouchEventArgs & touch){}
-void ofxMTWindow::touchMoved(ofTouchEventArgs & touch){}
-void ofxMTWindow::touchUp(ofTouchEventArgs & touch){}
-void ofxMTWindow::touchDoubleTap(ofTouchEventArgs & touch){}
-void ofxMTWindow::touchCancelled(ofTouchEventArgs & touch){}
+void MTWindow::touchDown(ofTouchEventArgs & touch){}
+void MTWindow::touchMoved(ofTouchEventArgs & touch){}
+void MTWindow::touchUp(ofTouchEventArgs & touch){}
+void MTWindow::touchDoubleTap(ofTouchEventArgs & touch){}
+void MTWindow::touchCancelled(ofTouchEventArgs & touch){}
 
-void ofxMTWindow::setFocusedView(std::shared_ptr<MTView> view)
+void MTWindow::setFocusedView(std::shared_ptr<MTView> view)
 {
     auto fv = focusedView.lock();
     if (fv)
@@ -187,22 +187,22 @@ void ofxMTWindow::setFocusedView(std::shared_ptr<MTView> view)
     }
 }
 
-int ofxMTWindow::getWidth()
+int MTWindow::getWidth()
 {
     return ofAppGLFWWindow::getWidth();
 }
 
-int ofxMTWindow::getHeight()
+int MTWindow::getHeight()
 {
     return ofAppGLFWWindow::getHeight();
 }
 
-void ofxMTWindow::removeAllEvents()
+void MTWindow::removeAllEvents()
 {
 
 }
 
-void ofxMTWindow::addAllEvents()
+void MTWindow::addAllEvents()
 {
 
 }

@@ -13,11 +13,11 @@
 #include "ofxMTAppFramework.h"
 
 
-class ofxMTModel : public MTEventListenerStore
+class MTModel : public MTEventListenerStore
 {
 public:
-    ofxMTModel(string _name);
-    virtual ~ofxMTModel(){}
+    MTModel(string _name);
+    virtual ~MTModel(){}
     string getName();
     void setName(string n);
     ofParameterGroup& getParameters();

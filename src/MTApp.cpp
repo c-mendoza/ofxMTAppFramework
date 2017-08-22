@@ -1,24 +1,24 @@
-#include "ofxMTApp.hpp"
+#include "MTApp.hpp"
 #include "MTWindow.hpp"
 #include "MTView.hpp"
-#include "ofxMTAppMode.hpp"
+#include "MTAppMode.hpp"
 #include "MTModel.hpp"
 
-const string ofxMTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
-const string ofxMTApp::MTPrefsWindowsGroupName = "Views";
-const string ofxMTApp::MTPrefsWindowPositionName = "Position";
-const string ofxMTApp::MTPrefsWindowSizeName = "Size";
+const string MTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
+const string MTApp::MTPrefsWindowsGroupName = "Views";
+const string MTApp::MTPrefsWindowPositionName = "Position";
+const string MTApp::MTPrefsWindowSizeName = "Size";
 
-ofEvent<MTAppModeChangeArgs> ofxMTApp::appChangeModeEvent;
-ofEvent<void> ofxMTApp::modelLoadedEvent;
-ofxMTApp* ofxMTApp::sharedApp = 0;
+ofEvent<MTAppModeChangeArgs> MTApp::appChangeModeEvent;
+ofEvent<void> MTApp::modelLoadedEvent;
+MTApp* MTApp::sharedApp = 0;
 
 
-ofxMTApp::ofxMTApp()
+MTApp::MTApp()
 {
 
     //TODO: Proper singleton
-    if(!ofxMTApp::sharedApp)
+    if(!MTApp::sharedApp)
     {
         //Set the basic preferences
         MTPrefLastFile.set("NSPrefLastFile", "");
@@ -31,7 +31,7 @@ ofxMTApp::ofxMTApp()
                            MTPrefLastFile,
                            NSPrefAutoloadLastFile,
                            MTPrefsWindowsGroup);
-        ofxMTApp::sharedApp = this;
+        MTApp::sharedApp = this;
         currentMode = defaultMode;
         registerMode(defaultMode);
 
@@ -89,7 +89,7 @@ ofxMTApp::ofxMTApp()
     }
 }
 
-void ofxMTApp::registerAppPreference(ofAbstractParameter &preference)
+void MTApp::registerAppPreference(ofAbstractParameter &preference)
 {
     if (appPrefsXml.load(APP_PREFERENCES_FILE))
     {
@@ -107,13 +107,13 @@ void ofxMTApp::registerAppPreference(ofAbstractParameter &preference)
     }
 }
 
-void ofxMTApp::keyPressed(ofKeyEventArgs &key)
+void MTApp::keyPressed(ofKeyEventArgs &key)
 {
-//	ofLogNotice("ofxMTApp") << "Key Pressed " << getMTViewForWindow(ofGetMainLoop()->getCurrentWindow())->getName();
+//	ofLogNotice("MTApp") << "Key Pressed " << getMTViewForWindow(ofGetMainLoop()->getCurrentWindow())->getName();
     appKeyPressed(key.key);
 }
 
-void ofxMTApp::keyReleased(ofKeyEventArgs &key)
+void MTApp::keyReleased(ofKeyEventArgs &key)
 {
     if (ofGetKeyPressed(OF_KEY_COMMAND))
     {
@@ -139,18 +139,18 @@ void ofxMTApp::keyReleased(ofKeyEventArgs &key)
     appKeyReleased(key.key);
 
 }
-/// Method is called in the ofxMTApp contructor, right before the app is run.
+/// Method is called in the MTApp contructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as well as the main
 /// window size and settings.
 
-void ofxMTApp::initialize()
+void MTApp::initialize()
 {
     // These should be overriden sometime
 //	model = shared_ptr<ofxMTModel>(new ofxMTModel("default"));
     model = nullptr;
 }
 
-void ofxMTApp::createAppViews()
+void MTApp::createAppViews()
 {
     ofGLFWWindowSettings windowSettings;
     windowSettings.width = 1280;
@@ -158,12 +158,12 @@ void ofxMTApp::createAppViews()
     mainWindow = createWindow("Main Window", windowSettings);
 }
 
-void ofxMTApp::run()
+void MTApp::run()
 {
     initialize();
     createAppViews();
     ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(mainWindow), shared_ptr<ofBaseApp>(this));
-    ofAddListener(ofEvents().keyPressed, this, &ofxMTApp::keyPressed);
+    ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
     isInitialized = false;
 
 
@@ -190,7 +190,7 @@ void ofxMTApp::run()
 
 /// APP MODES
 
-void ofxMTApp::setAppMode(MTAppModeName mode)
+void MTApp::setAppMode(MTAppModeName mode)
 {
 //	if(!ofContains(appModes, mode)) return;
 
@@ -206,19 +206,19 @@ void ofxMTApp::setAppMode(MTAppModeName mode)
         changeArgs.newMode = mode;
         changeArgs.oldMode = currentMode;
         currentMode = mode;
-        ofNotifyEvent(ofxMTApp::appChangeModeEvent, changeArgs, this);
+        ofNotifyEvent(MTApp::appChangeModeEvent, changeArgs, this);
     }
 }
 
-MTAppModeName ofxMTApp::getCurrentMode()
+MTAppModeName MTApp::getCurrentMode()
 {
     return currentMode;
 }
 
-shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettings& settings)
+shared_ptr<MTWindow> MTApp::createWindow(string windowName, ofWindowSettings& settings)
 {
 
-    auto window = shared_ptr<ofxMTWindow>(new ofxMTWindow(windowName));
+    auto window = shared_ptr<MTWindow>(new MTWindow(windowName));
     window->contentView->setWindow(window);
 #ifndef TARGET_OPENGLES
     ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings) settings;
@@ -231,8 +231,8 @@ shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettin
     addAllEvents(window.get());
 
     // Add the "global" keyboard event listener:
-    ofAddListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
-    ofAddListener(window->events().keyReleased, this, &ofxMTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
+    ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
+    ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
 //    window->events().
     ofGetMainLoop()->addWindow(window);
     windows.push_back(window);
@@ -277,62 +277,62 @@ shared_ptr<ofxMTWindow> ofxMTApp::createWindow(string windowName, ofWindowSettin
 }
 
 
-void ofxMTApp::addAllEvents(ofxMTWindow* w)
+void MTApp::addAllEvents(MTWindow* w)
 {
     w->events().enable();
-    ofAddListener(w->events().setup, w, &ofxMTWindow::setupInternal, OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().update, w, &ofxMTWindow::update,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().draw, w, &ofxMTWindow::draw,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().exit,w, &ofxMTWindow::exit,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().keyPressed,w, &ofxMTWindow::keyPressed,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().keyReleased,w, &ofxMTWindow::keyReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseMoved,w, &ofxMTWindow::mouseMoved,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseDragged,w, &ofxMTWindow::mouseDragged,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mousePressed,w, &ofxMTWindow::mousePressed,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseReleased,w, &ofxMTWindow::mouseReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseScrolled,w, &ofxMTWindow::mouseScrolled,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseEntered,w, &ofxMTWindow::mouseEntered,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseExited,w, &ofxMTWindow::mouseExited,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().windowResized,w, &ofxMTWindow::windowResized,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().messageEvent,w, &ofxMTWindow::messageReceived,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().fileDragEvent,w, &ofxMTWindow::dragged,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().touchCancelled,w, &ofxMTWindow::touchCancelled,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().touchDoubleTap,w, &ofxMTWindow::touchDoubleTap,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().touchDown,w, &ofxMTWindow::touchDown,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().touchMoved,w, &ofxMTWindow::touchMoved,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().touchUp,w, &ofxMTWindow::touchUp,OF_EVENT_ORDER_APP);
-    ofAddListener(ofxMTApp::appChangeModeEvent, w, &ofxMTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    ofAddListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().update, w, &MTWindow::update,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().draw, w, &MTWindow::draw,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().exit,w, &MTWindow::exit,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().keyPressed,w, &MTWindow::keyPressed,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().keyReleased,w, &MTWindow::keyReleased,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseMoved,w, &MTWindow::mouseMoved,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseDragged,w, &MTWindow::mouseDragged,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mousePressed,w, &MTWindow::mousePressed,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseReleased,w, &MTWindow::mouseReleased,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseScrolled,w, &MTWindow::mouseScrolled,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseEntered,w, &MTWindow::mouseEntered,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().mouseExited,w, &MTWindow::mouseExited,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().windowResized,w, &MTWindow::windowResized,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().messageEvent,w, &MTWindow::messageReceived,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().fileDragEvent,w, &MTWindow::dragged,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().touchCancelled,w, &MTWindow::touchCancelled,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().touchDoubleTap,w, &MTWindow::touchDoubleTap,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().touchDown,w, &MTWindow::touchDown,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().touchMoved,w, &MTWindow::touchMoved,OF_EVENT_ORDER_APP);
+    ofAddListener(w->events().touchUp,w, &MTWindow::touchUp,OF_EVENT_ORDER_APP);
+    ofAddListener(MTApp::appChangeModeEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
 }
 
-void ofxMTApp::removeAllEvents(ofxMTWindow* w)
+void MTApp::removeAllEvents(MTWindow* w)
 {
 
-    ofRemoveListener(w->events().setup, w, &ofxMTWindow::setupInternal, OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().update, w, &ofxMTWindow::update,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().draw, w, &ofxMTWindow::draw,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().exit,w, &ofxMTWindow::exit,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().keyPressed,w, &ofxMTWindow::keyPressed,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().keyReleased,w, &ofxMTWindow::keyReleased,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mouseMoved,w, &ofxMTWindow::mouseMoved,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mouseDragged,w, &ofxMTWindow::mouseDragged,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mousePressed,w, &ofxMTWindow::mousePressed,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mouseReleased,w, &ofxMTWindow::mouseReleased,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mouseScrolled,w, &ofxMTWindow::mouseScrolled,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mouseEntered,w, &ofxMTWindow::mouseEntered,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().mouseExited,w, &ofxMTWindow::mouseExited,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().windowResized,w, &ofxMTWindow::windowResized,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().messageEvent,w, &ofxMTWindow::messageReceived,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().fileDragEvent,w, &ofxMTWindow::dragged,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().touchCancelled,w, &ofxMTWindow::touchCancelled,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().touchDoubleTap,w, &ofxMTWindow::touchDoubleTap,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().touchDown,w, &ofxMTWindow::touchDown,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().touchMoved,w, &ofxMTWindow::touchMoved,OF_EVENT_ORDER_APP);
-    ofRemoveListener(w->events().touchUp,w, &ofxMTWindow::touchUp,OF_EVENT_ORDER_APP);
-    ofRemoveListener(ofxMTApp::appChangeModeEvent, w, &ofxMTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    ofRemoveListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().update, w, &MTWindow::update,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().draw, w, &MTWindow::draw,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().exit,w, &MTWindow::exit,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().keyPressed,w, &MTWindow::keyPressed,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().keyReleased,w, &MTWindow::keyReleased,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mouseMoved,w, &MTWindow::mouseMoved,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mouseDragged,w, &MTWindow::mouseDragged,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mousePressed,w, &MTWindow::mousePressed,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mouseReleased,w, &MTWindow::mouseReleased,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mouseScrolled,w, &MTWindow::mouseScrolled,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mouseEntered,w, &MTWindow::mouseEntered,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().mouseExited,w, &MTWindow::mouseExited,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().windowResized,w, &MTWindow::windowResized,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().messageEvent,w, &MTWindow::messageReceived,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().fileDragEvent,w, &MTWindow::dragged,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().touchCancelled,w, &MTWindow::touchCancelled,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().touchDoubleTap,w, &MTWindow::touchDoubleTap,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().touchDown,w, &MTWindow::touchDown,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().touchMoved,w, &MTWindow::touchMoved,OF_EVENT_ORDER_APP);
+    ofRemoveListener(w->events().touchUp,w, &MTWindow::touchUp,OF_EVENT_ORDER_APP);
+    ofRemoveListener(MTApp::appChangeModeEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
 }
 
 //// UI
-weak_ptr<ofAppBaseWindow> ofxMTApp::getMainWindow()
+weak_ptr<ofAppBaseWindow> MTApp::getMainWindow()
 {
     return mainWindow;
 }
@@ -340,7 +340,7 @@ weak_ptr<ofAppBaseWindow> ofxMTApp::getMainWindow()
 //// FILE HANDLING
 
 
-void ofxMTApp::open()
+void MTApp::open()
 {
     ofFileDialogResult result = ofSystemLoadDialog();
     if (result.bSuccess)
@@ -350,7 +350,7 @@ void ofxMTApp::open()
 }
 
 
-void ofxMTApp::save() {
+void MTApp::save() {
     if (MTPrefLastFile.get() == string(""))
     {
         saveAs();
@@ -361,7 +361,7 @@ void ofxMTApp::save() {
     }
 }
 
-void ofxMTApp::saveAs()
+void MTApp::saveAs()
 {
     ofFileDialogResult result = ofSystemSaveDialog(MTPrefLastFile, "Save As...");
     if(!result.bSuccess)
@@ -382,7 +382,7 @@ void ofxMTApp::saveAs()
     }
 }
 
-bool ofxMTApp::saveAsImpl(string filePath)
+bool MTApp::saveAsImpl(string filePath)
 {
     string temp = MTPrefLastFile;
     MTPrefLastFile.setWithoutEventNotifications(filePath);
@@ -400,7 +400,7 @@ bool ofxMTApp::saveAsImpl(string filePath)
     return true;
 }
 
-bool ofxMTApp::saveImpl()
+bool MTApp::saveImpl()
 {
 
     model->serialize(serializer);
@@ -418,7 +418,7 @@ bool ofxMTApp::saveImpl()
 }
 
 /// Open sesame.
-bool ofxMTApp::openImpl(string filePath)
+bool MTApp::openImpl(string filePath)
 {
 
     if (filePath == "")
@@ -437,7 +437,7 @@ bool ofxMTApp::openImpl(string filePath)
         model->deserialize(serializer);
         if (model == nullptr)
         {
-            ofLogError("ofxMTApp", "Failed Loading Model");
+            ofLogError("MTApp", "Failed Loading Model");
             ofSystemAlertDialog("Failed Loading Model");
         }
         else
@@ -448,14 +448,14 @@ bool ofxMTApp::openImpl(string filePath)
             mainWindow->setWindowTitle(fileName);
             saveAppPreferences();
             modelLoadedEvent.notify(this);
-            ofLogVerbose("ofxMTApp", "File loaded.");
+            ofLogVerbose("MTApp", "File loaded.");
             return true;
         } //End load model
     } //End loadLastFile
     return false;
 }
 
-void ofxMTApp::newFile()
+void MTApp::newFile()
 {
     // Call the user's newFile method:
 
@@ -473,13 +473,13 @@ void ofxMTApp::newFile()
 }
 
 /// Reload the last opened file.
-bool ofxMTApp::revert()
+bool MTApp::revert()
 {
     return openImpl(MTPrefLastFile);
 }
 
 /// Saves!
-bool ofxMTApp::saveAppPreferences()
+bool MTApp::saveAppPreferences()
 {
     auto windowsGroup = appPreferences.getGroup(MTPrefsWindowsGroupName);
 
@@ -488,7 +488,7 @@ bool ofxMTApp::saveAppPreferences()
         auto thisWindow = windowsGroup.getGroup(i);
 
         auto it = std::find_if(windows.begin(), windows.end(),
-                               [&thisWindow](std::shared_ptr<ofxMTWindow> current)
+                               [&thisWindow](std::shared_ptr<MTWindow> current)
         { return current->name.get() == thisWindow.getName(); });
 
         if (it != windows.end())
@@ -505,12 +505,12 @@ bool ofxMTApp::saveAppPreferences()
 
 //// EVENTS
 
-void ofxMTApp::windowClosing(ofxMTWindow* window)
+void MTApp::windowClosing(MTWindow* window)
 {
     ofLogVerbose() << "Closing " << window->name;
 
-    ofRemoveListener(window->events().keyPressed, this, &ofxMTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
-    ofRemoveListener(window->events().keyReleased, this, &ofxMTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
+    ofRemoveListener(window->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
+    ofRemoveListener(window->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
 //    ofRemoveListener(modelLoadedEvent, view, &ofxMTWindow::modelDidLoadInternal, OF_EVENT_ORDER_AFTER_APP);
 
     //This is another:
@@ -525,7 +525,7 @@ void ofxMTApp::windowClosing(ofxMTWindow* window)
     }
 }
 
-void ofxMTApp::exit()
+void MTApp::exit()
 {
     // Shouldn't be necessary, but just in case:
 //	if (windows.size() > 0)
@@ -543,7 +543,7 @@ void ofxMTApp::exit()
 }
 
 
-int ofxMTApp::getLocalMouseX()
+int MTApp::getLocalMouseX()
 {
     ///TODO: Get local mouse
     ofLogNotice() << "Not implemented yet!!";
@@ -555,13 +555,13 @@ int ofxMTApp::getLocalMouseX()
 //    }
 //    else
 //    {
-//        ofLogNotice("ofxMTApp") << "getLocalMouseX: Could not find MTView for window";
+//        ofLogNotice("MTApp") << "getLocalMouseX: Could not find MTView for window";
 //        return -1;
 //    }
 }
 
 
-int ofxMTApp::getLocalMouseY()
+int MTApp::getLocalMouseY()
 {
     ///TODO: Get local mouse
     ofLogNotice() << "Not implemented yet!!";
@@ -573,23 +573,23 @@ int ofxMTApp::getLocalMouseY()
 //    }
 //    else
 //    {
-//        ofLogNotice("ofxMTApp") << "getLocalMouseY: Could not find MTView for window";
+//        ofLogNotice("MTApp") << "getLocalMouseY: Could not find MTView for window";
 //        return -1;
 //    }
 }
 
 int mtGetLocalMouseX()
 {
-    return ofxMTApp::sharedApp->getLocalMouseX();
+    return MTApp::sharedApp->getLocalMouseX();
 }
 
 int mtGetLocalMouseY()
 {
-    return ofxMTApp::sharedApp->getLocalMouseY();
+    return MTApp::sharedApp->getLocalMouseY();
 
 }
 
-ofPath ofxMTApp::pathFromString(string s)
+ofPath MTApp::pathFromString(string s)
 {
     vector<string> commandStrings = ofSplitString(s, "{", true, true);
     ofPath thePath;
@@ -622,7 +622,7 @@ ofPath ofxMTApp::pathFromString(string s)
                 thePath.close();
                 break;
             default:
-                ofLog(OF_LOG_WARNING, "ofxMTApp::pathFromString: A Path Command supplied is not implemented");
+                ofLog(OF_LOG_WARNING, "MTApp::pathFromString: A Path Command supplied is not implemented");
                 break;
         }
 
@@ -631,7 +631,7 @@ ofPath ofxMTApp::pathFromString(string s)
     return thePath;
 }
 
-string ofxMTApp::pathToString(ofPath &path)
+string MTApp::pathToString(ofPath &path)
 {
     vector<ofPath::Command> commands = path.getCommands();
 

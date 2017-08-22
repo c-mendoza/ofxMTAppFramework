@@ -1,20 +1,20 @@
 //
-//  ofxMTModel.cpp
+//  MTModel.cpp
 //  NervousStructureOF
 //
 //  Created by Cristobal Mendoza on 12/18/15.
 //
 //
 
-#include "ofxMTModel.hpp"
+#include "MTModel.hpp"
 
-ofxMTModel::ofxMTModel(string _name)
+MTModel::MTModel(string _name)
 {
     name = _name;
     parameters.setName(name);
 }
 
-//ofxMTModel::~ofxMTModel()
+//MTModel::~MTModel()
 //{
 //    for (auto &el : eventListeners)
 //    {
@@ -24,28 +24,28 @@ ofxMTModel::ofxMTModel(string _name)
 //    eventListeners.clear();
 //}
 
-string ofxMTModel::getName()
+string MTModel::getName()
 {
     return name;
 }
 
-void ofxMTModel::setName(string n)
+void MTModel::setName(string n)
 {
     name = n;
     parameters.setName(n);
 }
 
-ofParameterGroup& ofxMTModel::getParameters()
+ofParameterGroup& MTModel::getParameters()
 {
     return parameters;
 }
 
-void ofxMTModel::serialize(ofXml& serializer)
+void MTModel::serialize(ofXml& serializer)
 {
     ofSerialize(serializer, parameters);
 }
 
-void ofxMTModel::deserialize(ofXml &serializer)
+void MTModel::deserialize(ofXml &serializer)
 {
     ofDeserialize(serializer, parameters);
 }

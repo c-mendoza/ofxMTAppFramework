@@ -6,7 +6,7 @@
 //
 //
 
-#include "ofxMTAppMode.hpp"
+//#include "ofxMTAppMode.hpp"
 
 //ofxMTAppMode::~ofxMTAppMode()
 //{

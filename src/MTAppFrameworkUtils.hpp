@@ -1,4 +1,6 @@
-#include "ofxMTAppFramework.h"
+#pragma once
+#include "ofMain.h"
+//#include "ofxMTAppFramework.h"
 
 //------------------------------------------------------//
 // MT-PROCEDURE     									//
@@ -40,6 +42,25 @@ private:
     MTProcedureStep current;
     bool procedureComplete = false;
 };
+
+//template <class T>
+//class MTStorageController
+//{
+
+//    void insertAtIndex(T&& item, int index);
+//    void push_back(T&& item);
+//    T& removeItem(T& item);
+//    void removeAllItems();
+
+//    void addToSelection(T& item);
+//    void addToSelection(std::vector<T>& items);
+//    bool removeFromSelection(T& item);
+//    void clearSelection();
+
+//private:
+//    std::vector<T> dataStore;
+//    std::vector<T> selection;
+//};
 
 //------------------------------------------------------//
 // MT-EVENT-LISTENER  									//
