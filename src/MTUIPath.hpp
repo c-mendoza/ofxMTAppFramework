@@ -24,9 +24,10 @@ class MTUIPathHandle;
     Triggered when a vertex handle is moved
 
 */
-class MTUIPath
+class MTUIPath :
+        public std::enable_shared_from_this<MTUIPath>
 {
-//	friend class MTView;
+    friend class MTUIPathHandle;
 public:
     ~MTUIPath();
 
@@ -45,7 +46,7 @@ public:
 
     void setup(ofPath* path, shared_ptr<MTView> view);
     void draw();
-    void setAutoDraw(bool autoDraw);
+//    void setAutoDraw(bool autoDraw);
     void setVisibility(bool visible);
     void setClosed(bool closed);
     bool getClosed() { return isClosed; }
@@ -99,18 +100,26 @@ public:
     ///Gets the selected handles. It is not safe to modify this vector nor to change the Path commands directly.
     const vector<shared_ptr<MTView>> getSelection();
 
+//    ///
+//    /// \brief addEventListeners adds mouse and keyboard
+//    /// listeners for events occuring in the MTView associated
+//    /// with this MTUIPath. You normally won't have to call this
+//    /// method.
+//    void addEventListeners();
 
-    ///These are called when the appropriate event occurs if useEventListeners = true.
-    ///If you are handling events yourself make sure to call these functions when necessary.
-    void mouseMoved(ofMouseEventArgs& args);
+//    ///
+//    /// \brief addEventListeners removes mouse and keyboard
+//    /// listeners for events occuring in the MTView associated
+//    /// with this MTUIPath. You normally won't have to call this
+//    /// method.
+//    void removeEventListeners();
+
+
     void mousePressed(ofMouseEventArgs& args);
-    void mouseReleased(ofMouseEventArgs& args);
-    void mouseDragged(ofMouseEventArgs& args);
-    void keyPressed(ofKeyEventArgs& args);
     void keyReleased(ofKeyEventArgs& args);
 
-    void setUseAutoEventListeners(bool use);
-    bool getUseAutoEventListeners() { return useAutoEventListeners; }
+//    void setUseAutoEventListeners(bool use);
+//    bool getUseAutoEventListeners() { return useAutoEventListeners; }
 
     //Options
 
@@ -157,18 +166,20 @@ protected:
     vector<shared_ptr<MTUIPathHandle>> selectedHandles;
     void handlePressed(MTUIPathHandle* pathHandle, ofMouseEventArgs &args);
     void handleReleased(MTUIPathHandle* pathHandle, ofMouseEventArgs &args);
-    ofEventListener* drawListener;
-    void drawEvent(ofEventArgs& args);
+//    ofEventListener* drawListener;
+//    void drawEvent(ofEventArgs& args);
 
     bool isVisible = true;
     bool autoDraw = false;
-    bool useAutoEventListeners = true;
+//    bool useAutoEventListeners = true;
     std::shared_ptr<MTView> view = nullptr;
 
     void arrangeClosedPath();
     void arrangeOpenPath();
     void addEventListeners();
     void removeEventListeners();
+
+    bool handleWasPressed = false;
 
 };
 
@@ -189,6 +200,7 @@ class MTUIPathHandle : public MTEventListenerStore
     bool useAutoEventListeners = true;
 
 public:
+    ~MTUIPathHandle();
     void setup(MTUIPath* uiPath, ofPath::Command* com);
     void setControlPoints();
     void setStyle(ofStyle newStyle);
@@ -196,7 +208,7 @@ public:
     ///Sets whether the underlying ofMSAInteractiveObjects listen to events on their own. Defaults
     ///to true. If false, you are in charge of feeding event information to the MTView for
     ///proper functionality.
-    void setAutoEventListeners(bool useEvents);
+//    void setAutoEventListeners(bool useEvents);
     bool getUseAutoEventListeners() { return useAutoEventListeners; }
 
     ///If you are handling events yourself make sure to call these functions when necessary.
@@ -214,12 +226,18 @@ public:
     shared_ptr<MTUIHandle> getPointHandle() { return toHandle; }
     shared_ptr<MTUIHandle> getCP1Handle() { return cp1Handle; }
     shared_ptr<MTUIHandle> getCP2Handle() { return cp2Handle; }
-    const ofPath* getPath() { return uiPath->getPath(); }
+	ofPath* getPath() { return uiPath->getPath(); }
     ofPath::Command* getCommand() { return command; }
     MTUIPath* getUIPath() { return uiPath; }
+	
+	///
+	/// \brief Updates the coordinates of the command to match that
+	/// of the handles. Called automatically whenever a handle is moved with
+	/// the mouse.
+	void updateCommand();
 
     ///Tests whether the point is inside the point handle or any of the control point handles
-    bool hitTest(glm::vec2& point); //?
+//    bool hitTest(glm::vec2& point); //?
 
 };
 
@@ -228,18 +246,41 @@ class MTUIHandle : public MTView
 {
 public:
 
-    MTUIHandle(string _name);
-    ~MTUIHandle();
+    MTUIHandle(string _name) : MTView(_name)
+    {
+        onMouseDragged = [this](int x, int y, int button)
+        {
+            setFrameOrigin(getFrameOrigin() +
+                           (getLocalMouse() - getLocalMouseDown()));
+        };
+		
+		wantsFocus = false;
+    }
+
+    void draw()
+    {
+        ofSetColor(255);
+        ofFill();
+        ofDrawRectangle(0, 0,
+                        getFrameSize().x,
+                        getFrameSize().y);
+    }
+
     enum HandleType
     {
         SQUARE,
         ROUND
     };
 
-    HandleType type;
-    ofEvent<ofMouseEventArgs> handlePressedEvent;
+    enum HandleState
+    {
+        DEFAULT,
+        SELECTED
+    };
 
-//    std::shared_ptr<MTView> hitTest(glm::vec2 &windowCoord);
+protected:
+    HandleType type;
+    HandleState state;
 };
 
 

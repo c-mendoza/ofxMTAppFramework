@@ -20,7 +20,7 @@ public:
     ~MTAppMode(){}
     std::string getName() { return name; }
     void setName(string name) { this->name = name; }
-    virtual void setup(MTView* view) = 0;
+    virtual void setup(shared_ptr<MTView> view) = 0;
     virtual void exit() = 0;
     virtual void update(){};
     virtual void draw(){};
@@ -37,7 +37,7 @@ public:
     //	virtual void dragEvent(ofDragInfo dragInfo);
     //	virtual void gotMessage(ofMessage msg);
 protected:
-    MTView* view;
+    shared_ptr<MTView> view = nullptr;
     std::string name;
 };
 
@@ -45,7 +45,7 @@ class MTAppModeVoid : public MTAppMode
 {
 public:
     MTAppModeVoid() : MTAppMode("App Mode Void"){}
-    virtual void setup(MTView* view) {}
+    virtual void setup(shared_ptr<MTView> view) {}
     virtual void exit() {}
 };
 

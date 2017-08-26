@@ -47,15 +47,9 @@ void ofxMTWindow::setup(const ofGLESWindowSettings & settings)
 }
 #endif
 
-//void ofxMTWindow::update()
-//{
-//	ofAppGLFWWindow::update();
-//}
-//
-//void ofxMTWindow::draw()
-//{
-//	ofAppGLFWWindow::draw();
-//}
+//------------------------------------------------------//
+// INTERNALS EVENT LISTENERS 							//
+//------------------------------------------------------//
 
 void MTWindow::setupInternal(ofEventArgs & args)
 {
@@ -90,11 +84,6 @@ void MTWindow::windowResized(ofResizeEventArgs & resize)
     contentView->windowResized(resize);
 }
 
-void MTWindow::modelDidLoad()
-{
-    contentView->modelDidLoad();
-}
-
 void MTWindow::keyPressed( ofKeyEventArgs & key )
 {
     auto fv = focusedView.lock();
@@ -102,6 +91,7 @@ void MTWindow::keyPressed( ofKeyEventArgs & key )
     {
         fv->keyPressed(key);
     }
+	this->keyPressed(key.key);
 }
 
 void MTWindow::keyReleased( ofKeyEventArgs & key )
@@ -117,16 +107,22 @@ void MTWindow::keyReleased( ofKeyEventArgs & key )
 void MTWindow::mouseMoved( ofMouseEventArgs & mouse )
 {
     auto v = contentView->hitTest(mouse);
-    auto mo = mouseOverView.lock();
-    if (v != mo)
-    {
-        mo->mouseReleased(mouse);
-        mo->mouseExited(mouse);
-        mouseOverView = v;
-        v->mouseEntered(mouse);
-    }
-
-    mouseOverView.lock()->mouseMoved(mouse);
+	if(auto mo = mouseOverView.lock())
+	{
+		if ((v != mo) && mo)
+		{
+			mo->mouseReleased(mouse);
+			mo->mouseExited(mouse);
+			mouseOverView = v;
+			v->mouseEntered(mouse);
+		}
+		mo->mouseMoved(mouse);
+	}
+	else
+	{
+		mouseOverView = v;
+		v->mouseEntered(mouse);
+	}
 }
 
 void MTWindow::mouseDragged( ofMouseEventArgs & mouse )
@@ -136,9 +132,11 @@ void MTWindow::mouseDragged( ofMouseEventArgs & mouse )
         isMouseDragging = true;
         mouseDragStart = mouse.xy();
     }
-
-    auto mo = mouseOverView.lock();
-    mo->mouseDragged(mouse);
+	
+	if(auto mo = mouseOverView.lock())
+	{
+		mo->mouseDragged(mouse);
+	}
 }
 
 void MTWindow::mousePressed( ofMouseEventArgs & mouse )
@@ -146,9 +144,11 @@ void MTWindow::mousePressed( ofMouseEventArgs & mouse )
     isMouseDown = true;
     mouseDownPos = mouse.xy();
 
-    auto mo = mouseOverView.lock();
-    mo->mousePressed(mouse);
-    setFocusedView(mo);
+    if(auto mo = mouseOverView.lock())
+	{
+		mo->mousePressed(mouse);
+		setFocusedView(mo);
+	}
 }
 
 void MTWindow::mouseReleased(ofMouseEventArgs & mouse)
@@ -156,8 +156,10 @@ void MTWindow::mouseReleased(ofMouseEventArgs & mouse)
     isMouseDown = false;
     isMouseDragging = false;
     mouseUpPos = mouse.xy();
-    auto mo = mouseOverView.lock();
-    mo->mouseReleased(mouse);
+	if(auto mo = mouseOverView.lock())
+	{
+		mo->mouseReleased(mouse);
+	}
 }
 
 void MTWindow::mouseScrolled( ofMouseEventArgs & mouse ){}
@@ -165,6 +167,16 @@ void MTWindow::mouseEntered( ofMouseEventArgs & mouse ){}
 void MTWindow::mouseExited( ofMouseEventArgs & mouse ){}
 void MTWindow::dragged(ofDragInfo & drag){}
 void MTWindow::messageReceived(ofMessage & message){}
+
+void MTWindow::modelLoaded(ofEventArgs &args)
+{
+    enqueueUpdateOperation([this]()
+    {
+        modelLoaded();
+    });
+
+    contentView->modelLoaded(args);
+}
 
 //TODO: Touch
 void MTWindow::touchDown(ofTouchEventArgs & touch){}
@@ -175,6 +187,8 @@ void MTWindow::touchCancelled(ofTouchEventArgs & touch){}
 
 void MTWindow::setFocusedView(std::shared_ptr<MTView> view)
 {
+	if (!view->wantsFocus) return; // Exit if the view doesn't want focus
+	
     auto fv = focusedView.lock();
     if (fv)
     {

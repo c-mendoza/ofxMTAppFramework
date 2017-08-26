@@ -43,7 +43,7 @@ public:
 
     /// Called once the model is successfully loaded from file.
     /// Default implementation does nothing.
-    virtual void modelDidLoad(){}
+    virtual void modelLoaded(){}
     virtual void setup(){}
     virtual void update(){}
     virtual void draw(){}
@@ -122,7 +122,7 @@ public:
     //
     //--------------------------------------------------//
 
-    std::function<void()> onModelDidLoad = []{};
+    std::function<void()> onModelLoaded = []{};
     std::function<void()> onSetup = []{};
     std::function<void()> onUpdate = []{};
     std::function<void()> onDraw = []{};
@@ -143,37 +143,16 @@ public:
     std::function<void(int, int)> onMouseEntered = [](int x, int y){};
     std::function<void(int, int)> onMouseExited = [](int x, int y){};
 
-
-
-
-    int mouseX, mouseY;			// for processing heads
+//    int mouseX, mouseY;			// for processing heads
 
     bool isMouseDown = false;
     bool isMouseDragging = false;
 
     bool hasFocus();
-
-//    ///Transform a point from view-coordinate to content-coordinate
-//    glm::vec3 viewToContent(glm::vec3 viewCoord)
-//    {
-//        return viewCoord * invTransMatrix;
-//    }
-
-//    ///Transform a point from view-coordinate to content-coordinate
-//    glm::vec3 viewToContent(float x, float y)
-//    {
-//        return viewToContent(ofVec3f(x, y, 0));
-//    }
-
-//    glm::vec3 contentToView(ofVec3f contentCoord)
-//    {
-//        return contentCoord * transMatrix;
-//    }
-
-//    glm::vec3 contentToView(float x, float y)
-//    {
-//        return contentToView(ofVec3f(x, y, 0));
-//    }
+	
+	/// Set this to false if you want this MTView to ignore
+	/// keyboard focus
+	bool wantsFocus = true;
 
 //    /// Moves the content within the view's frame by dx and dy.
 //    void scrollBy(float dx, float dy);
@@ -195,6 +174,7 @@ public:
 
     void setFrameOrigin(float x, float y);
     void setFrameOrigin(glm::vec3 pos);
+    void shiftFrameOrigin(glm::vec3 shiftAmount);
     const glm::vec3& getFrameOrigin();
 
     void setFrameSize(glm::vec2 size);
@@ -203,7 +183,7 @@ public:
 
     void setFrameFromCenter(glm::vec3 pos, glm::vec2 size);
     void setFrameCenter(glm::vec3 pos);
-    glm::vec2 getFrameCenter();
+    glm::vec3 getFrameCenter();
 
     void setContent(ofRectangle newContentRect);
     void setContentOrigin(glm::vec3 pos);
@@ -248,6 +228,17 @@ public:
     /// coordinates to the coordinate system of a given MTView
     glm::vec2 transformPoint(glm::vec2& coords,
                              const MTView* toView);
+	
+	/// \brief Transforms the passed point from its local
+	/// coordinates to the coordinate system of a given MTView
+	glm::vec2 transformPoint(glm::vec2& coords,
+							 std::shared_ptr<MTView> toView);
+	
+	glm::mat4& getFrameMatrix()
+	{
+		return frameMatrix;
+	}
+
 
     //------------------------------------------------------//
     // VIEW HEIRARCHY                                       //
@@ -256,7 +247,7 @@ public:
     void setWindow(std::weak_ptr<MTWindow> window);
 
     /// \brief Gets this view's superview if there is one.
-    std::weak_ptr<MTView> getSuperview();
+    std::shared_ptr<MTView> getSuperview();
 
     /// \brief Adds a subview.
     /// \return A reference to the added view.
@@ -272,7 +263,7 @@ public:
 
     /// \returns True if there was a view to be removed.
     bool removeLastSubview();
-
+    bool removeSubview(std::shared_ptr<MTView> view);
     void removeAllSubviews();
 
     std::weak_ptr<MTWindow> getWindow();
@@ -289,48 +280,26 @@ public:
     //
     // You do not need to call these methods
     //------------------------------------------------------//
-    virtual void setup(ofEventArgs & args) final;
-    virtual void update(ofEventArgs & args) final;
-    virtual void draw(ofEventArgs & args) final;
-    virtual void exit(ofEventArgs & args) final;
+    void setup(ofEventArgs & args);
+    void update(ofEventArgs & args);
+    void draw(ofEventArgs & args);
+    void exit(ofEventArgs & args);
 
-    virtual void windowResized(ofResizeEventArgs & resize) final;
+    void windowResized(ofResizeEventArgs & resize);
 
-    virtual void keyPressed( ofKeyEventArgs & key ) final;
-    virtual void keyReleased( ofKeyEventArgs & key ) final;
-    virtual void mouseMoved( ofMouseEventArgs & mouse ) final;
-    virtual void mouseDragged( ofMouseEventArgs & mouse ) final;
-    virtual void mousePressed( ofMouseEventArgs & mouse ) final;
-    virtual void mouseReleased(ofMouseEventArgs & mouse) final;// {
-//        mouseX=mouse.x;
-//        mouseY=mouse.y;
-//        contentMouse = viewToContent(mouse);
-//        isMouseDown = false;
-//        mouseReleased(mouse.x,mouse.y,mouse.button);
-//        isMouseDragging = false;
-//    }
-    virtual void mouseScrolled( ofMouseEventArgs & mouse ) final;
-    virtual void mouseEntered( ofMouseEventArgs & mouse ) final;
-    virtual void mouseExited( ofMouseEventArgs & mouse ) final;
-    virtual void dragged(ofDragInfo & drag) final;
-    virtual void messageReceived(ofMessage & message) final;
+    void keyPressed( ofKeyEventArgs & key );
+    void keyReleased( ofKeyEventArgs & key );
+    void mouseMoved( ofMouseEventArgs & mouse );
+    void mouseDragged( ofMouseEventArgs & mouse );
+    void mousePressed( ofMouseEventArgs & mouse );
+    void mouseReleased(ofMouseEventArgs & mouse);
+    void mouseScrolled( ofMouseEventArgs & mouse );
+    void mouseEntered( ofMouseEventArgs & mouse );
+    void mouseExited( ofMouseEventArgs & mouse );
+    void dragged(ofDragInfo & drag);
+    void messageReceived(ofMessage & message);
+    void modelLoaded(ofEventArgs & args);
 
-    //TODO: Touch
-//    virtual void touchDown(ofTouchEventArgs & touch) {
-//        touchDown(touch.x, touch.y, touch.id);
-//    }
-//    virtual void touchMoved(ofTouchEventArgs & touch) {
-//        touchMoved(touch.x, touch.y, touch.id);
-//    }
-//    virtual void touchUp(ofTouchEventArgs & touch) {
-//        touchUp(touch.x, touch.y, touch.id);
-//    }
-//    virtual void touchDoubleTap(ofTouchEventArgs & touch) {
-//        touchDoubleTap(touch.x, touch.y, touch.id);
-//    }
-//    virtual void touchCancelled(ofTouchEventArgs & touch){
-//        touchCancelled(touch.x, touch.y, touch.id);
-//    }
 
     //------------------------------------------------------//
     // EVENTS												//
@@ -340,14 +309,18 @@ public:
     ofEvent<ofEventArgs> focusLost;
     ofEvent<ofMouseEventArgs> mouseMovedEvent;
     ofEvent<ofMouseEventArgs> mouseDraggedEvent;
+    ofEvent<ofMouseEventArgs> mouseDraggedEndEvent;
     ofEvent<ofMouseEventArgs> mousePressedEvent;
     ofEvent<ofMouseEventArgs> mouseReleasedEvent;
     ofEvent<ofMouseEventArgs> mouseScrolledEvent;
     ofEvent<ofMouseEventArgs> mouseEnteredEvent;
     ofEvent<ofMouseEventArgs> mouseExitedEvent;
+    ofEvent<ofKeyEventArgs> keyPressedEvent;
+    ofEvent<ofKeyEventArgs> keyReleasedEvent;
     ofEvent<ofDragInfo> draggedEvent;
     ofEvent<ofMessage> messageEvent;
     ofEvent<ofEventArgs> frameChangedEvent;
+    ofEvent<ofResizeEventArgs> windowResizedEvent; //?
 
 
     //------------------------------------------------------//
@@ -393,23 +366,13 @@ protected:
     ofVec3f contentMouse; //localMousePos?
     ofParameter<float>	contentScale;
 
-    void removeAllEvents();
-    void addAllEvents();
+//    void removeAllEvents();
+//    void addAllEvents();
 
     void updateMatrices();
 
 
 private:
-
-    /// This function is called internally by the framework to signal that a model
-    /// has been loaded from a file. You don't need to call it.
-    void modelDidLoadInternal()
-    {
-        enqueueUpdateOperation([this]()
-        {
-            modelDidLoad();
-        });
-    }
 
     //------------------------------------------------------//
     // VIEW and MATRICES									//

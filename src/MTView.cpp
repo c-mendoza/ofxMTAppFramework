@@ -30,14 +30,19 @@ MTView::MTView(string _name)
     backgroundColor.set("Background Color",
                         ofFloatColor(1.0, 1.0, 1.0, 1.0));
     currentAppMode = std::shared_ptr<MTAppMode>(new MTAppModeVoid);
+    ofAddListener(MTApp::appChangeModeEvent,
+                  this,
+                  &MTView::appModeChanged,
+                  OF_EVENT_ORDER_AFTER_APP);
 }
 
 MTView::~MTView()
 {
-    // Not sure if I need to be that explicit here
     // TODO check ~MTView
-    eventListeners.clear();
-    removeAllEvents();
+    ofRemoveListener(MTApp::appChangeModeEvent,
+                  this,
+                  &MTView::appModeChanged,
+                  OF_EVENT_ORDER_AFTER_APP);
     subviews.clear();
     ofLogVerbose("View Destruct: ") << name;
 }
@@ -67,6 +72,11 @@ void MTView::setFrameOrigin(glm::vec3 pos)
 {
     frame.setPosition(pos);
     frameChangedInternal();
+}
+
+void MTView::shiftFrameOrigin(glm::vec3 shiftAmount)
+{
+    setFrameOrigin(frame.getPosition() + shiftAmount);
 }
 
 void MTView::setFrameFromCenter(glm::vec3 pos, glm::vec2 size)
@@ -102,9 +112,9 @@ glm::vec2 MTView::getFrameSize()
     return glm::vec2(frame.getWidth(), frame.getHeight());
 }
 
-glm::vec2 MTView::getFrameCenter()
+glm::vec3 MTView::getFrameCenter()
 {
-    return frame.getCenter().xy();
+    return frame.getCenter();
 }
 
 void MTView::setContent(ofRectangle newContentRect)
@@ -202,16 +212,22 @@ void MTView::contentChangedInternal()
 glm::vec2 MTView::transformPoint(glm::vec2& coords,
                                     const MTView* toView)
 {
-    auto windowCoords = invFrameMatrix * glm::vec4(coords.x, coords.y, 1, 1);
-    return (toView->frameMatrix * windowCoords).xy();
+    auto windowCoords = frameMatrix * glm::vec4(coords.x, coords.y, 1, 1);
+    return (toView->invFrameMatrix * windowCoords).xy();
+}
+
+glm::vec2 MTView::transformPoint(glm::vec2& coords,
+								 std::shared_ptr<MTView> toView)
+{
+	return transformPoint(coords, toView.get());
 }
 //------------------------------------------------------//
 // VIEW HEIRARCHY                                       //
 //------------------------------------------------------//
 
-std::weak_ptr<MTView> MTView::getSuperview()
+std::shared_ptr<MTView> MTView::getSuperview()
 {
-    return superview;
+    return superview.lock();
 }
 
 void MTView::setSuperview(shared_ptr<MTView> view)
@@ -237,19 +253,25 @@ vector<shared_ptr<MTView>>& MTView::getSubviews()
 /// \returns True if successful.
 bool MTView::removeFromSuperview()
 {
-    if (auto s = superview.lock())
-    {
-        auto sv = s->getSubviews();
-        auto iter = std::find(sv.begin(), sv.end(), shared_from_this());
-        if (iter != sv.end())
-        {
-//            superview = nullptr;
-            sv.erase(iter);
-            return true;
-        }
-    }
+//    if (auto s = superview.lock())
+//    {
+//        auto sv = s->getSubviews();
+//        auto iter = std::find(sv.begin(), sv.end(), shared_from_this());
+//        if (iter != sv.end())
+//        {
+//            superview.reset();
+//            sv.erase(iter);
+//            return true;
+//        }
+//    }
 
-    return false;
+//    return false;
+	if (auto s = superview.lock())
+	{
+		return s->removeSubview(shared_from_this());
+	}
+	
+	return false;
 }
 
 /// \returns True if there was a view to be removed.
@@ -257,6 +279,8 @@ bool MTView::removeLastSubview()
 {
     if (subviews.size() > 0)
     {
+        auto sv = subviews.back();
+        sv->superview.reset();
         subviews.pop_back();
         return true;
     }
@@ -264,6 +288,19 @@ bool MTView::removeLastSubview()
     {
         return false;
     }
+}
+
+bool MTView::removeSubview(std::shared_ptr<MTView> view)
+{
+    auto iter = std::find(subviews.begin(), subviews.end(), view);
+    if (iter < subviews.end())
+    {
+        view->superview.reset();
+        subviews.erase(iter);
+        return true;
+    }
+
+    return false;
 }
 
 void MTView::removeAllSubviews()
@@ -314,17 +351,9 @@ void MTView::update(ofEventArgs & args)
 
 void MTView::draw(ofEventArgs & args)
 {
-
-//	glEnable(GL_SCISSOR_TEST);
-//	glScissor(screenFrame.x,
-//			  screenFrame.y + screenFrame.height,
-//			  screenFrame.width,
-//			  screenFrame.height);
-
     ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
     ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
-
-
+	
     ofFill();
     ofSetColor(backgroundColor.get());
     ofDrawRectangle(0, 0, frame.width, frame.height);
@@ -339,22 +368,16 @@ void MTView::draw(ofEventArgs & args)
     //Call the user's draw() function
     draw();
     onDraw();
-//    glDisable(GL_SCISSOR_TEST);
+
     if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
     for (auto sv : subviews)
     {
         sv->draw(args);
     }
-//    ofPopView();
-
-
-
-//	ofPopView();
 }
 
 void MTView::exit(ofEventArgs &args)
 {
-    removeAllEvents();
     exit();
     onExit();
 }
@@ -362,11 +385,11 @@ void MTView::exit(ofEventArgs &args)
 void MTView::windowResized(ofResizeEventArgs & resize)
 {
     windowResized(resize.width, resize.height);
+    onWindowResized(resize.width, resize.height);
     for (auto view : subviews)
     {
         view->windowResized(resize);
     }
-    onWindowResized(resize.width, resize.height);
 }
 
 void MTView::keyPressed(ofKeyEventArgs & key)
@@ -374,6 +397,7 @@ void MTView::keyPressed(ofKeyEventArgs & key)
     ofLogVerbose(name, "Pressed: %c", (char)key.key);
     keyPressed(key.key);
     onKeyPressed(key.key);
+    keyPressedEvent.notify(this, key);
 }
 
 void MTView::keyReleased(ofKeyEventArgs & key)
@@ -381,6 +405,7 @@ void MTView::keyReleased(ofKeyEventArgs & key)
     ofLogVerbose(name, "Released: %c", (char)key.key);
     keyReleased(key.key);
     onKeyReleased(key.key);
+    keyReleasedEvent.notify(this, key);
 }
 
 void MTView::mouseMoved(ofMouseEventArgs & mouse)
@@ -390,9 +415,9 @@ void MTView::mouseMoved(ofMouseEventArgs & mouse)
                                                   localMouse.x,
                                                   localMouse.y,
                                                   mouse.button);
-    mouseMovedEvent.notify(localArgs);
     mouseMoved(mouse.x, mouse.y);
     onMouseMoved(mouse.x, mouse.y);
+    mouseMovedEvent.notify(this, localArgs);
 }
 
 void MTView::mouseDragged(ofMouseEventArgs & mouse)
@@ -408,9 +433,9 @@ void MTView::mouseDragged(ofMouseEventArgs & mouse)
                                                   localMouse.x,
                                                   localMouse.y,
                                                   mouse.button);
-    mouseDraggedEvent.notify(localArgs);
     mouseDragged(localMouse.x, localMouse.y, mouse.button);
     onMouseDragged(mouse.x, mouse.y, mouse.button);
+    mouseDraggedEvent.notify(this, localArgs);
 }
 
 void MTView::mousePressed(ofMouseEventArgs & mouse)
@@ -422,9 +447,88 @@ void MTView::mousePressed(ofMouseEventArgs & mouse)
                                                   localMouse.x,
                                                   localMouse.y,
                                                   mouse.button);
-    mousePressedEvent.notify(localArgs);
     mousePressed(localMouse.x, localMouse.y, mouse.button);
     onMousePressed(localMouse.x, localMouse.y, mouse.button);
+    mousePressedEvent.notify(this, localArgs);
+}
+
+void MTView::mouseReleased(ofMouseEventArgs & mouse)
+{
+    localMouseUp = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    localMouse = localMouseUp;
+    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,
+                                                  localMouse.x,
+                                                  localMouse.y,
+                                                  mouse.button);
+    if (isMouseDragging)
+    {
+        isMouseDragging = false;
+        mouseDraggedEndEvent.notify(this, localArgs);
+    }
+
+    isMouseDown = false;
+    mouseReleased(mouse.x, mouse.y, mouse.button);
+    onMouseReleased(mouse.x, mouse.y, mouse.button);
+    mouseReleasedEvent.notify(this, localArgs);
+}
+
+void MTView::mouseScrolled( ofMouseEventArgs & mouse )
+{
+    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Scrolled,
+                                                  localMouse.x,
+                                                  localMouse.y,
+                                                  mouse.button);
+//    ofLogNotice("MTView::mouseScrolled") << "scrollX and scrollY are in Window coordinates"
+    mouseScrolled(localMouse.x, localMouse.y, mouse.scrollX, mouse.scrollY);
+    onMouseScrolled(localMouse.x, localMouse.y, mouse.scrollX, mouse.scrollY);
+    mouseScrolledEvent.notify(this, localArgs);
+}
+
+void MTView::mouseEntered( ofMouseEventArgs & mouse )
+{
+    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Entered,
+                                                  localMouse.x,
+                                                  localMouse.y,
+                                                  mouse.button);
+    mouseEntered(localMouse.x, localMouse.y);
+    onMouseEntered(localMouse.x, localMouse.y);
+    mouseEnteredEvent.notify(this, localArgs);
+}
+
+void MTView::mouseExited( ofMouseEventArgs & mouse )
+{
+    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Exited,
+                                                  localMouse.x,
+                                                  localMouse.y,
+                                                  mouse.button);
+    mouseExited(localMouse.x, localMouse.y);
+    onMouseExited(localMouse.x, localMouse.y);
+    mouseExitedEvent.notify(this, localArgs);
+}
+
+void MTView::dragged(ofDragInfo & drag)
+{
+    ofLogNotice() << "ofxMTView::dragged not yet implemented";
+}
+
+void MTView::messageReceived(ofMessage & message)
+{
+    ofLogNotice() << "ofxMTView::messageReceived not yet implemented";
+}
+
+void MTView::modelLoaded(ofEventArgs &args)
+{
+    enqueueUpdateOperation([this]()
+    {
+        modelLoaded();
+        onModelLoaded();
+    });
+
+    // Recurse:
+    for (auto sv : subviews)
+    {
+        sv->modelLoaded(args);
+    }
 }
 
 std::shared_ptr<MTView> MTView::hitTest(glm::vec2 &windowCoord)
@@ -442,63 +546,6 @@ std::shared_ptr<MTView> MTView::hitTest(glm::vec2 &windowCoord)
     }
 
     return shared_from_this();
-}
-
-void MTView::mouseReleased(ofMouseEventArgs & mouse)
-{
-    localMouseUp = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-    localMouse = localMouseUp;
-    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,
-                                                  localMouse.x,
-                                                  localMouse.y,
-                                                  mouse.button);
-    mouseReleasedEvent.notify(localArgs);
-    mouseReleased(mouse.x, mouse.y, mouse.button);
-    onMouseReleased(mouse.x, mouse.y, mouse.button);
-}
-
-void MTView::mouseScrolled( ofMouseEventArgs & mouse )
-{
-    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Scrolled,
-                                                  localMouse.x,
-                                                  localMouse.y,
-                                                  mouse.button);
-//    ofLogNotice("MTView::mouseScrolled") << "scrollX and scrollY are in Window coordinates"
-    mouseScrolledEvent.notify(localArgs);
-    mouseScrolled(localMouse.x, localMouse.y, mouse.scrollX, mouse.scrollY);
-    onMouseScrolled(localMouse.x, localMouse.y, mouse.scrollX, mouse.scrollY);
-}
-
-void MTView::mouseEntered( ofMouseEventArgs & mouse )
-{
-    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Entered,
-                                                  localMouse.x,
-                                                  localMouse.y,
-                                                  mouse.button);
-    mouseEnteredEvent.notify(localArgs);
-    mouseEntered(localMouse.x, localMouse.y);
-    onMouseEntered(localMouse.x, localMouse.y);
-}
-
-void MTView::mouseExited( ofMouseEventArgs & mouse )
-{
-    ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Exited,
-                                                  localMouse.x,
-                                                  localMouse.y,
-                                                  mouse.button);
-    mouseExitedEvent.notify(localArgs);
-    mouseExited(localMouse.x, localMouse.y);
-    onMouseExited(localMouse.x, localMouse.y);
-}
-
-void MTView::dragged(ofDragInfo & drag)
-{
-    ofLogNotice() << "ofxMTView::dragged not yet implemented";
-}
-
-void MTView::messageReceived(ofMessage & message)
-{
-    ofLogNotice() << "ofxMTView::messageReceived not yet implemented";
 }
 
 bool MTView::hasFocus()
@@ -526,65 +573,69 @@ void MTView::updateMatrices()
     }
 
     invContentMatrix = glm::inverse(contentMatrix);
+
+    // TODO: Should updateMatrices recurse?
 }
 
 
-void MTView::addAllEvents()
-{
-    if (auto w = window.lock())
-    {
-    w->events().enable();
-    ofAddListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
-    ofAddListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
-//    ofAddListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
-//    ofAddListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
-//    ofAddListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
-//    ofAddListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
-//    ofAddListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-    ofAddListener(MTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
-    }
+//void MTView::addAllEvents()
+//{
+//    if (auto w = window.lock())
+//    {
+//        w->events().enable();
+//        ofAddListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
+//        ofAddListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
+//        //    ofAddListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
+//        //    ofAddListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
+//        //    ofAddListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
+//        //    ofAddListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
+//        //    ofAddListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
+//        ofAddListener(MTApp::modelLoadedEvent, this, &MTView::modelLoaded,OF_EVENT_ORDER_AFTER_APP);
+//        ofAddListener(MTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP);
+//    }
 
-}
-void MTView::removeAllEvents()
-{
-    if (auto w = window.lock()) //Acquire the shared_ptr if it exists
-    {
-        ofRemoveListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
-        ofRemoveListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-        ofRemoveListener(MTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
-    }
-}
+//}
+//void MTView::removeAllEvents()
+//{
+//    if (auto w = window.lock()) //Acquire the shared_ptr if it exists
+//    {
+//        ofRemoveListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
+////        ofRemoveListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
+////        ofRemoveListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
+////        ofRemoveListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
+////        ofRemoveListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
+////        ofRemoveListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
+//        ofRemoveListener(MTApp::modelLoadedEvent, this, &MTView::modelLoaded,OF_EVENT_ORDER_AFTER_APP);
+//        ofRemoveListener(MTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP);
+//    }
+//}
 

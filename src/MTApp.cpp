@@ -10,7 +10,7 @@ const string MTApp::MTPrefsWindowPositionName = "Position";
 const string MTApp::MTPrefsWindowSizeName = "Size";
 
 ofEvent<MTAppModeChangeArgs> MTApp::appChangeModeEvent;
-ofEvent<void> MTApp::modelLoadedEvent;
+ofEvent<ofEventArgs> MTApp::modelLoadedEvent;
 MTApp* MTApp::sharedApp = 0;
 
 
@@ -68,25 +68,12 @@ MTApp::MTApp()
 
         appPreferences.add(MTPrefsWindowsGroup);
 
-        addEventListener(modelLoadedEvent.newListener([this]()
-        {
-            modelDidLoad();
-#ifndef TARGET_RASPBERRY_PI
-            for (auto window : windows)
-            {
-                window->enqueueUpdateOperation([window]()
-                {
-                    window->modelDidLoad();
-                });
-            }
-#else
-            mainWindow->enqueueUpdateOperation([this]()
-            {
-                mainWindow->modelDidLoad();
-            });
-#endif
-        }));
-    }
+		addEventListener(modelLoadedEvent.
+						 newListener([this](ofEventArgs &args)
+									 {
+										 modelLoaded();
+									 }, OF_EVENT_ORDER_BEFORE_APP));
+	}
 }
 
 void MTApp::registerAppPreference(ofAbstractParameter &preference)
@@ -200,7 +187,6 @@ void MTApp::setAppMode(MTAppModeName mode)
     }
     else
     {
-
         // TODO: Make mode changes instantiate themselves, listen for their own events
         static MTAppModeChangeArgs changeArgs;
         changeArgs.newMode = mode;
@@ -301,7 +287,9 @@ void MTApp::addAllEvents(MTWindow* w)
     ofAddListener(w->events().touchDown,w, &MTWindow::touchDown,OF_EVENT_ORDER_APP);
     ofAddListener(w->events().touchMoved,w, &MTWindow::touchMoved,OF_EVENT_ORDER_APP);
     ofAddListener(w->events().touchUp,w, &MTWindow::touchUp,OF_EVENT_ORDER_APP);
-    ofAddListener(MTApp::appChangeModeEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    ofAddListener(MTApp::appChangeModeEvent, w,
+                  &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    ofAddListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
 }
 
 void MTApp::removeAllEvents(MTWindow* w)
@@ -329,6 +317,8 @@ void MTApp::removeAllEvents(MTWindow* w)
     ofRemoveListener(w->events().touchMoved,w, &MTWindow::touchMoved,OF_EVENT_ORDER_APP);
     ofRemoveListener(w->events().touchUp,w, &MTWindow::touchUp,OF_EVENT_ORDER_APP);
     ofRemoveListener(MTApp::appChangeModeEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+    ofRemoveListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
+
 }
 
 //// UI
@@ -447,7 +437,8 @@ bool MTApp::openImpl(string filePath)
             isInitialized = true;
             mainWindow->setWindowTitle(fileName);
             saveAppPreferences();
-            modelLoadedEvent.notify(this);
+            auto args = ofEventArgs();
+            modelLoadedEvent.notify(args);
             ofLogVerbose("MTApp", "File loaded.");
             return true;
         } //End load model
@@ -469,7 +460,8 @@ void MTApp::newFile()
 
     setAppMode(defaultMode);
 
-    modelLoadedEvent.notify(this);
+    auto args = ofEventArgs();
+    modelLoadedEvent.notify(args);
 }
 
 /// Reload the last opened file.
@@ -511,7 +503,7 @@ void MTApp::windowClosing(MTWindow* window)
 
     ofRemoveListener(window->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
     ofRemoveListener(window->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
-//    ofRemoveListener(modelLoadedEvent, view, &ofxMTWindow::modelDidLoadInternal, OF_EVENT_ORDER_AFTER_APP);
+//    ofRemoveListener(modelLoadedEvent, view, &ofxMTWindow::modelLoadedInternal, OF_EVENT_ORDER_AFTER_APP);
 
     //This is another:
     auto it = std::find_if(windows.begin(), windows.end(), [&](std::shared_ptr<ofAppBaseWindow> const& current) {

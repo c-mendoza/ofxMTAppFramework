@@ -43,7 +43,7 @@ public:
     }
 
     static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
-    static ofEvent<void> modelLoadedEvent;
+    static ofEvent<ofEventArgs> modelLoadedEvent;
 
     virtual void exit();
 
@@ -133,7 +133,7 @@ protected:
     virtual void appKeyReleased(int key){};
 
     /// Called once the model is loaded
-    virtual void modelDidLoad(){};
+    virtual void modelLoaded(){};
 
     //APP MODES
     MTAppModeName currentMode;

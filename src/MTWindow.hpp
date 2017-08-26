@@ -37,18 +37,14 @@ public:
     int mouseX, mouseY;			// for processing heads
 
     //------------------------------------------------------//
-    // EVENTS INTERNALS										//
-    // DO NOT OVERRIDE										//
+    // INTERNALS EVENT LISTENERS 							//
+    // You should not need to call these methods			//
     //------------------------------------------------------//
 #ifndef TARGET_OPENGLES
     virtual void setup(const ofGLFWWindowSettings & settings);
 #else
     virtual void setup(const ofGLESWindowSettings & settings);
 #endif
-    //	void setup();
-    //	void update();
-    //	void draw();
-    //	void exit();
     void setupInternal(ofEventArgs & args);
     void update(ofEventArgs & args);
     void draw(ofEventArgs & args);
@@ -66,23 +62,24 @@ public:
     void mouseExited( ofMouseEventArgs & mouse );
     void dragged(ofDragInfo & drag);
     void messageReceived(ofMessage & message);
+    void modelLoaded(ofEventArgs & args);
 
     //TODO: Touch
-    virtual void touchDown(ofTouchEventArgs & touch);
-    virtual void touchMoved(ofTouchEventArgs & touch);
-    virtual void touchUp(ofTouchEventArgs & touch);
-    virtual void touchDoubleTap(ofTouchEventArgs & touch);
-    virtual void touchCancelled(ofTouchEventArgs & touch);
+    void touchDown(ofTouchEventArgs & touch);
+    void touchMoved(ofTouchEventArgs & touch);
+    void touchUp(ofTouchEventArgs & touch);
+    void touchDoubleTap(ofTouchEventArgs & touch);
+    void touchCancelled(ofTouchEventArgs & touch);
+
 
     //------------------------------------------------------//
     // EVENTS / OVERRIDABLE									//
     //------------------------------------------------------//
 
-    /// \brief Default implementation calls modelDidLoad() of
-    ///  the content view
-    virtual void modelDidLoad();
-
-
+    /// \brief Called when the model is loaded by the app.
+    /// The call occurs in the update() method of the MTWindow,
+    /// so it is safe to call any GL functions from this method
+    virtual void modelLoaded(){}
     virtual void windowResized(int w, int h){}
     virtual void keyPressed( int key ){}
     virtual void keyReleased( int key ){}
@@ -131,11 +128,11 @@ protected:
 private:
     /// This function is called internally by the framework to signal that a model
     /// has been loaded from a file. You don't need to call it.
-    void modelDidLoadInternal()
+    void modelLoadedInternal()
     {
         enqueueUpdateOperation([this]()
         {
-            modelDidLoad();
+            modelLoaded();
         });
     }
 
