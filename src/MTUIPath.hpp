@@ -13,7 +13,7 @@
 #include "MTView.hpp"
 
 class MTUIPathEventArgs;
-class MTUIPathHandle;
+class MTUIPathVertex;
 /**
 ///
  Events:
@@ -27,7 +27,7 @@ class MTUIPathHandle;
 class MTUIPath :
         public std::enable_shared_from_this<MTUIPath>
 {
-    friend class MTUIPathHandle;
+    friend class MTUIPathVertex;
 public:
     ~MTUIPath();
 
@@ -63,7 +63,7 @@ public:
     /////////////////////////////////
 
     ///Returns true if the handle is found and deleted
-    bool deleteHandle(shared_ptr<MTUIPathHandle> handle);
+    bool deleteHandle(shared_ptr<MTUIPathVertex> handle);
 
     ///Deletes all selected handles
     void deleteSelected();
@@ -83,13 +83,13 @@ public:
     /////////////////////////////////
 
     ///Adds a handle to the selection
-    void addToSelection(shared_ptr<MTUIPathHandle> handle);
+    void addToSelection(shared_ptr<MTUIPathVertex> handle);
 
     ///Removes a handle from the selection
-    void removeFromSelection(shared_ptr<MTUIPathHandle> handle);
+    void removeFromSelection(shared_ptr<MTUIPathVertex> handle);
 
     ///Sets the selection to the specified handle, removing all others from the selection
-    void setSelection(shared_ptr<MTUIPathHandle> handle);
+    void setSelection(shared_ptr<MTUIPathVertex> handle);
 
     ///Removes all from selection
     void deselectAll();
@@ -116,6 +116,7 @@ public:
 
 
     void mousePressed(ofMouseEventArgs& args);
+    void mouseMoved(ofMouseEventArgs& args);
     void keyReleased(ofKeyEventArgs& args);
 
 //    void setUseAutoEventListeners(bool use);
@@ -162,10 +163,10 @@ protected:
     typedef ofPath::Command ofPathCommand;
     ofPath* path = NULL;
     bool isClosed = false;
-    vector<shared_ptr<MTUIPathHandle>> uiHandles;
-    vector<shared_ptr<MTUIPathHandle>> selectedHandles;
-    void handlePressed(MTUIPathHandle* pathHandle, ofMouseEventArgs &args);
-    void handleReleased(MTUIPathHandle* pathHandle, ofMouseEventArgs &args);
+    vector<shared_ptr<MTUIPathVertex>> pathVertices;
+    vector<shared_ptr<MTUIPathVertex>> selectedVertices;
+    void handlePressed(MTUIPathVertex* vertex, ofMouseEventArgs &args);
+    void handleReleased(MTUIPathVertex* vertex, ofMouseEventArgs &args);
 //    ofEventListener* drawListener;
 //    void drawEvent(ofEventArgs& args);
 
@@ -174,6 +175,8 @@ protected:
 //    bool useAutoEventListeners = true;
     std::shared_ptr<MTView> view = nullptr;
 
+    void updatePath();
+
     void arrangeClosedPath();
     void arrangeOpenPath();
     void addEventListeners();
@@ -181,16 +184,30 @@ protected:
 
     bool handleWasPressed = false;
 
+    struct Midpoint
+    {
+        unsigned int index1;
+        unsigned int index2;
+        glm::vec3 pos;
+    };
+
+    vector<Midpoint> midpoints;
+    Midpoint closestMidpoint;
+    Midpoint& getClosestMidpoint(const glm::vec3 & point);
+
 };
 
 class MTUIHandle; // Forward declaration
 
-/// \brief The MTUIPathHandle class wraps a set of handles that control
+/// \brief The MTUIPathVertex class wraps a set of handles that control
 /// a vertex in a path.
-class MTUIPathHandle : public MTEventListenerStore
+class MTUIPathVertex : public MTEventListenerStore
 {
     ofPath::Command* command;
     MTUIPath* uiPath;
+    unsigned int index;
+    std::weak_ptr<MTUIPathVertex> nextVertex;
+    std::weak_ptr<MTUIPathVertex> prevVertex;
     shared_ptr<MTUIHandle> toHandle;
     shared_ptr<MTUIHandle> cp1Handle;
     shared_ptr<MTUIHandle> cp2Handle;
@@ -200,7 +217,7 @@ class MTUIPathHandle : public MTEventListenerStore
     bool useAutoEventListeners = true;
 
 public:
-    ~MTUIPathHandle();
+    ~MTUIPathVertex();
     void setup(MTUIPath* uiPath, ofPath::Command* com);
     void setControlPoints();
     void setStyle(ofStyle newStyle);
@@ -226,15 +243,15 @@ public:
     shared_ptr<MTUIHandle> getPointHandle() { return toHandle; }
     shared_ptr<MTUIHandle> getCP1Handle() { return cp1Handle; }
     shared_ptr<MTUIHandle> getCP2Handle() { return cp2Handle; }
-	ofPath* getPath() { return uiPath->getPath(); }
+    ofPath* getPath() { return uiPath->getPath(); }
     ofPath::Command* getCommand() { return command; }
     MTUIPath* getUIPath() { return uiPath; }
-	
-	///
-	/// \brief Updates the coordinates of the command to match that
-	/// of the handles. Called automatically whenever a handle is moved with
-	/// the mouse.
-	void updateCommand();
+
+    ///
+    /// \brief Updates the coordinates of the command to match that
+    /// of the handles. Called automatically whenever a handle is moved with
+    /// the mouse.
+    void updateCommand();
 
     ///Tests whether the point is inside the point handle or any of the control point handles
 //    bool hitTest(glm::vec2& point); //?
@@ -253,8 +270,8 @@ public:
             setFrameOrigin(getFrameOrigin() +
                            (getLocalMouse() - getLocalMouseDown()));
         };
-		
-		wantsFocus = false;
+
+        wantsFocus = false;
     }
 
     void draw()
@@ -288,7 +305,7 @@ class MTUIPathEventArgs : public ofEventArgs
 {
 public:
     ofPath* path;
-    MTUIPathHandle* pathHandle;
+    MTUIPathVertex* pathHandle;
     void* userData;
 //    glm::vec2* pointData;
 };
