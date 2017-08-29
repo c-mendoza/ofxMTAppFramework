@@ -58,6 +58,8 @@ void MTUIPath::setup(ofPath* p, shared_ptr<MTView> view)
         vertex->setup(this, command);
         pathVertices.push_back(vertex);
     }
+	
+	updatePath();
 }
 
 void MTUIPath::updatePath()
@@ -67,11 +69,22 @@ void MTUIPath::updatePath()
 
     if (commands.size() > 1)
     {
-        for (int i = 0; i < commands.size(); i++)
+		int max;
+		
+		if (isClosed)
+		{
+			max = commands.size() - 1;
+		}
+		else
+		{
+			max = commands.size();
+		}
+		
+        for (int i = 0; i < max; i++)
         {
             Midpoint mp;
             mp.index1 = i;
-            mp.index2 = (i + 1) % commands.size();
+            mp.index2 = (i + 1) % (max);
             mp.pos = (commands[mp.index1].to + commands[mp.index2].to) / 2;
             midpoints.push_back(std::move(mp));
         }
@@ -167,12 +180,12 @@ void MTUIPath::draw()
             previous = handle;
         }
 
-        ofSetRectMode(OF_RECTMODE_CENTER);
-        for (auto & mid : midpoints)
-        {
-            ofDrawRectangle(mid.pos, 10, 10);
-        }
-        ofSetRectMode(OF_RECTMODE_CORNER);
+//        ofSetRectMode(OF_RECTMODE_CENTER);
+//        for (auto & mid : midpoints)
+//        {
+//            ofDrawCircle(mid.pos, 5);
+//        }
+//        ofSetRectMode(OF_RECTMODE_CORNER);
     }
 }
 
