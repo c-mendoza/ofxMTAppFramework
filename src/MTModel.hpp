@@ -10,8 +10,10 @@
 #define ofxMTModel_hpp
 
 #include <stdio.h>
-#include "ofxMTAppFramework.h"
+#include "MTAppFrameworkUtils.hpp"
 
+class ofXml;
+class ofParameterGroup;
 
 class MTModel : public MTEventListenerStore
 {

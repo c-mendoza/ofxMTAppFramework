@@ -74,6 +74,7 @@ void MTWindow::draw(ofEventArgs & args)
 
 void MTWindow::exit(ofEventArgs & args)
 {
+	MTApp::sharedApp->windowClosing(this);
     contentView->exit(args);
     contentView = nullptr;
 }

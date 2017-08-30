@@ -17,6 +17,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
 public:
     MTApp();
+	virtual ~MTApp();
 
     //TODO: Proper singleton
     static MTApp* sharedApp;
@@ -56,7 +57,7 @@ public:
     ///Returns the mouse y-position in local coordinates of the current window
     int getLocalMouseY();
 
-    void windowClosing(MTWindow* view);
+    void windowClosing(MTWindow* window);
 
     /////// FILE HANDLING
     void saveAs();
@@ -153,6 +154,8 @@ private:
     bool saveAsImpl(string newName);
     bool saveImpl();
     bool openImpl(string file);
+
+    void loadAppPreferences();
 //	void newFileImpl();
 
     //UI / Convenience
@@ -163,7 +166,15 @@ private:
     const static string MTPrefsWindowSizeName;
 
     ofEventListener exitHandler;
-    vector<ofEventListener> eventListeners;
+
+    struct WindowParams
+    {
+        string name;
+        glm::vec3 position;
+        glm::vec3 size;
+    };
+
+    std::unordered_map<std::string, WindowParams> wpMap;
 };
 
 class MTAppModeChangeArgs : public ofEventArgs

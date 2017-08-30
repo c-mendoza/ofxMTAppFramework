@@ -7,6 +7,9 @@
 //
 
 #include "MTModel.hpp"
+#include "ofXml.h"
+#include "ofParameter.h"
+#include "ofParameterGroup.h"
 
 MTModel::MTModel(string _name)
 {

@@ -29,7 +29,6 @@ MTView::MTView(string _name)
     contentScale.set("Content Scale", 1);
     backgroundColor.set("Background Color",
                         ofFloatColor(1.0, 1.0, 1.0, 1.0));
-    currentAppMode = std::shared_ptr<MTAppMode>(new MTAppModeVoid);
     ofAddListener(MTApp::appChangeModeEvent,
                   this,
                   &MTView::appModeChanged,
@@ -217,9 +216,9 @@ glm::vec2 MTView::transformPoint(glm::vec2& coords,
 }
 
 glm::vec2 MTView::transformPoint(glm::vec2& coords,
-								 std::shared_ptr<MTView> toView)
+                                 std::shared_ptr<MTView> toView)
 {
-	return transformPoint(coords, toView.get());
+    return transformPoint(coords, toView.get());
 }
 //------------------------------------------------------//
 // VIEW HEIRARCHY                                       //
@@ -242,6 +241,8 @@ void MTView::addSubview(shared_ptr<MTView> subview)
     subview->thisView = subview;
     subview->setSuperview(shared_from_this());
     subview->window = window;
+	auto args = ofEventArgs();
+	subview->setup(args);
     subviews.push_back(subview);
 }
 
@@ -266,12 +267,12 @@ bool MTView::removeFromSuperview()
 //    }
 
 //    return false;
-	if (auto s = superview.lock())
-	{
-		return s->removeSubview(shared_from_this());
-	}
-	
-	return false;
+    if (auto s = superview.lock())
+    {
+        return s->removeSubview(shared_from_this());
+    }
+
+    return false;
 }
 
 /// \returns True if there was a view to be removed.
@@ -321,6 +322,7 @@ std::weak_ptr<MTWindow> MTView::getWindow()
 
 void MTView::setup(ofEventArgs & args)
 {
+	currentAppMode = std::make_shared<MTAppModeVoid>(shared_from_this());
     setup();
     for (auto sv : subviews)
     {
@@ -353,7 +355,7 @@ void MTView::draw(ofEventArgs & args)
 {
     ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
     ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
-	
+
     ofFill();
     ofSetColor(backgroundColor.get());
     ofDrawRectangle(0, 0, frame.width, frame.height);
@@ -370,6 +372,7 @@ void MTView::draw(ofEventArgs & args)
     onDraw();
 
     if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
+
     for (auto sv : subviews)
     {
         sv->draw(args);
@@ -394,7 +397,7 @@ void MTView::windowResized(ofResizeEventArgs & resize)
 
 void MTView::keyPressed(ofKeyEventArgs & key)
 {
-    ofLogVerbose(name, "Pressed: %c", (char)key.key);
+    ofLogVerbose("MTView") << "keyPressed: " << name.get() + " " << (char)key.key;
     keyPressed(key.key);
     onKeyPressed(key.key);
     keyPressedEvent.notify(this, key);
@@ -402,7 +405,7 @@ void MTView::keyPressed(ofKeyEventArgs & key)
 
 void MTView::keyReleased(ofKeyEventArgs & key)
 {
-    ofLogVerbose(name, "Released: %c", (char)key.key);
+    ofLogVerbose("MTView") << "keyReleased: " << name.get() + " " << (char)key.key;
     keyReleased(key.key);
     onKeyReleased(key.key);
     keyReleasedEvent.notify(this, key);
@@ -440,6 +443,7 @@ void MTView::mouseDragged(ofMouseEventArgs & mouse)
 
 void MTView::mousePressed(ofMouseEventArgs & mouse)
 {
+    ofLogVerbose("MTView") << "mousePressed: " << name.get();
     localMouseDown =  (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     localMouse = localMouseDown;
 
@@ -454,6 +458,7 @@ void MTView::mousePressed(ofMouseEventArgs & mouse)
 
 void MTView::mouseReleased(ofMouseEventArgs & mouse)
 {
+    ofLogVerbose("MTView") << "mouseReleased: " << name.get();
     localMouseUp = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
     localMouse = localMouseUp;
     ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,
@@ -486,6 +491,7 @@ void MTView::mouseScrolled( ofMouseEventArgs & mouse )
 
 void MTView::mouseEntered( ofMouseEventArgs & mouse )
 {
+    ofLogVerbose("MTView") << "mouseEntered: " << name.get();
     ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Entered,
                                                   localMouse.x,
                                                   localMouse.y,
@@ -497,6 +503,7 @@ void MTView::mouseEntered( ofMouseEventArgs & mouse )
 
 void MTView::mouseExited( ofMouseEventArgs & mouse )
 {
+    ofLogVerbose("MTView") << "mouseExited: " << name.get();
     ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Exited,
                                                   localMouse.x,
                                                   localMouse.y,

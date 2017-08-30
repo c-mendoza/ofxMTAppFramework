@@ -21,7 +21,7 @@ ofStyle MTUIPath::cpHandleStyle;
 
 MTUIPath::~MTUIPath()
 {
-    ofLogNotice("MTUIPath") << "Destructor";
+    ofLogVerbose("MTUIPath") << "Destructor";
     removeEventListeners();
     for (auto handle : pathVertices)
     {
@@ -58,8 +58,8 @@ void MTUIPath::setup(ofPath* p, shared_ptr<MTView> view)
         vertex->setup(this, command);
         pathVertices.push_back(vertex);
     }
-	
-	updatePath();
+
+    updatePath();
 }
 
 void MTUIPath::updatePath()
@@ -69,17 +69,17 @@ void MTUIPath::updatePath()
 
     if (commands.size() > 1)
     {
-		int max;
-		
-		if (isClosed)
-		{
-			max = commands.size() - 1;
-		}
-		else
-		{
-			max = commands.size();
-		}
-		
+        int max;
+
+        if (isClosed)
+        {
+            max = commands.size() - 1;
+        }
+        else
+        {
+            max = commands.size();
+        }
+
         for (int i = 0; i < max; i++)
         {
             Midpoint mp;

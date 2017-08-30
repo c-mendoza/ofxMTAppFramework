@@ -149,10 +149,10 @@ public:
     bool isMouseDragging = false;
 
     bool hasFocus();
-	
-	/// Set this to false if you want this MTView to ignore
-	/// keyboard focus
-	bool wantsFocus = true;
+
+    /// Set this to false if you want this MTView to ignore
+    /// keyboard focus
+    bool wantsFocus = true;
 
 //    /// Moves the content within the view's frame by dx and dy.
 //    void scrollBy(float dx, float dy);
@@ -228,16 +228,16 @@ public:
     /// coordinates to the coordinate system of a given MTView
     glm::vec2 transformPoint(glm::vec2& coords,
                              const MTView* toView);
-	
-	/// \brief Transforms the passed point from its local
-	/// coordinates to the coordinate system of a given MTView
-	glm::vec2 transformPoint(glm::vec2& coords,
-							 std::shared_ptr<MTView> toView);
-	
-	glm::mat4& getFrameMatrix()
-	{
-		return frameMatrix;
-	}
+
+    /// \brief Transforms the passed point from its local
+    /// coordinates to the coordinate system of a given MTView
+    glm::vec2 transformPoint(glm::vec2& coords,
+                             std::shared_ptr<MTView> toView);
+
+    glm::mat4& getFrameMatrix()
+    {
+        return frameMatrix;
+    }
 
 
     //------------------------------------------------------//
@@ -321,6 +321,7 @@ public:
     ofEvent<ofMessage> messageEvent;
     ofEvent<ofEventArgs> frameChangedEvent;
     ofEvent<ofResizeEventArgs> windowResizedEvent; //?
+    ofEvent<ofEventArgs> exitEvent;
 
 
     //------------------------------------------------------//
