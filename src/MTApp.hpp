@@ -17,7 +17,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
 public:
     MTApp();
-	virtual ~MTApp();
+    virtual ~MTApp();
 
     //TODO: Proper singleton
     static MTApp* sharedApp;
@@ -170,8 +170,8 @@ private:
     struct WindowParams
     {
         string name;
-        glm::vec3 position;
-        glm::vec3 size;
+        glm::vec2 position;
+        glm::vec2 size;
     };
 
     std::unordered_map<std::string, WindowParams> wpMap;

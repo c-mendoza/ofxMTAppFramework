@@ -44,7 +44,7 @@ MTApp::MTApp()
 
 MTApp::~MTApp()
 {
-	saveAppPreferences();
+    saveAppPreferences();
 }
 
 void MTApp::loadAppPreferences()
@@ -68,12 +68,11 @@ void MTApp::loadAppPreferences()
         {
             WindowParams wp;
             wp.name = winXml.getChild("Name").getValue();
-            wp.position = winXml.getChild("Position").getValue<ofVec3f>();
-            wp.size = winXml.getChild("Size").getValue<ofVec3f>();
+            wp.position = winXml.getChild("Position").getValue<glm::vec2>();
+            wp.size = winXml.getChild("Size").getValue<glm::vec2>();
             wpMap.insert({ wp.name, wp });
         }
     }
-
 }
 
 void MTApp::registerAppPreference(ofAbstractParameter& preference)
@@ -423,7 +422,7 @@ bool MTApp::openImpl(string filePath)
             fileName = ofFilePath::getFileName(filePath);
             isInitialized = true;
             mainWindow->setWindowTitle(fileName);
-//            saveAppPreferences();
+            //            saveAppPreferences();
             auto args = ofEventArgs();
             modelLoadedEvent.notify(args);
             ofLogVerbose("MTApp", "File loaded.");
@@ -437,7 +436,7 @@ void MTApp::newFile()
 {
     // Call the user's newFile method:
 
-//    saveAppPreferences();
+    //    saveAppPreferences();
 
     newFileSetup();
     MTPrefLastFile = "";
@@ -460,18 +459,18 @@ bool MTApp::revert()
 /// Saves!
 bool MTApp::saveAppPreferences()
 {
-	ofSerialize(appPrefsXml, appPreferences);
+    ofSerialize(appPrefsXml, appPreferences);
 
     auto root = appPrefsXml.getChild("App_Preferences");
     bool success = root.removeChild("Windows");
     auto windowsXml = root.appendChild("Windows");
 
-    for (auto& win : windows)
+    for (auto& wp : wpMap)
     {
         auto winXml = windowsXml.appendChild("Window");
-        winXml.appendChild("Name").set(win->name);
-        winXml.appendChild("Position").set(win->getWindowPosition());
-        winXml.appendChild("Size").set(win->getWindowSize());
+        winXml.appendChild("Name").set(wp.second.name);
+        winXml.appendChild("Position").set(wp.second.position);
+        winXml.appendChild("Size").set(wp.second.size);
     }
 
     return appPrefsXml.save(APP_PREFERENCES_FILE);
@@ -481,10 +480,16 @@ bool MTApp::saveAppPreferences()
 
 void MTApp::windowClosing(MTWindow* window)
 {
-	saveAppPreferences();
-	
+
     ofLogVerbose() << "Closing " << window->name;
 
+    // Update the Window Parameters Map
+    auto wp = &wpMap[window->name.get()];
+    wp->position = window->getWindowPosition();
+    wp->size = window->getWindowSize();
+	
+	saveAppPreferences();
+	
     ofRemoveListener(window->events().keyPressed,
                      this,
                      &MTApp::keyPressed,
@@ -509,7 +514,6 @@ void MTApp::windowClosing(MTWindow* window)
         (*it)->events().disable();
         windows.erase(it);
     }
-	
 
 }
 
@@ -528,7 +532,7 @@ void MTApp::exit()
 
     //	views.clear();
     //	windows.clear();
-	saveAppPreferences();
+    saveAppPreferences();
 }
 
 int MTApp::getLocalMouseX()
