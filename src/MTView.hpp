@@ -17,22 +17,17 @@ class MTWindow;
 class MTAppModeChangeArgs;
 class MTAppMode;
 
-class MTView :
-        public MTEventListenerStore,
-        public std::enable_shared_from_this<MTView>
-{
+class MTView : public MTEventListenerStore,
+               public std::enable_shared_from_this<MTView> {
 
-public:
-//    static std::shared_ptr<ofxMTView> createView(string name);
+  public:
     MTView(string _name);
     virtual ~MTView();
-//	void setModel(shared_ptr<ofxMTModel> model);
-//	shared_ptr<ofxMTModel> getModel() { return model; }
-//    void setWindow(shared_ptr<ofxMTWindow> window);
 
     //-----------------------------//
     // PARAMETERS                  //
     //-----------------------------//
+
     ofParameter<ofFloatColor> backgroundColor;
     ofParameter<string> name;
 
@@ -40,45 +35,44 @@ public:
     // EVENTS: METHODS TO OVERRIDE //
     //-----------------------------//
 
-
     /// Called once the model is successfully loaded from file.
     /// Default implementation does nothing.
-    virtual void modelLoaded(){}
-    virtual void setup(){}
-    virtual void update(){}
-    virtual void draw(){}
-    virtual void exit(){}
-    virtual void windowResized(int w, int h){}
-    virtual void superviewFrameChanged(){}
-    virtual void frameChanged(){}
-    virtual void contentChanged(){}
-    virtual void superviewContentChanged(){}
-    virtual void keyPressed( int key ){}
-    virtual void keyReleased( int key ){}
+    virtual void modelLoaded() {}
+    virtual void setup() {}
+    virtual void update() {}
+    virtual void draw() {}
+    virtual void exit() {}
+    virtual void windowResized(int w, int h) {}
+    virtual void superviewFrameChanged() {}
+    virtual void frameChanged() {}
+    virtual void contentChanged() {}
+    virtual void superviewContentChanged() {}
+    virtual void keyPressed(int key) {}
+    virtual void keyReleased(int key) {}
 
     /// \brief Called on the active view when the mouse is moved.
-    /// Position is given in local coordinates.
-    virtual void mouseMoved( int x, int y ){}
+    /// Position is given in frame coordinates.
+    virtual void mouseMoved(int x, int y) {}
 
     /// \brief Called on the active view when the mouse is dragged, i.e.
     /// moved with a button pressed.
     ///
-    /// Position is given in local coordinates.
-    virtual void mouseDragged( int x, int y, int button ) {}
+    /// Position is given in frame coordinates.
+    virtual void mouseDragged(int x, int y, int button) {}
     /// \brief Called on the active view when a mouse button is pressed.
     ///
-    /// Position is given in local coordinates.
-    virtual void mousePressed( int x, int y, int button ){}
+    /// Position is given in frame coordinates.
+    virtual void mousePressed(int x, int y, int button) {}
 
     /// \brief Called on the active view when a mouse button is released.
     ///
-    /// Position is given in local coordinates.
-    virtual void mouseReleased(int x, int y, int button ){}
+    /// Position is given in frame coordinates.
+    virtual void mouseReleased(int x, int y, int button) {}
 
     /// \brief Called on the active view when the mouse wheel is scrolled.
     ///
-    /// Position is given in local coordinates.
-    virtual void mouseScrolled(int x, int y, float scrollX, float scrollY ){}
+    /// Position is given in frame coordinates.
+    virtual void mouseScrolled(int x, int y, float scrollX, float scrollY) {}
 
     /// \brief Called on the active view when the mouse cursor enters the
     /// window area
@@ -86,8 +80,8 @@ public:
     /// Note that the mouse coordinates are the last known x/y before the
     /// event occurred, i.e. from the previous frame.
     ///
-    /// Position is given in local coordinates.
-    virtual void mouseEntered( int x, int y ){}
+    /// Position is given in frame coordinates.
+    virtual void mouseEntered(int x, int y) {}
 
     /// \brief Called on the active view when the mouse cursor leaves the
     /// window area
@@ -95,12 +89,12 @@ public:
     /// Note that the mouse coordinates are the last known x/y before the
     /// event occurred, i.e. from the previous frame.
     ///
-    /// Position is given in local coordinates.
-    virtual void mouseExited( int x, int y){}
-    virtual void dragEvent(ofDragInfo dragInfo) { }
-    virtual void gotMessage(ofMessage msg){ }
+    /// Position is given in frame coordinates.
+    virtual void mouseExited(int x, int y) {}
+    virtual void dragEvent(ofDragInfo dragInfo) {}
+    virtual void gotMessage(ofMessage msg) {}
 
-    //TODO: Touch Events
+    // TODO: Touch Events
     virtual void touchDown(int x, int y, int id) {}
     virtual void touchMoved(int x, int y, int id) {}
     virtual void touchUp(int x, int y, int id) {}
@@ -110,7 +104,7 @@ public:
     //--------------------------------------------------//
     // EVENTS: LAMBDAS
     //
-    // If you don't want to override a whole class,
+    // If you don't want to subclass an MTView,
     // you can instead use these lambdas. They work
     // just like their equivalent event methods.
     // Make sure to assign the right signature to the
@@ -122,28 +116,28 @@ public:
     //
     //--------------------------------------------------//
 
-    std::function<void()> onModelLoaded = []{};
-    std::function<void()> onSetup = []{};
-    std::function<void()> onUpdate = []{};
-    std::function<void()> onDraw = []{};
-    std::function<void()> onExit = []{};
-    std::function<void(int, int)> onWindowResized = [](int w, int h){};
-    std::function<void()> onSuperviewFrameChanged = []{};
-    std::function<void()> onFrameChanged = []{};
-    std::function<void()> onSuperviewContentChanged = []{};
-    std::function<void(int)> onKeyPressed = [](int key){};
-    std::function<void(int)> onKeyReleased = [](int key){};
-    std::function<void(int, int)> onMouseMoved = [](int x, int y){};
-    std::function<void(int, int, int)> onMouseDragged = [](int x, int y, int button){};
-    std::function<void(int, int, int)> onMousePressed = [](int x, int y, int button){};
-    std::function<void(int, int, int)> onMouseReleased = [](int x, int y, int button){};
-    std::function<void(int, int, float, float)> onMouseScrolled = [](int x, int y,
-                                                               float scrollX,
-                                                               float scrollY){};
-    std::function<void(int, int)> onMouseEntered = [](int x, int y){};
-    std::function<void(int, int)> onMouseExited = [](int x, int y){};
-
-//    int mouseX, mouseY;			// for processing heads
+    std::function<void()> onModelLoaded = [] {};
+    std::function<void()> onSetup = [] {};
+    std::function<void()> onUpdate = [] {};
+    std::function<void()> onDraw = [] {};
+    std::function<void()> onExit = [] {};
+    std::function<void(int, int)> onWindowResized = [](int w, int h) {};
+    std::function<void()> onSuperviewFrameChanged = [] {};
+    std::function<void()> onFrameChanged = [] {};
+    std::function<void()> onSuperviewContentChanged = [] {};
+    std::function<void(int)> onKeyPressed = [](int key) {};
+    std::function<void(int)> onKeyReleased = [](int key) {};
+    std::function<void(int, int)> onMouseMoved = [](int x, int y) {};
+    std::function<void(int, int, int)> onMouseDragged =
+      [](int x, int y, int button) {};
+    std::function<void(int, int, int)> onMousePressed =
+      [](int x, int y, int button) {};
+    std::function<void(int, int, int)> onMouseReleased =
+      [](int x, int y, int button) {};
+    std::function<void(int, int, float, float)> onMouseScrolled =
+      [](int x, int y, float scrollX, float scrollY) {};
+    std::function<void(int, int)> onMouseEntered = [](int x, int y) {};
+    std::function<void(int, int)> onMouseExited = [](int x, int y) {};
 
     bool isMouseDown = false;
     bool isMouseDragging = false;
@@ -153,18 +147,6 @@ public:
     /// Set this to false if you want this MTView to ignore
     /// keyboard focus
     bool wantsFocus = true;
-
-//    /// Moves the content within the view's frame by dx and dy.
-//    void scrollBy(float dx, float dy);
-
-//    /// Moves the content to the specified view coordinates.
-//    void scrollTo(float x, float y);
-
-//    /// \brief Positive values zoom in, negative zoom out. Zoom=1 is the default.
-//    void zoomTo(float scale);
-
-//    /// \brief Change the view's zoom (scale) by a relative value.
-//    void zoomBy(float zoomChange);
 
     //------------------------------------------------------//
     // FRAME AND CONTENT                                    //
@@ -193,8 +175,12 @@ public:
     void setContentSize(float width, float height);
     glm::vec2 getContentSize();
 
-    ///TODO: Delete this method
-    const ofRectangle & getScreenFrame() { return screenFrame; }
+    /// \brief Sets the scale of the content matrix in a normalized scale
+    /// (1 means no scaling, 0.5 means half scale, -1 means inverse scale).
+    void setContentScale(float xs, float ys);
+
+    /// TODO: Delete this method
+    const ofRectangle& getScreenFrame() { return screenFrame; }
 
     /// \brief Sets the size of both the frame and the content
     void setSize(glm::vec2 size);
@@ -204,54 +190,54 @@ public:
 
     /// \brief Returns the deepest subview that occupies the specified
     /// window coordinate.
-    virtual std::shared_ptr<MTView> hitTest(glm::vec2 &windowCoord);
+    virtual std::shared_ptr<MTView> hitTest(glm::vec2& windowCoord);
 
-    /// \brief Gets the mouse in local coordinates.
+    /// \brief Gets the mouse position in frame coordinates.
     /// This will only report a useful number if the mouse
     /// is over the view instance. Other cases are undefined for the
     /// moment.
-    const glm::vec2 & getLocalMouse() { return localMouse; }
+    const glm::vec2& getLocalMouse() { return frameMouse; }
 
-    /// \brief Returns the mouse down position in local coordinates.
+    /// \brief Returns the mouse down position in frame coordinates.
     /// This will only report a useful number if the mouse
     /// is over the view instance. Other cases are undefined for the
     /// moment.
-    const glm::vec2 & getLocalMouseDown() { return localMouseDown; }
+    const glm::vec2& getLocalMouseDown() { return frameMouseDown; }
 
-    /// \brief Returns the last mouse up position in local coordinates.
+    /// \brief Returns the last mouse up position in frame coordinates.
     /// This will only report a useful number if the mouse
     /// is over the view instance. Other cases are undefined for the
     /// moment.
-    const glm::vec2 & getLocalMouseUp() { return localMouseUp; }
+    const glm::vec2& getLocalMouseUp() { return frameMouseUp; }
 
-    /// \brief Transforms the passed point from its local
-    /// coordinates to the coordinate system of a given MTView
-    glm::vec2 transformPoint(glm::vec2& coords,
-                             const MTView* toView);
+    /// \brief Transforms the passed point from its local (frame)
+    /// coordinates to the frame coordinate system of a given MTView.
+    glm::vec2 transformPoint(glm::vec2& coords, const MTView* toView);
 
-    /// \brief Transforms the passed point from its local
-    /// coordinates to the coordinate system of a given MTView
-    glm::vec2 transformPoint(glm::vec2& coords,
-                             std::shared_ptr<MTView> toView);
+    /// \brief Transforms the passed point from its local (frame)
+    /// coordinates to the frame coordinate system of a given MTView.
+    glm::vec2 transformPoint(glm::vec2& coords, std::shared_ptr<MTView> toView);
 
-    glm::mat4& getFrameMatrix()
-    {
-        return frameMatrix;
-    }
+    /// \brief Transforms the passed point from frame
+    /// coordinates to content coordinates.
+    glm::vec2 frameToContent(glm::vec2& coords);
 
+    /// \brief Returns a reference to the frame matrix. Modifying the reference
+    /// might result in unexpected behavior!
+    glm::mat4& getFrameMatrix() { return frameMatrix; }
 
     //------------------------------------------------------//
     // VIEW HEIRARCHY                                       //
     //------------------------------------------------------//
 
+    /// \brief Moves this view and its hierarchy to the specified MTWindow/
     void setWindow(std::weak_ptr<MTWindow> window);
 
-    /// \brief Gets this view's superview if there is one.
+    /// \brief Gets this view's superview if there is one. Make sure to test the
+    /// returned shared_ptr!
     std::shared_ptr<MTView> getSuperview();
 
     /// \brief Adds a subview.
-    /// \return A reference to the added view.
-    /// \note Uses move semantics, object takes ownership of the passed value
     void addSubview(shared_ptr<MTView> subview);
 
     vector<shared_ptr<MTView>>& getSubviews();
@@ -268,41 +254,57 @@ public:
 
     std::weak_ptr<MTWindow> getWindow();
 
+    //------------------------------------------------------//
+    // VIEW Releated                                        //
+    //------------------------------------------------------//
+
+    /// \brief Enables or disables the drawing of this view's background.
+    /// The background is the extents of the view's frame.
+    void setDrawBackground(bool drawIt)
+    {
+        if (drawIt != isDrawingBackground)
+        {
+            enqueueUpdateOperation(
+              [this, drawIt]() { isDrawingBackground = drawIt; });
+        }
+    }
+
+    bool getDrawBackground() { return isDrawingBackground; }
 
     //------------------------------------------------------//
     // APP MODES                                            //
     //------------------------------------------------------//
 
-    virtual void appModeChanged(MTAppModeChangeArgs & modeChange){}
+    virtual void appModeChanged(MTAppModeChangeArgs& modeChange) {}
 
     //------------------------------------------------------//
     // INTERNAL EVENT LISTENERS
     //
     // You do not need to call these methods
     //------------------------------------------------------//
-    void setup(ofEventArgs & args);
-    void update(ofEventArgs & args);
-    void draw(ofEventArgs & args);
-    void exit(ofEventArgs & args);
+    void setup(ofEventArgs& args);
+    void update(ofEventArgs& args);
+    void draw(ofEventArgs& args);
+    void exit(ofEventArgs& args);
 
-    void windowResized(ofResizeEventArgs & resize);
+    void windowResized(ofResizeEventArgs& resize);
 
-    void keyPressed( ofKeyEventArgs & key );
-    void keyReleased( ofKeyEventArgs & key );
-    void mouseMoved( ofMouseEventArgs & mouse );
-    void mouseDragged( ofMouseEventArgs & mouse );
-    void mousePressed( ofMouseEventArgs & mouse );
-    void mouseReleased(ofMouseEventArgs & mouse);
-    void mouseScrolled( ofMouseEventArgs & mouse );
-    void mouseEntered( ofMouseEventArgs & mouse );
-    void mouseExited( ofMouseEventArgs & mouse );
-    void dragged(ofDragInfo & drag);
-    void messageReceived(ofMessage & message);
-    void modelLoaded(ofEventArgs & args);
-
+    void keyPressed(ofKeyEventArgs& key);
+    void keyReleased(ofKeyEventArgs& key);
+    void mouseMoved(ofMouseEventArgs& mouse);
+    void mouseDragged(ofMouseEventArgs& mouse);
+    void mousePressed(ofMouseEventArgs& mouse);
+    void mouseReleased(ofMouseEventArgs& mouse);
+    void mouseScrolled(ofMouseEventArgs& mouse);
+    void mouseEntered(ofMouseEventArgs& mouse);
+    void mouseExited(ofMouseEventArgs& mouse);
+    void dragged(ofDragInfo& drag);
+    void messageReceived(ofMessage& message);
+    void modelLoaded(ofEventArgs& args);
 
     //------------------------------------------------------//
-    // EVENTS												//
+    // EVENTS
+    //
     //------------------------------------------------------//
 
     ofEvent<ofEventArgs> focusGained;
@@ -320,9 +322,10 @@ public:
     ofEvent<ofDragInfo> draggedEvent;
     ofEvent<ofMessage> messageEvent;
     ofEvent<ofEventArgs> frameChangedEvent;
-    ofEvent<ofResizeEventArgs> windowResizedEvent; //?
-    ofEvent<ofEventArgs> exitEvent;
+    ofEvent<ofResizeEventArgs> windowResizedEvent;   //?
 
+    /// \brief Notified before this MTView is destroyed.
+    ofEvent<ofEventArgs> exitEvent;
 
     //------------------------------------------------------//
     // OPERATION QUEUES
@@ -333,14 +336,11 @@ public:
         drawOpQueue.push(funct);
     }
 
-    void enqueueUpdateOperation(function<void()> f)
-    {
-        updateOpQueue.push(f);
-    }
+    void enqueueUpdateOperation(function<void()> f) { updateOpQueue.push(f); }
 
     friend class MTWindow;
 
-protected:
+  protected:
     std::weak_ptr<MTWindow> window;
     std::weak_ptr<MTView> superview;
     vector<shared_ptr<MTView>> subviews;
@@ -364,68 +364,64 @@ protected:
     /// system.
     ofRectangle frame;
 
-    ofVec3f contentMouse; //localMousePos?
-    ofParameter<float>	contentScale;
+    ofVec3f contentMouse;   // localMousePos?
+    ofParameter<float> contentScaleX;
+    ofParameter<float> contentScaleY;
 
-//    void removeAllEvents();
-//    void addAllEvents();
 
     void updateMatrices();
 
-
-private:
-
+  private:
     //------------------------------------------------------//
-    // VIEW and MATRICES									//
+    // VIEW and MATRICES
     //------------------------------------------------------//
 
     glm::mat4 contentMatrix;
-    glm::mat4 invContentMatrix; //Just a cached value
+    glm::mat4 invContentMatrix;
     glm::mat4 frameMatrix;
     glm::mat4 invFrameMatrix;
 
-    ofRectangle screenFrame; //The Frame in screen coordinates and scale
+    ofRectangle screenFrame;   // The Frame in screen coordinates and scale
 
+    bool isDrawingBackground = true;
 
     //------------------------------------------------------//
-    // MOUSE            									//
+    // MOUSE
     //------------------------------------------------------//
-    //The mouse position in local coordinates
-    glm::vec2 localMouse;
+    // The mouse position in frame coordinates
+    glm::vec2 frameMouse;
 
-    //The mouse down position in local coordinates
-    glm::vec2 localMouseDown;
+    // The mouse down position in frame coordinates
+    glm::vec2 frameMouseDown;
 
-    //The mouse up position in local coordinates
-    glm::vec2 localMouseUp;
+    // The mouse up position in frame coordinates
+    glm::vec2 frameMouseUp;
 
-    glm::vec2 localMouseDragStart;
+    glm::vec2 frameMouseDragStart;
 
     bool isDragging = false;
 
     //------------------------------------------------------//
-    // QUEUES												//
+    // QUEUES
     //------------------------------------------------------//
 
     queue<function<void()>> updateOpQueue;
     queue<function<void()>> drawOpQueue;
 
     //------------------------------------------------------//
-    // INTERNALS / CONVENIENCE								//
+    // INTERNALS / CONVENIENCE
     //------------------------------------------------------//
 
     void frameChangedInternal();
     void contentChangedInternal();
+    //	void superviewFrameChangedInternal();
+    void superviewContentChangedInternal();
 
     //------------------------------------------------------//
-    // EVENTS												//
+    // EVENTS
     //------------------------------------------------------//
 
     bool isFocused = false;
-
-    /// \brief Internal shared pointer
-    std::weak_ptr<MTView> thisView;
 };
 
 #endif /* MTView_hpp */
-
