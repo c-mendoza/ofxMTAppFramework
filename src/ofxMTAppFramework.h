@@ -22,12 +22,11 @@
 //#endif
 
 #include "ofMain.h"
+#include "MTAppFrameworkUtils.hpp"
+#include "MTAppMode.hpp"
+#include "MTApp.hpp"
+#include "MTModel.hpp"
+#include "MTView.hpp"
+#include "MTWindow.hpp"
 
-#include "ofxMTAppMode.hpp"
-#include "ofxMTApp.hpp"
-#include "ofxMTModel.hpp"
-#include "ofxMTView.hpp"
-//#include "ofxDatGui.h"
-#include "MTProcedure.h"
-
-#endif /* ofxMTAppFramework_h */
+#endif

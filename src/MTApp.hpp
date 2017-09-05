@@ -3,22 +3,24 @@
 
 #include "ofxMTAppFramework.h"
 
-class ofxMTView;
-class ofxMTModel;
-class ofxMTAppMode;
+class MTWindow;
+class MTView;
+class MTModel;
+class MTAppMode;
 
 typedef string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
-class ofxMTApp : public ofBaseApp
+class MTApp : public ofBaseApp, public MTEventListenerStore
 {
 
 public:
-    ofxMTApp();
+    MTApp();
+    virtual ~MTApp();
 
     //TODO: Proper singleton
-    static ofxMTApp* sharedApp;
+    static MTApp* sharedApp;
 
     /// Extra "constructor" for the user. It is the last thing that is called in the default ofxMTApp contructor,
     /// and before the app's setup() function. This is where you want to instantiate your Model and your View.
@@ -41,39 +43,21 @@ public:
         appModes.push_back(mode);
     }
 
-    //------ EVENTS
-
-    void addEventListener(ofEventListener&& el)
-    {
-        eventListeners.push_back(move(el));
-    }
-
-    void clearEventListeners()
-    {
-        eventListeners.clear();
-    }
-
     static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
-    static ofEvent<void> modelLoadedEvent;
+    static ofEvent<ofEventArgs> modelLoadedEvent;
 
     virtual void exit();
 
-
     //// UI
-    shared_ptr<ofAppBaseWindow> getMainWindow();
-    shared_ptr<ofxMTView> getMainView();
-    void createWindowForView(shared_ptr<ofxMTView> view, ofWindowSettings& settings);
-
-    ///Returns the ofxMTView associated with the passed ofBaseAppWindow, or nullptr if the window does not
-    ///have any ofxMTView partner.
-    shared_ptr<ofxMTView> getMTViewForWindow(shared_ptr<ofAppBaseWindow> window);
+    weak_ptr<ofAppBaseWindow> getMainWindow();
+    shared_ptr<MTWindow> createWindow(string windowName, ofWindowSettings& settings);
 
     ///Returns the mouse x-position in local coordinates of the current window
     int getLocalMouseX();
     ///Returns the mouse y-position in local coordinates of the current window
     int getLocalMouseY();
 
-    void viewClosing(ofxMTView* view);
+    void windowClosing(MTWindow* window);
 
     /////// FILE HANDLING
     void saveAs();
@@ -88,7 +72,7 @@ public:
 
     void registerAppPreference(ofAbstractParameter& preference);
 
-    virtual shared_ptr<ofxMTModel> getModel() { return model; };
+    virtual shared_ptr<MTModel> getModel() { return model; }
 
     /////// UTILITY
     /// Stringifies a path.
@@ -96,7 +80,7 @@ public:
 
     /// Makes an ofPath from a stringified representation.
     static ofPath pathFromString(string s);
-    ofParameter<string> NSPrefLastFile;
+    ofParameter<string> MTPrefLastFile;
     ofParameter<bool> NSPrefAutoloadLastFile;
     ofParameter<bool> NSPrefLaunchInFullScreen;
 
@@ -128,16 +112,14 @@ protected:
     /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
     string fileExtension = "xml";
 
-    shared_ptr<ofxMTView> mainView;
-    shared_ptr<ofxMTModel> model;
+    shared_ptr<MTWindow> mainWindow;
+    shared_ptr<MTModel> model;
     const static string APP_PREFERENCES_FILE;
     bool isInitialized;
     ofParameterGroup appPreferences;
-    ofParameterGroup NSPrefsViewsGroup;
+    ofParameterGroup MTPrefsWindowsGroup;
 
-    //TODO: make these private?
-    vector<shared_ptr<ofAppBaseWindow>> windows;
-    vector<shared_ptr<ofxMTView>> views;
+    std::vector<std::shared_ptr<MTWindow>> windows;
 
     virtual void keyPressed(ofKeyEventArgs &key);
     virtual void keyReleased(ofKeyEventArgs &key);
@@ -151,13 +133,19 @@ protected:
     virtual void appKeyReleased(int key){};
 
     /// Called once the model is loaded
-    virtual void modelDidLoad(){};
+    virtual void modelLoaded(){};
 
     //APP MODES
     MTAppModeName currentMode;
     vector<MTAppModeName> appModes;
-    //UI
 
+    //////////////////////////////
+    //	CONVENIENCE
+    //////////////////////////////
+
+    /// \brief Adds the standard event listeners to a window
+    void addAllEvents(MTWindow* w);
+    void removeAllEvents(MTWindow* w);
 
 private:
     bool ofAppInitialized = false;
@@ -165,17 +153,27 @@ private:
     bool saveAsImpl(string newName);
     bool saveImpl();
     bool openImpl(string file);
+
+    void loadAppPreferences();
 //	void newFileImpl();
 
     //UI / Convenience
 //	void storeViewParameters(ofxMTView* view);
 
-    const static string NSPrefsViewsGroupName;
-    const static string NSPrefsViewPositionName;
-    const static string NSPrefsViewSizeName;
+    const static string MTPrefsWindowsGroupName;
+    const static string MTPrefsWindowPositionName;
+    const static string MTPrefsWindowSizeName;
 
     ofEventListener exitHandler;
-    vector<ofEventListener> eventListeners;
+
+    struct WindowParams
+    {
+        string name;
+        glm::vec2 position;
+        glm::vec2 size;
+    };
+
+    std::unordered_map<std::string, WindowParams> wpMap;
 };
 
 class MTAppModeChangeArgs : public ofEventArgs
@@ -189,7 +187,6 @@ public:
 
 int mtGetLocalMouseX();
 int mtGetLocalMouseY();
-
 
 
 #endif

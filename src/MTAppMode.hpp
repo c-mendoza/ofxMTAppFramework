@@ -10,44 +10,52 @@
 #define ofxMTAppMode_hpp
 
 #include "ofxMTAppFramework.h"
-class ofxMTView;
 
-class ofxMTAppMode  {
+class MTView;
 
+class MTAppMode : public MTEventListenerStore {
 public:
-    ofxMTAppMode(string name) { this->name = name; }
-    ~ofxMTAppMode();
+    MTAppMode(string name, std::shared_ptr<MTView> view)
+    {
+        this->name = name;
+        this->view = view;
+        addAllEventListeners();
+    }
+    ~MTAppMode();
+    void addAllEventListeners();
+    //    void removeAllEventListeners();
     std::string getName() { return name; }
     void setName(string name) { this->name = name; }
-    virtual void setup(ofxMTView* view) = 0;
-    virtual void exit() = 0;
+
+    virtual void setup() = 0;
+    virtual void exit(){};
     virtual void update(){};
     virtual void draw(){};
     virtual void keyPressed(int key){};
     virtual void keyReleased(int key){};
-    virtual void mouseMoved(int x, int y ){};
+    virtual void mouseMoved(int x, int y){};
     virtual void mouseDragged(int x, int y, int button){};
+    virtual void mouseDraggedEnd(int x, int y, int button){};
     virtual void mousePressed(int x, int y, int button){};
     virtual void mouseReleased(int x, int y, int button){};
     virtual void mouseEntered(int x, int y){};
     virtual void mouseExited(int x, int y){};
     virtual void windowResized(int w, int h){};
 
-    void addEventListener(ofEventListener&& e);
     //	virtual void dragEvent(ofDragInfo dragInfo);
     //	virtual void gotMessage(ofMessage msg);
 protected:
-    ofxMTView* view;
+    shared_ptr<MTView> view = nullptr;
     std::string name;
-private:
-    vector <ofEventListener> eventListeners;
 };
 
-class MTAppModeVoid : public ofxMTAppMode
-{
+class MTAppModeVoid : public MTAppMode {
 public:
-    MTAppModeVoid() : ofxMTAppMode("App Mode Void"){}
-    virtual void setup(ofxMTView* view) {}
+    MTAppModeVoid(std::shared_ptr<MTView> view)
+        : MTAppMode("App Mode Void", view)
+    {
+    }
+    virtual void setup(){}
     virtual void exit() {}
 };
 
