@@ -119,7 +119,6 @@ protected:
     ofParameterGroup appPreferences;
     ofParameterGroup MTPrefsWindowsGroup;
 
-    //TODO: make these private?
     std::vector<std::shared_ptr<MTWindow>> windows;
 
     virtual void keyPressed(ofKeyEventArgs &key);

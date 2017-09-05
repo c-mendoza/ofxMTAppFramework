@@ -28,7 +28,6 @@ MTView::MTView(string _name)
 
 MTView::~MTView()
 {
-    // TODO check ~MTView
     ofRemoveListener(MTApp::appChangeModeEvent,
                   this,
                   &MTView::appModeChanged,
@@ -196,9 +195,6 @@ void MTView::frameChangedInternal()
 void MTView::contentChangedInternal()
 {
     updateMatrices();
-
-    //TODO: content changed internal?
-
     contentChanged();
 
     for (auto sv : subviews)
