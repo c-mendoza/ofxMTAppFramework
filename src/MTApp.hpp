@@ -12,36 +12,50 @@ typedef string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
-class MTApp : public ofBaseApp, public MTEventListenerStore
-{
+class MTApp : public ofBaseApp, public MTEventListenerStore {
 
-public:
+  public:
     MTApp();
     virtual ~MTApp();
 
-    //TODO: Proper singleton
+    // TODO: Proper singleton
     static MTApp* sharedApp;
 
-    /// Extra "constructor" for the user. It is the last thing that is called in the default ofxMTApp contructor,
-    /// and before the app's setup() function. This is where you want to instantiate your Model and your View.
-    /// Default implementation creates a placeholder model and view.
+    /**
+     * @brief initialize Extra "constructor" for the user. It is the last thing
+     * that is called in the default ofxMTApp contructor, and before the app's
+     * setup() function. This is where you want to instantiate your Model and
+     * your View. Default implementation creates a placeholder model and view.
+     */
     virtual void initialize();
 
-
-    /// Creates the app's views at initialization. This will set up your windows when the program launches or when
-    /// a new MTModel (a document) is loaded. Override this to create your views.
+    /**
+     * @brief createAppViews creates the app's views at initialization. This
+     * will set up your windows when the program launches or when a new MTModel
+     * (a document) is loaded. Override this to create your views.
+     */
     virtual void createAppViews();
 
     virtual void run();
+
+    template<class T>
+    static shared_ptr<T> Model()
+    {
+        auto outModel = std::dynamic_pointer_cast<T>(MTApp::sharedApp->model);
+        return outModel;
+    }
+
+    template<class T>
+    static T* App()
+    {
+        return dynamic_cast<T>(MTApp::sharedApp);
+    }
 
     //------ APP MODES
     const MTAppModeName defaultMode = "MTAppModeDefault";
     void setAppMode(MTAppModeName mode);
     MTAppModeName getCurrentMode();
-    void registerMode(MTAppModeName mode)
-    {
-        appModes.push_back(mode);
-    }
+    void registerMode(MTAppModeName mode) { appModes.push_back(mode); }
 
     static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
     static ofEvent<ofEventArgs> modelLoadedEvent;
@@ -50,11 +64,12 @@ public:
 
     //// UI
     weak_ptr<ofAppBaseWindow> getMainWindow();
-    shared_ptr<MTWindow> createWindow(string windowName, ofWindowSettings& settings);
+    shared_ptr<MTWindow> createWindow(string windowName,
+                                      ofWindowSettings& settings);
 
-    ///Returns the mouse x-position in local coordinates of the current window
+    /// Returns the mouse x-position in local coordinates of the current window
     int getLocalMouseX();
-    ///Returns the mouse y-position in local coordinates of the current window
+    /// Returns the mouse y-position in local coordinates of the current window
     int getLocalMouseY();
 
     void windowClosing(MTWindow* window);
@@ -68,11 +83,9 @@ public:
     void newFile();
 
     /// Override this if you need to prep your app to create a new document.
-    virtual void newFileSetup(){}
+    virtual void newFileSetup() {}
 
     void registerAppPreference(ofAbstractParameter& preference);
-
-    virtual shared_ptr<MTModel> getModel() { return model; }
 
     /////// UTILITY
     /// Stringifies a path.
@@ -98,8 +111,7 @@ public:
     bool autoUpdateAppModes = true;
     bool autoDrawAppModes = true;
 
-protected:
-
+  protected:
     ofXml serializer;
     ofXml appPrefsXml;
 
@@ -109,7 +121,8 @@ protected:
     /// Full path of the file
     string filePath;
 
-    /// The file extension you want your documents to have. Defaults to ".xml", but it can be anything you want.
+    /// The file extension you want your documents to have. Defaults to ".xml",
+    /// but it can be anything you want.
     string fileExtension = "xml";
 
     shared_ptr<MTWindow> mainWindow;
@@ -121,21 +134,23 @@ protected:
 
     std::vector<std::shared_ptr<MTWindow>> windows;
 
-    virtual void keyPressed(ofKeyEventArgs &key);
-    virtual void keyReleased(ofKeyEventArgs &key);
+    virtual void keyPressed(ofKeyEventArgs& key);
+    virtual void keyReleased(ofKeyEventArgs& key);
 
-    /// Called whenever there is a key pressed anywhere in the app. Other than the built-in behavior, default
+    /// Called whenever there is a key pressed anywhere in the app. Other than
+    /// the built-in behavior, default
     /// implementation does nothing.
     virtual void appKeyPressed(int key){};
 
-    /// Called whenever there is a key released anywhere in the app. Other than the built-in behavior, default
+    /// Called whenever there is a key released anywhere in the app. Other than
+    /// the built-in behavior, default
     /// implementation does nothing.
     virtual void appKeyReleased(int key){};
 
     /// Called once the model is loaded
     virtual void modelLoaded(){};
 
-    //APP MODES
+    // APP MODES
     MTAppModeName currentMode;
     vector<MTAppModeName> appModes;
 
@@ -147,7 +162,7 @@ protected:
     void addAllEvents(MTWindow* w);
     void removeAllEvents(MTWindow* w);
 
-private:
+  private:
     bool ofAppInitialized = false;
 
     bool saveAsImpl(string newName);
@@ -155,10 +170,10 @@ private:
     bool openImpl(string file);
 
     void loadAppPreferences();
-//	void newFileImpl();
+    //	void newFileImpl();
 
-    //UI / Convenience
-//	void storeViewParameters(ofxMTView* view);
+    // UI / Convenience
+    //	void storeViewParameters(ofxMTView* view);
 
     const static string MTPrefsWindowsGroupName;
     const static string MTPrefsWindowPositionName;
@@ -176,17 +191,14 @@ private:
     std::unordered_map<std::string, WindowParams> wpMap;
 };
 
-class MTAppModeChangeArgs : public ofEventArgs
-{
-public:
+class MTAppModeChangeArgs : public ofEventArgs {
+  public:
     MTAppModeName newMode;
     MTAppModeName oldMode;
-    MTAppModeChangeArgs(){}
-
+    MTAppModeChangeArgs() {}
 };
 
 int mtGetLocalMouseX();
 int mtGetLocalMouseY();
-
 
 #endif
