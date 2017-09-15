@@ -18,22 +18,22 @@ class ofParameterGroup;
 class MTModel : public MTEventListenerStore
 {
 public:
-    MTModel(string _name);
-    virtual ~MTModel(){}
-    string getName();
-    void setName(string n);
-    ofParameterGroup& getParameters();
+	MTModel(string _name);
+	virtual ~MTModel(){}
+	string getName();
+	void setName(string n);
+	ofParameterGroup& getParameters();
 
-    virtual void serialize(ofXml& serializer);
-    virtual void deserialize(ofXml& serializer);
+	virtual void serialize(ofXml& serializer);
+	virtual void deserialize(ofXml& serializer);
 //	virtual void loadFromSerializer(ofXml& serializer) = 0;
 //	virtual void saveWithSerializer(ofXml& serializer) = 0;
 
 protected:
-    ofParameterGroup parameters;
+	ofParameterGroup parameters;
 
 private:
-    string name;
+	string name;
 };
 
 #endif /* ofxMTModel_hpp */
