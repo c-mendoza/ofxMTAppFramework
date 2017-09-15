@@ -8,7 +8,6 @@
 
 #include "MTUIPath.hpp"
 
-
 int MTUIPath::vertexHandleSize = 10;
 int MTUIPath::cpHandleSize = 10;
 ofStyle MTUIPath::vertexHandleStyle;
@@ -85,7 +84,7 @@ void MTUIPath::updatePath()
             Midpoint mp;
             mp.index1 = i;
             mp.index2 = (i + 1) % (max);
-            mp.pos = (commands[mp.index1].to + commands[mp.index2].to) / 2;
+            mp.pos = (commands[mp.index1].to + commands[mp.index2].to) / 2.0f;
             midpoints.push_back(std::move(mp));
         }
     }
@@ -215,10 +214,10 @@ void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs &args)
                     auto toHandle = (*it)->getPointHandle();
                     auto cp1 = (*it)->getCP1Handle();
                     auto tNorm = glm::normalize(tangent);
-                    cp1->setFrameOrigin(toHandle->getFrameOrigin() - (tNorm * 50));
+                    cp1->setFrameOrigin(toHandle->getFrameOrigin() - (tNorm * 50.0f));
 
                     auto cp2 = (*it)->getCP2Handle();
-                    cp2->setFrameOrigin(toHandle->getFrameOrigin() + (tNorm * 50));
+                    cp2->setFrameOrigin(toHandle->getFrameOrigin() + (tNorm * 50.0f));
                     command->type = ofPath::Command::bezierTo;
 //                    (*it)->getCP1Handle()->setFrameOrigin(command->to.x, command->to.y);
 //                    (*it)->getCP2Handle()->setFrameOrigin(command->to.x, command->to.y);
