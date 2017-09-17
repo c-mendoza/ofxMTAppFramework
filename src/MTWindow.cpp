@@ -308,6 +308,7 @@ static void mt_rotateMouseXY(ofOrientation orientation,
 	}
 }
 
+#ifndef TARGET_OPENGLES
 void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 {
 	ofAppGLFWWindow* instance =
@@ -340,5 +341,5 @@ void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 		  mtWindow->mouseButtonInUse);
 	}
 }
-
+#endif
 #endif /* MTWindow_h */

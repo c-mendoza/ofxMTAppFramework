@@ -17,161 +17,161 @@ MTAppModePathEditor::MTAppModePathEditor(shared_ptr<MTView> view)
 
 void MTAppModePathEditor::setup()
 {
-    this->view = view;
-    iiModel = IIApp::sharedApp->getIIModel();
+	this->view = view;
+	iiModel = IIApp::sharedApp->getIIModel();
 
-    MTUIPath::vertexHandleStyle.bFill = false;
-    MTUIPath::selectedVextexHandleStyle.bFill = true;
+	MTUIPath::vertexHandleStyle.bFill = false;
+	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
-    for (int j = 0; j < settings.paths.size(); j++)
-    {
-        auto uiPath = createUIPath(settings.paths.at(j).get());
-        activeUIPath = uiPath;
-    }
+	for (int j = 0; j < settings.paths.size(); j++)
+	{
+		auto uiPath = createUIPath(settings.paths.at(j).get());
+		activeUIPath = uiPath;
+	}
 
-    view->enqueueUpdateOperation([this]() { ofShowCursor(); });
+	view->enqueueUpdateOperation([this]() { ofShowCursor(); });
 }
 
 shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
   std::shared_ptr<ofPath> p)
 {
-    auto uiPath = std::make_shared<MTUIPath>();
-    uiPath->setClosed(true);
-    uiPath->setup(p, view);
-    uiPath->getPath()->setColor(ofColor::yellow);
-    uiPath->getPath()->setFilled(false);
-    uiPath->getPath()->setStrokeWidth(3);
-    // Add LisMTAppModePathEditor_hteners:
-    addEventListener(uiPath->pathChangedEvent.newListener(
-      [this, p](const void* uiPath) {
-          auto up = (std::shared_ptr<MTUIPath>)uiPath;
-          pEventArgs.path = up->getPath();
-          pathModifiedEvent.notify(pEventArgs);
-      },
-      OF_EVENT_ORDER_AFTER_APP));
+	auto uiPath = std::make_shared<MTUIPath>();
+	uiPath->setClosed(settings.pathsAreClosed);
+	uiPath->setup(p, view);
+	uiPath->getPath()->setColor(settings.pathColor);
+	uiPath->getPath()->setFilled(false);
+	uiPath->getPath()->setStrokeWidth(settings.pathStrokeWidth);
+	// Add LisMTAppModePathEditor_hteners:
+	addEventListener(uiPath->pathChangedEvent.newListener(
+	  [this, p](const void* uiPath) {
+		  auto up = (std::shared_ptr<MTUIPath>)uiPath;
+		  pEventArgs.path = up->getPath();
+		  pathModifiedEvent.notify(pEventArgs);
+	  },
+	  OF_EVENT_ORDER_AFTER_APP));
 
-    addEventListener(uiPath->pathHandlePressedEvent.newListener(
-      [this](const void* handle, ofMouseEventArgs& args) {
-          //                                  handleWasPressed = true;
-          auto h = (MTUIPathVertex*)handle;
-          activeUIPath = h->getUIPath()->shared_from_this();
-      },
-      OF_EVENT_ORDER_AFTER_APP));
+	addEventListener(uiPath->pathHandlePressedEvent.newListener(
+	  [this](const void* handle, ofMouseEventArgs& args) {
+		  //                                  handleWasPressed = true;
+		  auto h = (MTUIPathVertex*)handle;
+		  activeUIPath = h->getUIPath()->shared_from_this();
+	  },
+	  OF_EVENT_ORDER_AFTER_APP));
 
-    addEventListener(uiPath->pathHandleMovedEvent.newListener(
-      [this](const void* handle, ofMouseEventArgs& args) {
-          auto h = (MTUIPathVertex*)handle;
-          pEventArgs.path = h->getUIPath()->getPath();
-          pathModifiedEvent.notify(pEventArgs);
-      },
-      OF_EVENT_ORDER_AFTER_APP));
+	addEventListener(uiPath->pathHandleMovedEvent.newListener(
+	  [this](const void* handle, ofMouseEventArgs& args) {
+		  auto h = (MTUIPathVertex*)handle;
+		  pEventArgs.path = h->getUIPath()->getPath();
+		  pathModifiedEvent.notify(pEventArgs);
+	  },
+	  OF_EVENT_ORDER_AFTER_APP));
 
-    addEventListener(uiPath->lastHandleDeletedEvent.newListener(
-      [this](const void* sender) {
-          auto up = (std::shared_ptr<MTUIPath>)uiPath;
-          removeUIPath(up);
-          pEventArgs.path = up->getPath();
-          pathDeletedEvent.notify(pEventArgs);
-      },
-      OF_EVENT_ORDER_AFTER_APP));
+	addEventListener(uiPath->lastHandleDeletedEvent.newListener(
+	  [this](const void* sender) {
+		  auto up = (std::shared_ptr<MTUIPath>)uiPath;
+		  removeUIPath(up);
+		  pEventArgs.path = up->getPath();
+		  pathDeletedEvent.notify(pEventArgs);
+	  },
+	  OF_EVENT_ORDER_AFTER_APP));
 
-    uiPaths.push_back(uiPath);
-    return uiPath;
+	uiPaths.push_back(uiPath);
+	return uiPath;
 }
 
 bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 {
-    auto iter = std::find(uiPaths.begin(), uiPaths.end(), p);
-    if (iter != uiPaths.end())
-    {
+	auto iter = std::find(uiPaths.begin(), uiPaths.end(), p);
+	if (iter != uiPaths.end())
+	{
 
-        ofPath* path = p->getPath();
-        auto iterOfPath = std::find_if(settings.paths.begin(),
-                                       settings.paths.end(),
-                                       [&](shared_ptr<ofPath> const& current) {
-                                           return current.get() == path;
-                                       });
+		ofPath* path = p->getPath();
+		auto iterOfPath = std::find_if(settings.paths.begin(),
+									   settings.paths.end(),
+									   [&](shared_ptr<ofPath> const& current) {
+										   return current.get() == path;
+									   });
 
-        if (iterOfPath != settings.paths.end())
-        {
-            // Clear the path first:
-            (*iterOfPath)->clear();
+		if (iterOfPath != settings.paths.end())
+		{
+			// Clear the path first:
+			(*iterOfPath)->clear();
 
-            // Now remove the path from the model:
-            settings.paths.erase(iterOfPath);
-            activeUIPath = nullptr;
-        }
+			// Now remove the path from the model:
+			settings.paths.erase(iterOfPath);
+			activeUIPath = nullptr;
+		}
 
-        uiPaths.erase(iter);
-        pathDeletedEvent.notify(this);
+		uiPaths.erase(iter);
+		pathDeletedEvent.notify(this);
 
-        if (uiPaths.size() == 0)
-        {
-            lastPathDeletedEvent.notify(this);
-        }
-        return true;
-    }
+		if (uiPaths.size() == 0)
+		{
+			lastPathDeletedEvent.notify(this);
+		}
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 {
-    if (button == 0)
-    {
-        //        if (!handleWasPressed)
-        //        {
-        if (ofGetKeyPressed(OF_KEY_SHIFT))
-        {
-            if (activeUIPath != nullptr)
-            {
-                auto command =
-                  ofPath::Command(ofPath::Command::lineTo, glm::vec3(x, y, 0));
-                activeUIPath->addCommand(command);
-            }
-            else
-            {
-                if (settings.allowMultiplePaths)
-                {
-                    auto pathPtr = shared_ptr<ofPath>(new ofPath);
-                    activeUIPath = createUIPath(pathPtr);
-                    auto command =
-                            ofPath::Command(ofPath::Command::moveTo, glm::vec3(x, y, 0));
-                    activeUIPath->addCommand(command);
-                    settings.paths.push_back(pathPtr);
-                    pEventArgs.path = pathPtr;
-                    pathCreatedEvent.notify(pEventArgs);
-                    ofLogVerbose() << "Active UI Path: " << activeUIPath;
-                }
-            }
-        }
-    }
-    //        else
-    //        {
-    //            handleWasPressed = false;
-    //        }
-    //    }
+	if (button == 0)
+	{
+		//        if (!handleWasPressed)
+		//        {
+		if (ofGetKeyPressed(OF_KEY_SHIFT))
+		{
+			if (activeUIPath != nullptr)
+			{
+				auto command =
+				  ofPath::Command(ofPath::Command::lineTo, glm::vec3(x, y, 0));
+				activeUIPath->addCommand(command);
+			}
+			else
+			{
+				if (settings.allowMultiplePaths)
+				{
+					auto pathPtr = shared_ptr<ofPath>(new ofPath);
+					activeUIPath = createUIPath(pathPtr);
+					auto command =
+							ofPath::Command(ofPath::Command::moveTo, glm::vec3(x, y, 0));
+					activeUIPath->addCommand(command);
+					settings.paths.push_back(pathPtr);
+					pEventArgs.path = pathPtr;
+					pathCreatedEvent.notify(pEventArgs);
+					ofLogVerbose() << "Active UI Path: " << activeUIPath;
+				}
+			}
+		}
+	}
+	//        else
+	//        {
+	//            handleWasPressed = false;
+	//        }
+	//    }
 }
 
 void MTAppModePathEditor::keyReleased(int key)
 {
-    if (key == OF_KEY_RETURN)
-    {
-        activeUIPath = nullptr;
-    }
+	if (key == OF_KEY_RETURN)
+	{
+		activeUIPath = nullptr;
+	}
 }
 
 void MTAppModePathEditor::draw()
 {
-    for (auto uiPath : uiPaths)
-    {
-        uiPath->draw();
-    }
+	for (auto uiPath : uiPaths)
+	{
+		uiPath->draw();
+	}
 }
 
 
 void MTAppModePathEditor::exit()
 {
-    activeUIPath = nullptr;
-    uiPaths.clear();
+	activeUIPath = nullptr;
+	uiPaths.clear();
 }
