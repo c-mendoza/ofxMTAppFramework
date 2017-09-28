@@ -29,12 +29,12 @@ MTWindow::~MTWindow()
 {
 }
 
-// void ofxMTWindow::setup(ofEventArgs & args)
+// void MTWindow::setup(ofEventArgs & args)
 //{
 //    contentView->setup(args);
 //}
 
-#ifndef TARGET_OPENGLES
+#ifndef TARGET_RASPBERRY_PI
 void MTWindow::setup(const ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
@@ -42,9 +42,9 @@ void MTWindow::setup(const ofGLFWWindowSettings& settings)
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
 }
 #else
-void ofxMTWindow::setup(const ofGLESWindowSettings& settings)
+void MTWindow::setup(const ofGLESWindowSettings& settings)
 {
-	ofAppGLESWindow::setup(settings);
+	ofAppEGLWindow::setup(settings);
 }
 #endif
 
@@ -54,8 +54,14 @@ void ofxMTWindow::setup(const ofGLESWindowSettings& settings)
 
 void MTWindow::setupInternal(ofEventArgs& args)
 {
+#ifndef TARGET_RASPBERRY_PI
 	contentView->setSize(ofAppGLFWWindow::getWidth(),
 						 ofAppGLFWWindow::getHeight());
+#else
+	contentView->setSize(ofAppEGLWindow::getWidth(),
+						 ofAppEGLWindow::getHeight());
+	ofLogVerbose("MTWindow::setupInternal") << "contentView size: " <<  contentView->getContentSize();
+#endif
 	contentView->setFrameOrigin(glm::vec3(0, 0, 0));
 	contentView->setup(args);
 }
@@ -67,8 +73,13 @@ void MTWindow::update(ofEventArgs& args)
 
 void MTWindow::draw(ofEventArgs& args)
 {
+#ifndef TARGET_RASPBERRY_PI
 	ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(),
-							 ofAppGLFWWindow::getHeight());
+						 ofAppGLFWWindow::getHeight());
+#else
+	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
+						 ofAppEGLWindow::getHeight());
+#endif
 	ofBackground(0);
 	contentView->draw(args);
 }
@@ -240,9 +251,11 @@ int MTWindow::getWidth()
 //		return fv->getFrameSize().y;
 //	}
 //	else
-	{
-		return ofAppGLFWWindow::getWidth();
-	}
+#ifndef TARGET_RASPBERRY_PI
+	return ofAppGLFWWindow::getWidth();
+#else
+	return ofAppEGLWindow::getWidth();
+#endif
 }
 
 int MTWindow::getHeight()
@@ -252,9 +265,12 @@ int MTWindow::getHeight()
 //		return fv->getFrameSize().y;
 //	}
 //	else
-	{
-		return ofAppGLFWWindow::getHeight();
-	}
+#ifndef TARGET_RASPBERRY_PI
+	return ofAppGLFWWindow::getHeight();
+#else
+	return ofAppEGLWindow::getHeight();
+#endif
+
 }
 
 void MTWindow::removeAllEvents()
@@ -308,7 +324,7 @@ static void mt_rotateMouseXY(ofOrientation orientation,
 	}
 }
 
-#ifndef TARGET_OPENGLES
+#ifndef TARGET_RASPBERRY_PI
 void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 {
 	ofAppGLFWWindow* instance =

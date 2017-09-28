@@ -126,19 +126,31 @@ void MTApp::initialize()
 
 void MTApp::createAppViews()
 {
+	#ifndef TARGET_RASPBERRY_PI
 	ofGLFWWindowSettings windowSettings;
+#else
+	ofGLESWindowSettings windowSettings;
+#endif
 	windowSettings.width = 1280;
 	windowSettings.height = 800;
 	mainWindow = createWindow("Main Window", windowSettings);
 }
 
-void MTApp::run()
+void MTApp::runApp()
 {
-	loadAppPreferences();
 	initialize();
+	loadAppPreferences();
 	createAppViews();
 	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()),
 			 std::shared_ptr<ofBaseApp>(this));
+	
+	// Only the first window gets notified of setup when ofRunApp is called
+	// so we need to do that ourselves:
+	for (auto iter = windows.begin()+1; iter < windows.end(); iter++)
+	{
+		(*iter)->events().notifySetup();
+	}
+	
 	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
 	isInitialized = false;
 
@@ -196,6 +208,7 @@ std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> vie
 												   ofWindowSettings& settings)
 {
 	auto win = createWindow(windowName, settings);
+	view->setSize(win->getWidth(), win->getHeight());
 	win->contentView->addSubview(view);
 	return win;
 }
@@ -205,13 +218,16 @@ std::shared_ptr<MTWindow> MTApp::createWindow(string windowName,
 {
 
 	auto window = shared_ptr<MTWindow>(new MTWindow(windowName));
+	ofGetMainLoop()->addWindow(window);
+	windows.push_back(window);
+
 	window->contentView->setWindow(window);
-#ifndef TARGET_OPENGLES
+#ifndef TARGET_RASPBERRY_PI
 	ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings)settings;
 	window->setup(glfwWS);
 #else
 	ofGLESWindowSettings esWS = (ofGLESWindowSettings)settings;
-	window->setup(esWs);
+	window->setup(esWS);
 #endif
 
 	addAllEvents(window.get());
@@ -226,9 +242,8 @@ std::shared_ptr<MTWindow> MTApp::createWindow(string windowName,
 				  &MTApp::keyReleased,
 				  OF_EVENT_ORDER_BEFORE_APP);
 	//    window->events().
-	ofGetMainLoop()->addWindow(window);
-	windows.push_back(window);
 
+#ifndef TARGET_RASPBERRY_PI
 	// Restore the window position and shape:
 	auto wp = wpMap.find(windowName);
 	if (wp != wpMap.end())
@@ -237,7 +252,15 @@ std::shared_ptr<MTWindow> MTApp::createWindow(string windowName,
 		window->setWindowPosition(wp->second.position.x, wp->second.position.y);
 		window->setWindowTitle(windowName);
 	}
-
+	else
+	{
+		WindowParams wp;
+		wp.name = windowName;
+		wp.position = window->getWindowPosition();
+		wp.size = window->getWindowSize();
+		wpMap[wp.name] = wp;
+	}
+#endif
 	// The ofApp system only notifies setup for the first window it creates,
 	// the rest are on their own aparently. So we check if we have initilized
 	// the ofApp system, and if we have, then
@@ -414,11 +437,12 @@ bool MTApp::openImpl(string filePath)
 
 	if (!serializer.load(filePath))
 	{
-		ofLog(OF_LOG_ERROR, "Failed loading file");
+		ofLogError("MTApp::openImpl") << "Failed loading file " << filePath;
 		return false;
 	}
 	else
 	{
+		ofLogVerbose("MTApp::openImpl") << "Opening file: " << filePath;
 		model->deserialize(serializer);
 		if (model == nullptr)
 		{
@@ -451,10 +475,10 @@ void MTApp::newFile()
 	MTPrefLastFile = "";
 	fileName = "";
 	isInitialized = true;
-	mainWindow->setWindowTitle(fileName);
+//	mainWindow->setWindowTitle(fileName);
 
 	setAppMode(defaultMode);
-
+	
 	auto args = ofEventArgs();
 	modelLoadedEvent.notify(args);
 }
@@ -477,7 +501,7 @@ bool MTApp::saveAppPreferences()
 	for (auto& wp : wpMap)
 	{
 		auto winXml = windowsXml.appendChild("Window");
-		winXml.appendChild("Name").set(wp.second.name);
+		winXml.appendChild("Name").set(wp.first);
 		winXml.appendChild("Position").set(wp.second.position);
 		winXml.appendChild("Size").set(wp.second.size);
 	}
@@ -486,7 +510,6 @@ bool MTApp::saveAppPreferences()
 }
 
 //// EVENTS
-
 void MTApp::windowClosing(MTWindow* window)
 {
 
@@ -508,7 +531,7 @@ void MTApp::windowClosing(MTWindow* window)
 					 &MTApp::keyReleased,
 					 OF_EVENT_ORDER_BEFORE_APP);
 	//    ofRemoveListener(modelLoadedEvent, view,
-	//    &ofxMTWindow::modelLoadedInternal, OF_EVENT_ORDER_AFTER_APP);
+	//    &MTWindow::modelLoadedInternal, OF_EVENT_ORDER_AFTER_APP);
 
 	// This is another:
 	auto it =

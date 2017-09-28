@@ -6,19 +6,25 @@
 //
 //
 
-#ifndef ofxMTWindow_hpp
-#define ofxMTWindow_hpp
+#ifndef MTWindow_hpp
+#define MTWindow_hpp
 
 #include "ofxMTAppFramework.h"
+
+#ifndef TARGET_RASPBERRY_PI
+#include "ofAppGLFWWindow.h"
+#else
+#include "ofAppEGLWindow.h"
+#endif
 
 class MTModel;
 class MTAppModeChangeArgs;
 class MTView;
 
-#ifndef TARGET_OPENGLES
+#ifndef TARGET_RASPBERRY_PI
 class MTWindow : public ofAppGLFWWindow, public MTEventListenerStore {
 #else
-class ofxMTWindow : public ofAppBaseGLESWindow, public MTEventListenerStore {
+class MTWindow : public ofAppEGLWindow, public MTEventListenerStore {
 #endif
   public:
 	MTWindow(string name);
@@ -35,7 +41,7 @@ class ofxMTWindow : public ofAppBaseGLESWindow, public MTEventListenerStore {
 	// INTERNALS EVENT LISTENERS
 	// You should not need to call these methods
 	//------------------------------------------------------//
-#ifndef TARGET_OPENGLES
+#ifndef TARGET_RASPBERRY_PI
 	virtual void setup(const ofGLFWWindowSettings& settings);
 #else
 	virtual void setup(const ofGLESWindowSettings& settings);
@@ -161,7 +167,8 @@ class ofxMTWindow : public ofAppBaseGLESWindow, public MTEventListenerStore {
 	glm::vec2 mouseUpPos;
 	glm::vec2 mouseDragStart;
 
-#ifndef TARGET_OPENGLES
+
+#ifndef TARGET_RASPBERRY_PI
 	/**
 	 * @brief "Override" mouse motion callback to avoid ofGetWidth and ofGetHeight
 	 * getting called every time the mouse moves. This implementation changes
@@ -171,4 +178,4 @@ class ofxMTWindow : public ofAppBaseGLESWindow, public MTEventListenerStore {
 #endif
 };
 
-#endif /* ofxMTWindow_hpp */
+#endif /* MTWindow_hpp */

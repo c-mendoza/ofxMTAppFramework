@@ -245,8 +245,15 @@ void MTView::addSubview(shared_ptr<MTView> subview)
 {
 	subview->setSuperview(shared_from_this());
 	subview->window = window;
-	auto args = ofEventArgs();
-	subview->setup(args);
+
+	if (this->isSetUp) // If setupInternal has run already, then call the subview's setup
+	{
+		enqueueUpdateOperation([this, subview]()
+		{
+			auto args = ofEventArgs();
+			subview->setup(args);
+		});
+	}
 	subviews.push_back(subview);
 }
 
@@ -328,6 +335,7 @@ void MTView::setup(ofEventArgs & args)
 {
 	currentAppMode = std::make_shared<MTAppModeVoid>(shared_from_this());
 	setup();
+	isSetUp = true;
 	for (auto sv : subviews)
 	{
 		sv->setup(args);

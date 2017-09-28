@@ -36,7 +36,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 */
 	virtual void createAppViews();
 
-	virtual void run();
+	virtual void runApp();
 
 	template<class T>
 	static shared_ptr<T> Model()

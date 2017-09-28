@@ -223,14 +223,14 @@ void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs &args)
 //                    (*it)->getCP2Handle()->setFrameOrigin(command->to.x, command->to.y);
 					view->addSubview(cp1);
 					view->addSubview(cp2);
-					this->pathChangedEvent.notify(shared_from_this());
+					this->pathChangedEvent.notify(this);
 				}
 				else if((*it)->getCommand()->type == ofPath::Command::bezierTo)
 				{
 					(*it)->getCommand()->type = ofPath::Command::lineTo;
 					(*it)->getCP1Handle()->removeFromSuperview();
 					(*it)->getCP2Handle()->removeFromSuperview();
-					this->pathChangedEvent.notify(shared_from_this());
+					this->pathChangedEvent.notify(this);
 				}
 
 				(*it)->updateCommand();
@@ -383,7 +383,7 @@ bool MTUIPath::deleteHandle(shared_ptr<MTUIPathVertex> handle)
 		if ( (commands.size() == 0) || (commands.size() == 1 && commands.back().type == ofPath::Command::close))
 		{
 			// If so, notify listeners.
-			lastHandleDeletedEvent.notify(shared_from_this());
+			lastHandleDeletedEvent.notify(this);
 		}
 		else
 		{
@@ -459,7 +459,7 @@ void MTUIPath::insertCommand(ofPath::Command &command, int index)
 	//	vertexHandles.insert(vertexHandles.begin() + index, vertexHandle);
 
 	setup(path, view);
-	pathChangedEvent.notify(shared_from_this());
+	pathChangedEvent.notify(this);
 
 	if (selectsLastInsertion)
 	{
@@ -658,7 +658,7 @@ void MTUIPathVertex::setControlPoints()
 	addEventListener(cp1Handle->mouseDraggedEndEvent.newListener
 					 ([this](const void* handle, ofMouseEventArgs &args)
 	{
-		this->uiPath->pathChangedEvent.notify(this->uiPath->shared_from_this());
+		this->uiPath->pathChangedEvent.notify(this->uiPath);
 	}, OF_EVENT_ORDER_BEFORE_APP));
 
 	cp2Handle->setFrameFromCenter(command->cp2,
