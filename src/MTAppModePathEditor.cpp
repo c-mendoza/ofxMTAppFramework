@@ -10,22 +10,21 @@
 #include "MTAppModePathEditor.hpp"
 #include "MTUIPath.hpp"
 
-MTAppModePathEditor::MTAppModePathEditor(shared_ptr<MTView> view)
-  : MTAppMode(IIApp::MODE_MASK_EDIT, view)
+MTAppModePathEditor::MTAppModePathEditor(const PathEditorSettings& settings)
+  : MTAppMode(settings.appModeName, settings.view)
 {
+	this->settings = settings;
 }
 
 void MTAppModePathEditor::setup()
 {
-	this->view = view;
-	iiModel = IIApp::sharedApp->getIIModel();
 
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
 	for (int j = 0; j < settings.paths.size(); j++)
 	{
-		auto uiPath = createUIPath(settings.paths.at(j).get());
+		auto uiPath = createUIPath(settings.paths.at(j));
 		activeUIPath = uiPath;
 	}
 
@@ -43,8 +42,8 @@ shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 	uiPath->getPath()->setStrokeWidth(settings.pathStrokeWidth);
 	// Add LisMTAppModePathEditor_hteners:
 	addEventListener(uiPath->pathChangedEvent.newListener(
-	  [this, p](const void* uiPath) {
-		  auto up = (std::shared_ptr<MTUIPath>)uiPath;
+	  [this, p](const void* theUiPath) {
+		  auto up = *(std::shared_ptr<MTUIPath>*)theUiPath;
 		  pEventArgs.path = up->getPath();
 		  pathModifiedEvent.notify(pEventArgs);
 	  },
@@ -67,8 +66,8 @@ shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 	  OF_EVENT_ORDER_AFTER_APP));
 
 	addEventListener(uiPath->lastHandleDeletedEvent.newListener(
-	  [this](const void* sender) {
-		  auto up = (std::shared_ptr<MTUIPath>)uiPath;
+	  [this](const void* theUiPath) {
+		  auto up = *(std::shared_ptr<MTUIPath>*)theUiPath;
 		  removeUIPath(up);
 		  pEventArgs.path = up->getPath();
 		  pathDeletedEvent.notify(pEventArgs);
@@ -85,11 +84,11 @@ bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 	if (iter != uiPaths.end())
 	{
 
-		ofPath* path = p->getPath();
+		auto path = p->getPath();
 		auto iterOfPath = std::find_if(settings.paths.begin(),
 									   settings.paths.end(),
-									   [&](shared_ptr<ofPath> const& current) {
-										   return current.get() == path;
+									   [&](std::shared_ptr<ofPath> const& current) {
+										   return current == path;
 									   });
 
 		if (iterOfPath != settings.paths.end())
@@ -103,11 +102,12 @@ bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 		}
 
 		uiPaths.erase(iter);
-		pathDeletedEvent.notify(this);
+		auto args = ofEventArgs();
+		pathDeletedEvent.notify(args);
 
 		if (uiPaths.size() == 0)
 		{
-			lastPathDeletedEvent.notify(this);
+			lastPathDeletedEvent.notify(args);
 		}
 		return true;
 	}

@@ -365,17 +365,15 @@ void MTView::update(ofEventArgs & args)
 
 void MTView::draw(ofEventArgs & args)
 {
-//	ofPushView();
-//	ofViewport(screenFrame);
+	ofPushMatrix();
 	ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
-	ofLoadIdentityMatrix();
 
 	// Draw the background
 	if (isDrawingBackground)
 	{
 		ofPushMatrix();
 		// The background is drawn in Frame coordinates:
-		ofLoadMatrix(ofGetCurrentViewMatrix() * frameMatrix);
+		ofMultMatrix(frameMatrix);
 		ofFill();
 		ofSetColor(backgroundColor.get());
 		ofDrawRectangle(0, 0, frame.width, frame.height);
@@ -383,7 +381,7 @@ void MTView::draw(ofEventArgs & args)
 	}
 
 	// Load the content coordinates:
-	ofLoadMatrix(ofGetCurrentViewMatrix() * contentMatrix);
+	ofMultMatrix(contentMatrix);
 
 	// Execute operations in the draw queue:
 	while (!drawOpQueue.empty())
@@ -400,7 +398,7 @@ void MTView::draw(ofEventArgs & args)
 	// Should I fire a drawEvent here instead? It would make sense...
 	if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 
-//	ofPopView();
+	ofPopMatrix();
 	// Draw subviews:
 	for (auto sv : subviews)
 	{
@@ -412,6 +410,10 @@ void MTView::exit(ofEventArgs &args)
 {
 	exit();
 	onExit();
+	for (auto sv : subviews)
+	{
+		sv->exit(args);
+	}
 }
 
 void MTView::windowResized(ofResizeEventArgs & resize)

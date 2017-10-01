@@ -20,6 +20,7 @@ static ofEventArgs voidEventArgs;
 MTWindow::MTWindow(string name)
 {
 	contentView = std::make_shared<MTView>("root");
+	contentView->backgroundColor = ofColor(0);
 	focusedView = contentView;
 	mouseOverView = contentView;
 	this->name.set("Window Name", name);

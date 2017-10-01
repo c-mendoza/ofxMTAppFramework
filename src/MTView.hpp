@@ -154,6 +154,12 @@ class MTView : public MTEventListenerStore,
 
 	void setFrame(ofRectangle newFrame);
 
+	/**
+	 * @brief getFrame returns a copy of the frame
+	 * @return ofRectangle
+	 */
+	ofRectangle getFrame() { return frame; }
+
 	void setFrameOrigin(float x, float y);
 	void setFrameOrigin(glm::vec3 pos);
 	void shiftFrameOrigin(glm::vec3 shiftAmount);
@@ -168,6 +174,12 @@ class MTView : public MTEventListenerStore,
 	glm::vec3 getFrameCenter();
 
 	void setContent(ofRectangle newContentRect);
+
+	/**
+	 * @brief getContent returns a copy of the content rect
+	 * @return an ofRectangle
+	 */
+	ofRectangle getContent() { return content; }
 	void setContentOrigin(glm::vec3 pos);
 	const glm::vec3& getContentOrigin();
 
