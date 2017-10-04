@@ -12,6 +12,8 @@ const string MTApp::MTPrefsWindowSizeName = "Size";
 ofEvent<MTAppModeChangeArgs> MTApp::appChangeModeEvent;
 ofEvent<ofEventArgs> MTApp::modelLoadedEvent;
 MTApp* MTApp::sharedApp = 0;
+ofxImGui::Gui MTApp::gui;
+
 
 MTApp::MTApp()
 {
@@ -143,14 +145,15 @@ void MTApp::runApp()
 	createAppViews();
 	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()),
 			 std::shared_ptr<ofBaseApp>(this));
-	
+
+	MTApp::gui.setup();
 	// Only the first window gets notified of setup when ofRunApp is called
 	// so we need to do that ourselves:
 	for (auto iter = windows.begin()+1; iter < windows.end(); iter++)
 	{
 		(*iter)->events().notifySetup();
 	}
-	
+
 	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
 	isInitialized = false;
 
@@ -478,7 +481,7 @@ void MTApp::newFile()
 //	mainWindow->setWindowTitle(fileName);
 
 	setAppMode(defaultMode);
-	
+
 	auto args = ofEventArgs();
 	modelLoadedEvent.notify(args);
 }

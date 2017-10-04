@@ -17,6 +17,8 @@
 #include "ofAppEGLWindow.h"
 #endif
 
+#include "ofxImGui.h"
+
 class MTModel;
 class MTAppModeChangeArgs;
 class MTView;
@@ -134,6 +136,8 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore {
 	 * @return The height of the MTView that is currently focused.
 	 */
 	int getHeight();
+	
+//	ofxImGui::Gui gui;
 
   protected:
 	void removeAllEvents();

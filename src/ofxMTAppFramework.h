@@ -13,7 +13,7 @@
 //This is sadly the only way that I can think of overriding "of..." globals.
 //This will cause ofGetMouseX and ofGetMouseY to return "local" view coordinates.
 //In addition to this define, you must enable Prefix headers and use the supplied .pch file.
-#define OFXMTAPP_USE_LOCAL_MOUSE 1
+//#define OFXMTAPP_USE_LOCAL_MOUSE 1
 
 
 //#ifdef OFXMTAPP_USE_LOCAL_MOUSE

@@ -2,6 +2,7 @@
 #define ofxMTApp_hpp
 
 #include "ofxMTAppFramework.h"
+#include "ofxImGui.h"
 
 class MTWindow;
 class MTView;
@@ -20,6 +21,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 
 	// TODO: Proper singleton
 	static MTApp* sharedApp;
+
+	static ofxImGui::Gui gui;
 
 	/**
 	 * @brief initialize Extra "constructor" for the user. It is the last thing

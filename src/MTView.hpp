@@ -11,6 +11,7 @@
 
 #include "ofxMTAppFramework.h"
 #include "glm/glm.hpp"
+#include "ofxImGui.h"
 
 class MTModel;
 class MTWindow;
@@ -18,7 +19,8 @@ class MTAppModeChangeArgs;
 class MTAppMode;
 
 class MTView : public MTEventListenerStore,
-			   public std::enable_shared_from_this<MTView> {
+			   public std::enable_shared_from_this<MTView>
+{
 
   public:
 	MTView(string _name);
@@ -160,6 +162,9 @@ class MTView : public MTEventListenerStore,
 	 */
 	ofRectangle getFrame() { return frame; }
 
+	float getWidth() { return frame.width; }
+	float getHeight() { return frame.height; }
+
 	void setFrameOrigin(float x, float y);
 	void setFrameOrigin(glm::vec3 pos);
 	void shiftFrameOrigin(glm::vec3 shiftAmount);
@@ -266,9 +271,28 @@ class MTView : public MTEventListenerStore,
 
 	std::weak_ptr<MTWindow> getWindow();
 
+	int getWindowWidth();
+	int getWindowHeight();
+
 	//------------------------------------------------------//
 	// VIEW Releated                                        //
 	//------------------------------------------------------//
+
+	/**
+	 * @brief Called whenever a view:
+	 * 1. Is added to a superview
+	 * 2. It changes size or position
+	 * 3. Its superview changes size or position
+	 * 4. Its parent window changes size
+	 *
+	 * The default implementation does nothing.
+	 */
+	virtual void layout(){}
+
+	/**
+	  * @brief lambda flavor of layout()
+	  */
+	std::function<void()> onLayout = [](){};
 
 	/// \brief Enables or disables the drawing of this view's background.
 	/// The background is the extents of the view's frame.
@@ -282,6 +306,10 @@ class MTView : public MTEventListenerStore,
 	}
 
 	bool getDrawBackground() { return isDrawingBackground; }
+
+	virtual void drawGui(){};
+	ImGuiContext* imCtx;
+	ofxImGui::Gui & getGui();
 
 	//------------------------------------------------------//
 	// APP MODES                                            //
@@ -335,6 +363,7 @@ class MTView : public MTEventListenerStore,
 	ofEvent<ofMessage> messageEvent;
 	ofEvent<ofEventArgs> frameChangedEvent;
 	ofEvent<ofResizeEventArgs> windowResizedEvent;   //?
+	ofEvent<ofEventArgs> addedToWindowEvent;
 
 	/// \brief Notified before this MTView is destroyed.
 	ofEvent<ofEventArgs> exitEvent;
@@ -428,6 +457,7 @@ class MTView : public MTEventListenerStore,
 	void contentChangedInternal();
 	//	void superviewFrameChangedInternal();
 	void superviewContentChangedInternal();
+	void layoutInternal();
 
 	bool isSetUp = false;
 

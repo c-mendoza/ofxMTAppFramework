@@ -33,6 +33,7 @@ MTView::~MTView()
 				  &MTView::appModeChanged,
 				  OF_EVENT_ORDER_AFTER_APP);
 	subviews.clear();
+	ImGui::DestroyContext(imCtx);
 	ofLogVerbose("View Destruct: ") << name;
 }
 
@@ -184,7 +185,6 @@ void MTView::frameChangedInternal()
 	// Notify listeners:
 	auto args =  ofEventArgs();
 	frameChangedEvent.notify(this, args);
-
 	// Notify the rest of the hierarchy:
 	for (auto sv : subviews)
 	{
@@ -197,11 +197,17 @@ void MTView::contentChangedInternal()
 {
 	updateMatrices();
 	contentChanged();
-
+//	layoutInternal(); //?
 	for (auto sv : subviews)
 	{
 		sv->superviewContentChanged();
 	}
+}
+
+void MTView::layoutInternal()
+{
+	onLayout();
+	layout();
 }
 
 //TODO: Check to see if transformPoint works
@@ -238,13 +244,16 @@ void MTView::setSuperview(shared_ptr<MTView> view)
 {
 	superview = view;
 	frameChangedInternal();
+	layoutInternal();
 }
 /// \brief Adds a subview.
 
 void MTView::addSubview(shared_ptr<MTView> subview)
 {
-	subview->setSuperview(shared_from_this());
 	subview->window = window;
+	ofEventArgs args;
+	subview->addedToWindowEvent.notify(args);
+	subview->setSuperview(shared_from_this());
 
 	if (this->isSetUp) // If setupInternal has run already, then call the subview's setup
 	{
@@ -325,6 +334,35 @@ std::weak_ptr<MTWindow> MTView::getWindow()
 	return window;
 }
 
+int MTView::getWindowWidth()
+{
+	if (auto w = window.lock())
+	{
+		return (int)w->getWindowSize().x;
+	}
+	else
+	{
+		return 200;
+	}
+}
+
+int MTView::getWindowHeight()
+{
+	if (auto w = window.lock())
+	{
+		return (int)w->getWindowSize().y;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ofxImGui::Gui & MTView::getGui()
+{
+	return MTApp::gui;
+}
+
 //------------------------------------------------------//
 // INTERNAL EVENT LISTENERS
 //
@@ -334,6 +372,9 @@ std::weak_ptr<MTWindow> MTView::getWindow()
 void MTView::setup(ofEventArgs & args)
 {
 	currentAppMode = std::make_shared<MTAppModeVoid>(shared_from_this());
+	imCtx = ImGui::CreateContext();
+	ImGui::SetCurrentContext(imCtx);
+	getGui().setup();
 	setup();
 	isSetUp = true;
 	for (auto sv : subviews)
@@ -365,6 +406,14 @@ void MTView::update(ofEventArgs & args)
 
 void MTView::draw(ofEventArgs & args)
 {
+//	ofPushView();
+//	ofViewport(screenFrame);
+	auto w = window.lock();
+//	glEnable(GL_SCISSOR_TEST);
+//	glScissor(screenFrame.x,
+//			  20,
+//			  screenFrame.width,
+//			  screenFrame.height);
 	ofPushMatrix();
 	ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
 
@@ -397,8 +446,16 @@ void MTView::draw(ofEventArgs & args)
 
 	// Should I fire a drawEvent here instead? It would make sense...
 	if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
-
 	ofPopMatrix();
+	
+	ImGui::SetCurrentContext(imCtx);
+	auto& io = ImGui::GetIO();
+	io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
+	getGui().begin();
+	drawGui();
+	getGui().end();
+//	ofPopView();
+
 	// Draw subviews:
 	for (auto sv : subviews)
 	{
@@ -419,6 +476,7 @@ void MTView::exit(ofEventArgs &args)
 void MTView::windowResized(ofResizeEventArgs & resize)
 {
 	updateMatrices();
+	layoutInternal();
 	windowResized(resize.width, resize.height);
 	onWindowResized(resize.width, resize.height);
 	for (auto view : subviews)

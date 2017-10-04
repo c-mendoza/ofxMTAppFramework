@@ -41,11 +41,13 @@ void MTWindow::setup(const ofGLFWWindowSettings& settings)
 	ofAppGLFWWindow::setup(settings);
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
+//	gui.setup();
 }
 #else
 void MTWindow::setup(const ofGLESWindowSettings& settings)
 {
 	ofAppEGLWindow::setup(settings);
+	gui.setup();
 }
 #endif
 
@@ -63,6 +65,8 @@ void MTWindow::setupInternal(ofEventArgs& args)
 						 ofAppEGLWindow::getHeight());
 	ofLogVerbose("MTWindow::setupInternal") << "contentView size: " <<  contentView->getContentSize();
 #endif
+
+	
 	contentView->setFrameOrigin(glm::vec3(0, 0, 0));
 	contentView->setup(args);
 }
@@ -83,6 +87,9 @@ void MTWindow::draw(ofEventArgs& args)
 #endif
 	ofBackground(0);
 	contentView->draw(args);
+//	gui.begin();
+//	contentView->drawGuiInternal();
+//	gui.end();
 }
 
 void MTWindow::exit(ofEventArgs& args)
