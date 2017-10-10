@@ -24,6 +24,7 @@ MTView::MTView(string _name)
 				  this,
 				  &MTView::appModeChanged,
 				  OF_EVENT_ORDER_AFTER_APP);
+	imCtx = NULL;
 }
 
 MTView::~MTView()
@@ -33,7 +34,7 @@ MTView::~MTView()
 				  &MTView::appModeChanged,
 				  OF_EVENT_ORDER_AFTER_APP);
 	subviews.clear();
-	ImGui::DestroyContext(imCtx);
+	if (imCtx) ImGui::DestroyContext(imCtx);
 	ofLogVerbose("View Destruct: ") << name;
 }
 

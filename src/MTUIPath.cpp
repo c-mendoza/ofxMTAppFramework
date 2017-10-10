@@ -413,6 +413,8 @@ MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(const glm::vec3 &point)
 {
 	float minDistance = 5000;
 	Midpoint closest;
+	int currentIndex = 0;
+	int closestIndex = 0;
 
 	for (auto & mid : midpoints)
 	{
@@ -421,10 +423,13 @@ MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(const glm::vec3 &point)
 		{
 			closest = mid;
 			minDistance = distance;
+			closestIndex = currentIndex;
+
 		}
+		currentIndex++;
 	}
 
-	return closest;
+	return midpoints[closestIndex];
 }
 
 void MTUIPath::addCommand(ofPath::Command &command)
