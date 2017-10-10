@@ -14,6 +14,11 @@ MTAppModePathEditor::MTAppModePathEditor(const PathEditorSettings& settings)
   : MTAppMode(settings.appModeName, settings.view)
 {
 	this->settings = settings;
+	onFirstPathCreated = [](PathEditorEventArgs args) {};
+	onPathCreated = [](PathEditorEventArgs args) {};
+	onPathModified = [](PathEditorEventArgs args) {};
+	onPathDeleted = [](PathEditorEventArgs args){};
+	onLastPathDeleted = [](){};
 }
 
 void MTAppModePathEditor::setup()
@@ -46,6 +51,7 @@ shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 		  auto up = *(std::shared_ptr<MTUIPath>*)theUiPath;
 		  pEventArgs.path = up->getPath();
 		  pathModifiedEvent.notify(pEventArgs);
+		  onPathModified(pEventArgs);
 	  },
 	  OF_EVENT_ORDER_AFTER_APP));
 
@@ -62,6 +68,7 @@ shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 		  auto h = (MTUIPathVertex*)handle;
 		  pEventArgs.path = h->getUIPath()->getPath();
 		  pathModifiedEvent.notify(pEventArgs);
+		  onPathModified(pEventArgs);
 	  },
 	  OF_EVENT_ORDER_AFTER_APP));
 
@@ -71,6 +78,7 @@ shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 		  removeUIPath(up);
 		  pEventArgs.path = up->getPath();
 		  pathDeletedEvent.notify(pEventArgs);
+		  onPathDeleted(pEventArgs);
 	  },
 	  OF_EVENT_ORDER_AFTER_APP));
 
@@ -102,12 +110,15 @@ bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 		}
 
 		uiPaths.erase(iter);
-		auto args = ofEventArgs();
-		pathDeletedEvent.notify(args);
+		pEventArgs.path = path;
+		pathDeletedEvent.notify(pEventArgs);
+		onPathDeleted(pEventArgs);
 
 		if (uiPaths.size() == 0)
 		{
+			ofEventArgs args;
 			lastPathDeletedEvent.notify(args);
+			onLastPathDeleted();
 		}
 		return true;
 	}

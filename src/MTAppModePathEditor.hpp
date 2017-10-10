@@ -16,13 +16,13 @@ class PathEditorSettings
 {
 public:
 	shared_ptr<MTView> view;
-	
+
 	/**
 	 * @brief allowMultiplePaths
 	 * @default true
 	 */
 	bool allowMultiplePaths = true;
-	
+
 	/**
 	 * @brief pathsAreClosed
 	 * @default true
@@ -48,12 +48,12 @@ public:
 	bool dragEventsNotified = false;
 	int maxPaths = INT_MAX;
 	string appModeName = "";
-	
+
 	ofColor pathColor = ofColor::yellow;
 	float pathStrokeWidth = 3;
-	
+
 	//TODO style options for pathEditor
-	
+
 };
 
 
@@ -65,7 +65,7 @@ class MTAppModePathEditor : public MTAppMode {
 	virtual void draw();
 	virtual void keyReleased(int key);
 	virtual void mouseReleased(int x, int y, int button);
-	std::function<void()> onPathCreated = [] {};
+
 
 	/**
 	 * @brief Fires when a vertex is added or deleted, or when a vertex is moved
@@ -73,10 +73,19 @@ class MTAppModePathEditor : public MTAppMode {
 	ofEvent<PathEditorEventArgs> pathModifiedEvent;
 	ofEvent<PathEditorEventArgs> pathCreatedEvent;
 	ofEvent<PathEditorEventArgs> firstPathCreatedEvent;
-	ofEvent<ofEventArgs> pathDeletedEvent;
+	ofEvent<PathEditorEventArgs> pathDeletedEvent;
 	ofEvent<ofEventArgs> lastPathDeletedEvent;
 
-	
+	/**
+	 * @brief onFirstPathCreated
+	 */
+	std::function<void(PathEditorEventArgs)> onFirstPathCreated;
+	std::function<void(PathEditorEventArgs)> onPathCreated;
+	std::function<void(PathEditorEventArgs)> onPathModified;
+	std::function<void(PathEditorEventArgs)> onPathDeleted;
+	std::function<void()> onLastPathDeleted;
+
+
 
   protected:
 	PathEditorEventArgs pEventArgs;
