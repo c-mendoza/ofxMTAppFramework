@@ -585,13 +585,14 @@ void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
 			 */
 		}
 
-		this->uiPath->pathHandleMovedEvent.notify(this, args);
+//		this->uiPath->pathHandleMovedEvent.notify(this, args);
 	}, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(toHandle->mouseDraggedEndEvent.newListener
 					 ([this](const void* handle, ofMouseEventArgs &args)
 	{
-		this->uiPath->pathChangedEvent.notify(this->uiPath);
+//		this->uiPath->pathChangedEvent.notify(this->uiPath);
+		this->uiPath->pathHandleMovedEvent.notify(this, args);
 	}, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(toHandle->mousePressedEvent.newListener

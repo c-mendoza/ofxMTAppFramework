@@ -281,6 +281,13 @@ public:
 		ofDrawRectangle(0, 0,
 						getFrameSize().x,
 						getFrameSize().y);
+
+		ofPushMatrix();
+		ofLoadIdentityMatrix();
+		ofSetColor(ofColor::yellow, 50);
+		ofSetLineWidth(2);
+		ofDrawRectangle(getScreenFrame());
+		ofPopMatrix();
 	}
 
 	enum HandleType
