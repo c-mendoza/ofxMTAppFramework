@@ -20,7 +20,7 @@ void MTAppMode::addAllEventListeners()
         [this](ofKeyEventArgs& args) { keyPressed(args.key); }));
 
     addEventListener(view->keyReleasedEvent.newListener(
-        [this](ofKeyEventArgs& args) { keyPressed(args.key); }));
+        [this](ofKeyEventArgs& args) { keyReleased(args.key); }));
 
     addEventListener(view->mousePressedEvent.newListener(
         [this](ofMouseEventArgs& args) {
