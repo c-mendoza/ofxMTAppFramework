@@ -192,7 +192,12 @@ void MTWindow::mouseReleased(ofMouseEventArgs& mouse)
 void MTWindow::mouseScrolled(ofMouseEventArgs& mouse)
 {
 	mouseButtonInUse = mouse.button;
+	if (auto mo = mouseOverView.lock())
+	{
+		mo->mouseScrolled(mouse);
+	}
 }
+
 void MTWindow::mouseEntered(ofMouseEventArgs& mouse)
 {
 	mouseButtonInUse = mouse.button;
