@@ -147,7 +147,7 @@ void MTView::setContentScale(float xs, float ys)
 {
 	contentScaleX = xs;
 	contentScaleY = ys;
-	updateMatrices();
+	contentChangedInternal();
 }
 
 void MTView::setSize(float width, float height)
@@ -168,10 +168,12 @@ void MTView::frameChangedInternal()
 
 	if (auto super = superview.lock())
 	{
-		glm::vec4 screenFramePosition = super->frameMatrix * glm::vec4(frame.getPosition(), 1);
+		glm::vec4 screenFramePosition = super->contentMatrix * glm::vec4(frame.getPosition(), 1);
 		screenFrame.setPosition(screenFramePosition.xyz());
 		/// TODO: Scale
-		screenFrame.setSize(frame.width, frame.height);
+	
+		auto size = getFrameSize().xyyy() * super->contentMatrix;
+		screenFrame.setSize(size.x, size.y);
 	}
 	else
 	{
@@ -197,10 +199,25 @@ void MTView::frameChangedInternal()
 void MTView::contentChangedInternal()
 {
 	updateMatrices();
+	if (auto super = superview.lock())
+	{
+		glm::vec4 screenFramePosition = super->contentMatrix * glm::vec4(frame.getPosition(), 1);
+		screenFrame.setPosition(screenFramePosition.xyz());
+		/// TODO: Scale
+		
+		auto size = getFrameSize().xyyy() * super->contentMatrix;
+		screenFrame.setSize(size.x, size.y);
+	}
+	else
+	{
+		screenFrame = frame;
+	}
+	
 	contentChanged();
 //	layoutInternal(); //?
 	for (auto sv : subviews)
 	{
+		sv->contentChangedInternal();
 		sv->superviewContentChanged();
 	}
 }
@@ -410,11 +427,15 @@ void MTView::draw(ofEventArgs & args)
 //	ofPushView();
 //	ofViewport(screenFrame);
 	auto w = window.lock();
-//	glEnable(GL_SCISSOR_TEST);
-//	glScissor(screenFrame.x,
-//			  20,
-//			  screenFrame.width,
-//			  screenFrame.height);
+	//					glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+	if (clipToFrame)
+	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(screenFrame.x,
+				  w->getWindowSize().y - (screenFrame.y + screenFrame.height),
+				  screenFrame.width,
+				  screenFrame.height);
+	}
 	ofPushMatrix();
 	ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
 
@@ -448,7 +469,7 @@ void MTView::draw(ofEventArgs & args)
 	// Should I fire a drawEvent here instead? It would make sense...
 	if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
 	ofPopMatrix();
-	
+
 	ImGui::SetCurrentContext(imCtx);
 	auto& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
@@ -461,6 +482,11 @@ void MTView::draw(ofEventArgs & args)
 	for (auto sv : subviews)
 	{
 		sv->draw(args);
+	}
+	
+	if (clipToFrame)
+	{
+		glDisable(GL_SCISSOR_TEST);
 	}
 }
 
@@ -504,57 +530,57 @@ void MTView::keyReleased(ofKeyEventArgs & key)
 
 void MTView::mouseMoved(ofMouseEventArgs & mouse)
 {
-	frameMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Moved,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
-	mouseMoved(frameMouse.x, frameMouse.y);
-	onMouseMoved(frameMouse.x, frameMouse.y);
+	mouseMoved(contentMouse.x, contentMouse.y);
+	onMouseMoved(contentMouse.x, contentMouse.y);
 	mouseMovedEvent.notify(this, localArgs);
 }
 
 void MTView::mouseDragged(ofMouseEventArgs & mouse)
 {
-	frameMouse = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-	if (!isDragging)
+	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+	if (!isMouseDragging)
 	{
-		isDragging = true;
-		frameMouseDragStart = frameMouseDown;
+		isMouseDragging = true;
+		contentMouseDragStart = contentMouseDown;
 	}
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Dragged,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
-	mouseDragged(frameMouse.x, frameMouse.y, mouse.button);
-	onMouseDragged(frameMouse.x, frameMouse.y, mouse.button);
+	mouseDragged(contentMouse.x, contentMouse.y, mouse.button);
+	onMouseDragged(contentMouse.x, contentMouse.y, mouse.button);
 	mouseDraggedEvent.notify(this, localArgs);
 }
 
 void MTView::mousePressed(ofMouseEventArgs & mouse)
 {
 	ofLogVerbose("MTView") << "mousePressed: " << name.get();
-	frameMouseDown =  (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-	frameMouse = frameMouseDown;
+	contentMouseDown =  (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+	contentMouse = contentMouseDown;
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Pressed,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
-	mousePressed(frameMouse.x, frameMouse.y, mouse.button);
-	onMousePressed(frameMouse.x, frameMouse.y, mouse.button);
+	mousePressed(contentMouse.x, contentMouse.y, mouse.button);
+	onMousePressed(contentMouse.x, contentMouse.y, mouse.button);
 	mousePressedEvent.notify(this, localArgs);
 }
 
 void MTView::mouseReleased(ofMouseEventArgs & mouse)
 {
 	ofLogVerbose("MTView") << "mouseReleased: " << name.get();
-	frameMouseUp = (invFrameMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-	frameMouse = frameMouseUp;
+	contentMouseUp = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+	contentMouse = contentMouseUp;
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
 	if (isMouseDragging)
 	{
@@ -563,20 +589,20 @@ void MTView::mouseReleased(ofMouseEventArgs & mouse)
 	}
 
 	isMouseDown = false;
-	mouseReleased(frameMouse.x, frameMouse.y, mouse.button);
-	onMouseReleased(frameMouse.x, frameMouse.y, mouse.button);
+	mouseReleased(contentMouse.x, contentMouse.y, mouse.button);
+	onMouseReleased(contentMouse.x, contentMouse.y, mouse.button);
 	mouseReleasedEvent.notify(this, localArgs);
 }
 
 void MTView::mouseScrolled( ofMouseEventArgs & mouse )
 {
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Scrolled,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
 //    ofLogNotice("MTView::mouseScrolled") << "scrollX and scrollY are in Window coordinates"
-	mouseScrolled(frameMouse.x, frameMouse.y, mouse.scrollX, mouse.scrollY);
-	onMouseScrolled(frameMouse.x, frameMouse.y, mouse.scrollX, mouse.scrollY);
+	mouseScrolled(contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
+	onMouseScrolled(contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
 	mouseScrolledEvent.notify(this, localArgs);
 }
 
@@ -584,11 +610,11 @@ void MTView::mouseEntered( ofMouseEventArgs & mouse )
 {
 	ofLogVerbose("MTView") << "mouseEntered: " << name.get();
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Entered,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
-	mouseEntered(frameMouse.x, frameMouse.y);
-	onMouseEntered(frameMouse.x, frameMouse.y);
+	mouseEntered(contentMouse.x, contentMouse.y);
+	onMouseEntered(contentMouse.x, contentMouse.y);
 	mouseEnteredEvent.notify(this, localArgs);
 }
 
@@ -596,11 +622,11 @@ void MTView::mouseExited( ofMouseEventArgs & mouse )
 {
 	ofLogVerbose("MTView") << "mouseExited: " << name.get();
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Exited,
-												  frameMouse.x,
-												  frameMouse.y,
+												  contentMouse.x,
+												  contentMouse.y,
 												  mouse.button);
-	mouseExited(frameMouse.x, frameMouse.y);
-	onMouseExited(frameMouse.x, frameMouse.y);
+	mouseExited(contentMouse.x, contentMouse.y);
+	onMouseExited(contentMouse.x, contentMouse.y);
 	mouseExitedEvent.notify(this, localArgs);
 }
 
@@ -655,7 +681,7 @@ void MTView::updateMatrices()
 {
 	if (auto sv = superview.lock())
 	{
-		frameMatrix = glm::translate(sv->frameMatrix, frame.getPosition());
+		frameMatrix = glm::translate(sv->contentMatrix, frame.getPosition());
 	}
 	else
 	{
@@ -668,7 +694,11 @@ void MTView::updateMatrices()
 	contentMatrix = glm::scale(pos, glm::vec3(contentScaleX.get(), contentScaleY.get(), 1));
 	invContentMatrix = glm::inverse(contentMatrix);
 
-	// TODO: Should updateMatrices recurse?
+	// TODO: Should updateMatrices recurse? prolly:
+	for (auto &sv : subviews)
+	{
+		sv->updateMatrices();
+	}
 }
 
 

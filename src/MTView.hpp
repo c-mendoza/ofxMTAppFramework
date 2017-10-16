@@ -178,6 +178,7 @@ class MTView : public MTEventListenerStore,
 	void setFrameCenter(glm::vec3 pos);
 	glm::vec3 getFrameCenter();
 
+	bool clipToFrame = false;
 	void setContent(ofRectangle newContentRect);
 
 	/**
@@ -195,6 +196,9 @@ class MTView : public MTEventListenerStore,
 	/// \brief Sets the scale of the content matrix in a normalized scale
 	/// (1 means no scaling, 0.5 means half scale, -1 means inverse scale).
 	void setContentScale(float xs, float ys);
+	float getContentScaleX() { return contentScaleX; }
+	float getContentScaleY() { return contentScaleY; }
+	
 
 	/// TODO: Delete this method
 	const ofRectangle& getScreenFrame() { return screenFrame; }
@@ -213,19 +217,19 @@ class MTView : public MTEventListenerStore,
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getLocalMouse() { return frameMouse; }
+	const glm::vec2& getLocalMouse() { return contentMouse; }
 
 	/// \brief Returns the mouse down position in frame coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getLocalMouseDown() { return frameMouseDown; }
+	const glm::vec2& getLocalMouseDown() { return contentMouseDown; }
 
 	/// \brief Returns the last mouse up position in frame coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getLocalMouseUp() { return frameMouseUp; }
+	const glm::vec2& getLocalMouseUp() { return contentMouseUp; }
 
 	/// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
@@ -405,7 +409,6 @@ class MTView : public MTEventListenerStore,
 	/// system.
 	ofRectangle frame;
 
-	ofVec3f contentMouse;   // localMousePos?
 	ofParameter<float> contentScaleX;
 	ofParameter<float> contentScaleY;
 
@@ -430,15 +433,15 @@ class MTView : public MTEventListenerStore,
 	// MOUSE
 	//------------------------------------------------------//
 	// The mouse position in frame coordinates
-	glm::vec2 frameMouse;
+	glm::vec2 contentMouse;
 
 	// The mouse down position in frame coordinates
-	glm::vec2 frameMouseDown;
+	glm::vec2 contentMouseDown;
 
 	// The mouse up position in frame coordinates
-	glm::vec2 frameMouseUp;
+	glm::vec2 contentMouseUp;
 
-	glm::vec2 frameMouseDragStart;
+	glm::vec2 contentMouseDragStart;
 
 	bool isDragging = false;
 
