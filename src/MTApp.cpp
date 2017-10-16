@@ -519,9 +519,9 @@ void MTApp::windowClosing(MTWindow* window)
 	ofLogVerbose() << "Closing " << window->name;
 
 	// Update the Window Parameters Map
-	auto wp = &wpMap[window->name.get()];
-	wp->position = window->getWindowPosition();
-	wp->size = window->getWindowSize();
+	auto& wp = wpMap[window->name.get()];
+	wp.position = window->getWindowPosition();
+	wp.size = window->getWindowSize();
 
 	saveAppPreferences();
 
@@ -554,19 +554,17 @@ void MTApp::windowClosing(MTWindow* window)
 
 void MTApp::exit()
 {
-	// Shouldn't be necessary, but just in case:
-	//	if (windows.size() > 0)
-	//	{
-	//		for (auto window : windows)
-	//		{
-	//
-	//			window->setWindowShouldClose();
-	//			window->events().disable();
-	//		}
-	//	}
-
-	//	views.clear();
-	//	windows.clear();
+	// Last chance to store the size and position of windows:
+	for (auto& w : windows)
+	{
+		auto iter = wpMap.find(w->name.get());
+		if (iter != wpMap.end())
+		{
+			iter->second.position = w->getWindowPosition();
+			iter->second.size = w->getWindowSize();
+		}
+	}
+	
 	saveAppPreferences();
 }
 
