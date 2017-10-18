@@ -27,9 +27,9 @@ void MTAppModePathEditor::setup()
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
-	for (int j = 0; j < settings.paths.size(); j++)
+	for (int j = 0; j < settings.paths->size(); j++)
 	{
-		auto uiPath = createUIPath(settings.paths.at(j));
+		auto uiPath = createUIPath(settings.paths->at(j));
 		activeUIPath = uiPath;
 	}
 
@@ -93,19 +93,19 @@ bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 	{
 
 		auto path = p->getPath();
-		auto iterOfPath = std::find_if(settings.paths.begin(),
-									   settings.paths.end(),
+		auto iterOfPath = std::find_if(settings.paths->begin(),
+									   settings.paths->end(),
 									   [&](std::shared_ptr<ofPath> const& current) {
 										   return current == path;
 									   });
 
-		if (iterOfPath != settings.paths.end())
+		if (iterOfPath != settings.paths->end())
 		{
 			// Clear the path first:
 			(*iterOfPath)->clear();
 
 			// Now remove the path from the model:
-			settings.paths.erase(iterOfPath);
+			settings.paths->erase(iterOfPath);
 			activeUIPath = nullptr;
 		}
 
@@ -149,7 +149,7 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 					auto command =
 							ofPath::Command(ofPath::Command::moveTo, glm::vec3(x, y, 0));
 					activeUIPath->addCommand(command);
-					settings.paths.push_back(pathPtr);
+					settings.paths->push_back(pathPtr);
 					pEventArgs.path = pathPtr;
 					pathCreatedEvent.notify(pEventArgs);
 					ofLogVerbose() << "Active UI Path: " << activeUIPath;

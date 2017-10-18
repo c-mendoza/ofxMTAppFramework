@@ -50,5 +50,28 @@ void MTModel::serialize(ofXml& serializer)
 
 void MTModel::deserialize(ofXml &serializer)
 {
-    ofDeserialize(serializer, parameters);
+//    ofDeserialize(serializer, parameters);
+	
+	for (auto &parameter : parameters)
+	{
+		string escapedName = parameter->getEscapedName();
+		auto child = serializer.getChild(escapedName);
+		if(parameter->type() == typeid(ofParameter <int> ).name()){
+			parameter->cast <int>() = child.getIntValue();
+		}else if(parameter->type() == typeid(ofParameter <float> ).name()){
+			parameter->cast <float>() = child.getFloatValue();
+		}else if(parameter->type() == typeid(ofParameter <bool> ).name()){
+			parameter->cast <bool>() = child.getBoolValue();
+		}else if(parameter->type() == typeid(ofParameter <string> ).name()){
+			parameter->cast <string>() = child.getValue();
+		} else if(parameter->type() == typeid(ofParameterGroup).name()) {
+			//Ignore groups
+		
+		} else {
+			parameter->fromString(child.getValue());
+		}
+
+	}
+
+
 }

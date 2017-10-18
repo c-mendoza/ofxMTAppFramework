@@ -32,7 +32,7 @@ public:
 	 * @brief If @property allowMultiplePaths is true then this
 	 * member must contain a valid vector of shared_ptr<ofPath>
 	 */
-	vector<std::shared_ptr<ofPath>> paths;
+	vector<std::shared_ptr<ofPath>> *paths;
 	/**
 	 * @brief If @property allowMultiplePaths is false then this
 	 * member must contain a valid shared_ptr<ofPath>

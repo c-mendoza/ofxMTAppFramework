@@ -143,6 +143,7 @@ void MTUIPath::setClosed(bool closed)
 	if (closed)
 	{
 		arrangeClosedPath();
+		
 	}
 	else
 	{
@@ -434,15 +435,22 @@ MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(const glm::vec3 &point)
 
 void MTUIPath::addCommand(ofPath::Command &command)
 {
-	// Check to see if we are in the last midpoint.
-	// index2 should be 0 in the last one:
-	if (closestMidpoint.index2 == 0)
+	if (path->getCommands().size() < 3)
 	{
-		insertCommand(command, closestMidpoint.index1 + 1);
+		insertCommand(command, path->getCommands().size());
 	}
 	else
 	{
-		insertCommand(command, closestMidpoint.index2);
+		// Check to see if we are in the last midpoint.
+		// index2 should be 0 in the last one:
+		if (closestMidpoint.index2 == 0)
+		{
+			insertCommand(command, closestMidpoint.index1 + 1);
+		}
+		else
+		{
+			insertCommand(command, closestMidpoint.index2);
+		}
 	}
 }
 
@@ -450,8 +458,16 @@ void MTUIPath::insertCommand(ofPath::Command &command, int index)
 {
 	if (index >= path->getCommands().size())
 	{
-		path->getCommands().push_back(std::move(command));
-
+		// if the path is closed we need to add the point second-to-last
+		if (isClosed)
+		{
+			auto pos = path->getCommands().end() - 1;
+			path->getCommands().insert(pos, std::move(command));
+		}
+		else
+		{
+			path->getCommands().push_back(std::move(command));
+		}
 	}
 	else
 	{

@@ -463,6 +463,8 @@ class MTView : public MTEventListenerStore,
 	void layoutInternal();
 
 	bool isSetUp = false;
+	
+	float mouseWheel = 0;
 
 	//------------------------------------------------------//
 	// EVENTS

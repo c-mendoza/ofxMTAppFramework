@@ -473,6 +473,8 @@ void MTView::draw(ofEventArgs & args)
 	ImGui::SetCurrentContext(imCtx);
 	auto& io = ImGui::GetIO();
 	io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
+	io.MouseWheel = mouseWheel;
+	mouseWheel = 0;
 	getGui().begin();
 	drawGui();
 	getGui().end();
@@ -600,6 +602,7 @@ void MTView::mouseScrolled( ofMouseEventArgs & mouse )
 												  contentMouse.x,
 												  contentMouse.y,
 												  mouse.button);
+	mouseWheel = mouse.scrollY;
 //    ofLogNotice("MTView::mouseScrolled") << "scrollX and scrollY are in Window coordinates"
 	mouseScrolled(contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
 	onMouseScrolled(contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
