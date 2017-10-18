@@ -31,7 +31,14 @@ MTUIPath::~MTUIPath()
 	pathVertices.clear();
 }
 
-void MTUIPath::setup(std::shared_ptr<ofPath> p, shared_ptr<MTView> view)
+void MTUIPath::setup(std::shared_ptr<ofPath> p,
+					 shared_ptr<MTView> view)
+{
+	setup(p, view, 0x111);
+}
+void MTUIPath::setup(std::shared_ptr<ofPath> p,
+					 shared_ptr<MTView> view,
+					 unsigned int options)
 {
 	path = p;
 	pathVertices.clear();
@@ -58,6 +65,7 @@ void MTUIPath::setup(std::shared_ptr<ofPath> p, shared_ptr<MTView> view)
 		pathVertices.push_back(vertex);
 	}
 
+	pathOptionFlags = std::bitset<3>(options);
 	updatePath();
 }
 
@@ -152,7 +160,7 @@ void MTUIPath::setClosed(bool closed)
 
 	//I think that this updates the path:
 	path->getCommands();
-	setup(path, view); // Necessary??? TODO: Check
+	setup(path, view, pathOptionFlags.to_ulong()); // Necessary??? TODO: Check
 }
 
 ///The actual drawing method
@@ -199,9 +207,10 @@ void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs &args)
 				return current.get() == handle; });
 
 		// Transform lineTo <-> bezierTo
-		if (ofGetKeyPressed(OF_KEY_SHIFT))
+		#pragma mark VERTEX TRANSFORM
+		if (ofGetKeyPressed(OF_KEY_SHIFT) &&
+			pathOptionFlags.test(CanConvertPoints))
 		{
-#pragma mark VERTEX TRANSFORM
 			// Don't transform the first vertex, it has to be moveTo
 			if (it != pathVertices.begin())
 			{
@@ -302,9 +311,12 @@ void MTUIPath::mouseMoved(ofMouseEventArgs& args)
 
 void MTUIPath::keyReleased(ofKeyEventArgs& args)
 {
-	if(args.key == OF_KEY_DEL || args.key == OF_KEY_BACKSPACE)
+	if (pathOptionFlags.test(MTUIPathOptions::CanDeletePoints))
 	{
-		deleteSelected();
+		if(args.key == OF_KEY_DEL || args.key == OF_KEY_BACKSPACE)
+		{
+			deleteSelected();
+		}
 	}
 }
 
@@ -388,7 +400,7 @@ bool MTUIPath::deleteHandle(shared_ptr<MTUIPathVertex> handle)
 		}
 		else
 		{
-			setup(path, view);
+			setup(path, view, pathOptionFlags.to_ulong());
 			pathChangedEvent.notify(this);
 			if (selectsLastInsertion)
 			{
@@ -435,6 +447,8 @@ MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(const glm::vec3 &point)
 
 void MTUIPath::addCommand(ofPath::Command &command)
 {
+	if (!pathOptionFlags.test(CanAddPoints)) return;
+	
 	if (path->getCommands().size() < 3)
 	{
 		insertCommand(command, path->getCommands().size());
@@ -456,6 +470,8 @@ void MTUIPath::addCommand(ofPath::Command &command)
 
 void MTUIPath::insertCommand(ofPath::Command &command, int index)
 {
+	if (!pathOptionFlags.test(CanAddPoints)) return;
+
 	if (index >= path->getCommands().size())
 	{
 		// if the path is closed we need to add the point second-to-last
@@ -479,7 +495,7 @@ void MTUIPath::insertCommand(ofPath::Command &command, int index)
 	//	vertexHandle->setup(this, &path->getCommands()[index]);
 	//	vertexHandles.insert(vertexHandles.begin() + index, vertexHandle);
 
-	setup(path, view);
+	setup(path, view, pathOptionFlags.to_ulong());
 	pathChangedEvent.notify(this);
 
 	if (selectsLastInsertion)

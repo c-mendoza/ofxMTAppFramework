@@ -11,6 +11,7 @@
 
 #include "ofMain.h"
 #include "MTView.hpp"
+#include <bitset>
 
 class MTUIPathEventArgs;
 class MTUIPathVertex;
@@ -24,6 +25,11 @@ class MTUIPathVertex;
 	Triggered when a vertex handle is moved
 
 */
+
+const unsigned char MTUIPathOptionCanAddPoints		= 1 << 0;
+const unsigned char MTUIPathOptionCanDeletePoints	= 1 << 1;
+const unsigned char MTUIPathOptionCanConvertPoints  = 1 << 2;
+
 class MTUIPath :
 		public std::enable_shared_from_this<MTUIPath>
 {
@@ -31,20 +37,37 @@ class MTUIPath :
 public:
 	~MTUIPath();
 
-	///
-	/// \brief Sets up the UIPath
-	/// \param path is a pointer to the ofPath to be manipulated.
-	/// It is not retained or stored in any way within this class,
-	/// so make sure to store it somewhere!
-	/// It is possible to modify the path outside and still have
-	/// MTUIPath work as expected.
-	/// \param view The MTView that the MTUIPath will be drawn on.
-	/// The MTView is retained, so said view won't be destroyed
-	/// until the MTUIPath is destroyed.
-	/// The view also provides the reference coordinate system for
-	/// the path and the MTUIPath.
+	/**
+	* @brief Sets up the UIPath
+	* @param path is a shared_ptr pointer to the ofPath to be manipulated.
+	* It is possible to modify the path outside and still have
+	* MTUIPath work as expected, but it is not thread-safe.
+	* @param view The MTView that the MTUIPath will be drawn on.
+	* The MTView is retained, so it won't be destroyed
+	* until the MTUIPath is destroyed.
+	* The view also provides the reference coordinate system for
+	* the path and the MTUIPath.
+	* @param options Or'd option flags. See MTUIPathOption* in this
+	* header file.
+	*/
+	void setup(std::shared_ptr<ofPath> path,
+			   std::shared_ptr<MTView> view,
+			   unsigned int options);
 
-	void setup(std::shared_ptr<ofPath> path, std::shared_ptr<MTView> view);
+	 /**
+	 * @brief Sets up the UIPath with all of the options enabled.
+	 * @param path is a shared_ptr pointer to the ofPath to be manipulated.
+	 * It is possible to modify the path outside and still have
+	 * MTUIPath work as expected, but it is not thread-safe.
+	 * @param view The MTView that the MTUIPath will be drawn on.
+	 * The MTView is retained, so it won't be destroyed
+	 * until the MTUIPath is destroyed.
+	 * The view also provides the reference coordinate system for
+	 * the path and the MTUIPath.
+	 */
+
+	void setup(std::shared_ptr<ofPath> path,
+			   std::shared_ptr<MTView> view);
 	void draw();
 //    void setAutoDraw(bool autoDraw);
 	void setVisibility(bool visible);
@@ -54,10 +77,12 @@ public:
 
 	enum MTUIPathOptions
 	{
-		CanAddPoints,
+		CanAddPoints = 0,
 		CanDeletePoints,
 		CanConvertPoints
 	};
+
+	std::bitset<3> pathOptionFlags;
 
 	//DATA HANDLING
 	/////////////////////////////////

@@ -24,6 +24,7 @@ MTAppModePathEditor::MTAppModePathEditor(const PathEditorSettings& settings)
 void MTAppModePathEditor::setup()
 {
 
+	ofLogVerbose("MTAppModePathEditor::setup") << settings.appModeName;
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
@@ -40,8 +41,25 @@ shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
   std::shared_ptr<ofPath> p)
 {
 	auto uiPath = std::make_shared<MTUIPath>();
-	uiPath->setClosed(settings.pathsAreClosed);
-	uiPath->setup(p, view);
+	unsigned int opts = 0;
+	if (settings.options.test(settings.CanAddPoints))
+	{
+		opts |= MTUIPathOptionCanAddPoints;
+	}
+	if (settings.options.test(settings.CanDeletePoints))
+	{
+		opts |= MTUIPathOptionCanDeletePoints;
+	}
+	if (settings.options.test(settings.CanConvertPoints))
+	{
+		opts |= MTUIPathOptionCanConvertPoints;
+	}
+	if (settings.options.test(settings.PathsAreClosed))
+	{
+		uiPath->setClosed(true);
+	}
+	
+	uiPath->setup(p, view, opts);
 	uiPath->getPath()->setColor(settings.pathColor);
 	uiPath->getPath()->setFilled(false);
 	uiPath->getPath()->setStrokeWidth(settings.pathStrokeWidth);
@@ -134,7 +152,8 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 		//        {
 		if (ofGetKeyPressed(OF_KEY_SHIFT))
 		{
-			if (activeUIPath != nullptr)
+			if (activeUIPath != nullptr &&
+				settings.options.test(PathEditorSettings::PathEditorOptions::CanAddPoints))
 			{
 				auto command =
 				  ofPath::Command(ofPath::Command::lineTo, glm::vec3(x, y, 0));
@@ -142,7 +161,7 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 			}
 			else
 			{
-				if (settings.allowMultiplePaths)
+				if (settings.options.test(PathEditorSettings::PathEditorOptions::AllowsMultiplePaths))
 				{
 					auto pathPtr = shared_ptr<ofPath>(new ofPath);
 					activeUIPath = createUIPath(pathPtr);
@@ -183,6 +202,8 @@ void MTAppModePathEditor::draw()
 
 void MTAppModePathEditor::exit()
 {
+	ofLogVerbose("MTAppModePathEditor::exit()") << settings.appModeName;
 	activeUIPath = nullptr;
 	uiPaths.clear();
+	onExit();
 }

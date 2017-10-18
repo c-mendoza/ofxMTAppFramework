@@ -21,13 +21,21 @@ public:
 	 * @brief allowMultiplePaths
 	 * @default true
 	 */
-	bool allowMultiplePaths = true;
+	std::bitset<8> options;
+	
+	enum PathEditorOptions
+	{
+		AllowsMultiplePaths = 0,
+		CanAddPaths,
+		CanDeletePaths,
+		CanAddPoints,
+		CanDeletePoints,
+		CanConvertPoints,
+		PathsAreClosed,
+		DragEventsNotified
+	};
 
-	/**
-	 * @brief pathsAreClosed
-	 * @default true
-	 */
-	bool pathsAreClosed = true;
+
 	/**
 	 * @brief If @property allowMultiplePaths is true then this
 	 * member must contain a valid vector of shared_ptr<ofPath>
@@ -45,7 +53,7 @@ public:
 	 * complete (in other words, when the mouse is released).
 	 * @default is false;
 	 */
-	bool dragEventsNotified = false;
+
 	int maxPaths = INT_MAX;
 	string appModeName = "";
 
@@ -84,6 +92,7 @@ class MTAppModePathEditor : public MTAppMode {
 	std::function<void(PathEditorEventArgs)> onPathModified;
 	std::function<void(PathEditorEventArgs)> onPathDeleted;
 	std::function<void()> onLastPathDeleted;
+	std::function<void()> onExit;
 
 
 
