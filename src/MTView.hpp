@@ -312,8 +312,12 @@ class MTView : public MTEventListenerStore,
 	bool getDrawBackground() { return isDrawingBackground; }
 
 	virtual void drawGui(){};
+	
+	void setImGuiEnabled(bool doGui);
 	ImGuiContext* imCtx;
 	ofxImGui::Gui & getGui();
+	
+	bool isRenderingEnabled = true;
 
 	//------------------------------------------------------//
 	// APP MODES                                            //
@@ -428,6 +432,7 @@ class MTView : public MTEventListenerStore,
 	ofRectangle screenFrame;   // The Frame in screen coordinates and scale
 
 	bool isDrawingBackground = true;
+	bool isImGuiEnabled = false;
 
 	//------------------------------------------------------//
 	// MOUSE

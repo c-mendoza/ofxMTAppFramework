@@ -376,6 +376,31 @@ int MTView::getWindowHeight()
 	}
 }
 
+void MTView::setImGuiEnabled(bool doGui)
+{
+	if (isImGuiEnabled == doGui) return;
+	
+	isImGuiEnabled = doGui;
+	
+	if (doGui)
+	{
+		enqueueUpdateOperation([this]()
+							   {
+								   imCtx = ImGui::CreateContext();
+								   ImGui::SetCurrentContext(imCtx);
+								   getGui().setup();
+							   });
+		
+	}
+	else
+	{
+		enqueueUpdateOperation([this]()
+							   {
+								   ImGui::DestroyContext(imCtx);
+							   });
+	}
+}
+
 ofxImGui::Gui & MTView::getGui()
 {
 	return MTApp::gui;
@@ -390,9 +415,6 @@ ofxImGui::Gui & MTView::getGui()
 void MTView::setup(ofEventArgs & args)
 {
 	currentAppMode = std::make_shared<MTAppModeVoid>(shared_from_this());
-	imCtx = ImGui::CreateContext();
-	ImGui::SetCurrentContext(imCtx);
-	getGui().setup();
 	setup();
 	isSetUp = true;
 	for (auto sv : subviews)
@@ -409,9 +431,9 @@ void MTView::update(ofEventArgs & args)
 		op();
 		updateOpQueue.pop();
 	}
-	//I should do something here to update the size of the contentFrame and the scroll bars when necessary
 
-	update(); //Call user's update()
+	//Call user's update()
+	update();
 	onUpdate();
 
 	if (MTApp::sharedApp->autoUpdateAppModes) currentAppMode->update();
@@ -426,6 +448,8 @@ void MTView::draw(ofEventArgs & args)
 {
 //	ofPushView();
 //	ofViewport(screenFrame);
+	if(!isRenderingEnabled) return;
+	
 	auto w = window.lock();
 	//					glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 	if (clipToFrame)
@@ -468,17 +492,20 @@ void MTView::draw(ofEventArgs & args)
 
 	// Should I fire a drawEvent here instead? It would make sense...
 	if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
+	
 	ofPopMatrix();
 
-	ImGui::SetCurrentContext(imCtx);
-	auto& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
-	io.MouseWheel = mouseWheel;
-	mouseWheel = 0;
-	getGui().begin();
-	drawGui();
-	getGui().end();
-//	ofPopView();
+	if (isImGuiEnabled)
+	{
+		ImGui::SetCurrentContext(imCtx);
+		auto& io = ImGui::GetIO();
+		io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
+		io.MouseWheel = mouseWheel;
+		mouseWheel = 0;
+		getGui().begin();
+		drawGui();
+		getGui().end();
+	}
 
 	// Draw subviews:
 	for (auto sv : subviews)
