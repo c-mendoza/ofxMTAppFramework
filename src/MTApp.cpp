@@ -84,8 +84,6 @@ void MTApp::registerAppPreference(ofAbstractParameter& preference)
 
 void MTApp::keyPressed(ofKeyEventArgs& key)
 {
-	//	ofLogNotice("MTApp") << "Key Pressed " <<
-	// getMTViewForWindow(ofGetMainLoop()->getCurrentWindow())->getName();
 	appKeyPressed(key.key);
 }
 
@@ -154,7 +152,7 @@ void MTApp::runApp()
 		(*iter)->events().notifySetup();
 	}
 
-	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
+//	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
 	isInitialized = false;
 
 	if (NSPrefAutoloadLastFile)
@@ -196,6 +194,7 @@ void MTApp::setAppMode(MTAppModeName mode)
 		changeArgs.newMode = mode;
 		changeArgs.oldMode = currentMode;
 		currentMode = mode;
+		appModeChanged(changeArgs);
 		ofNotifyEvent(MTApp::appChangeModeEvent, changeArgs, this);
 	}
 }
@@ -280,6 +279,9 @@ std::shared_ptr<MTWindow> MTApp::createWindow(string windowName,
 		// MTWindow's setup
 		window->events().notifySetup();
 	}
+	
+	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
+	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased);
 
 	return window;
 }

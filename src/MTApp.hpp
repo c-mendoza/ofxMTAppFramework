@@ -68,6 +68,13 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	MTAppModeName getCurrentMode();
 	void registerMode(MTAppModeName mode) { appModes.push_back(mode); }
 
+	/**
+	 * @brief Called whenever the App Mode changes. This function will get called
+	 * before any other listener of the @code appModeChanged event.
+	 * The default implementation does nothing.
+	 */
+	virtual void appModeChanged(MTAppModeChangeArgs& changeArgs){}
+
 	static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
 	static ofEvent<ofEventArgs> modelLoadedEvent;
 
@@ -172,15 +179,15 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	/// Called whenever there is a key pressed anywhere in the app. Other than
 	/// the built-in behavior, default
 	/// implementation does nothing.
-	virtual void appKeyPressed(int key){};
+	virtual void appKeyPressed(int key){}
 
 	/// Called whenever there is a key released anywhere in the app. Other than
 	/// the built-in behavior, default
 	/// implementation does nothing.
-	virtual void appKeyReleased(int key){};
+	virtual void appKeyReleased(int key){}
 
 	/// Called once the model is loaded
-	virtual void modelLoaded(){};
+	virtual void modelLoaded(){}
 
 	// APP MODES
 	MTAppModeName currentMode;
