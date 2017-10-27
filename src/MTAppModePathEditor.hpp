@@ -87,12 +87,12 @@ class MTAppModePathEditor : public MTAppMode {
 	/**
 	 * @brief onFirstPathCreated
 	 */
-	std::function<void(PathEditorEventArgs)> onFirstPathCreated;
-	std::function<void(PathEditorEventArgs)> onPathCreated;
-	std::function<void(PathEditorEventArgs)> onPathModified;
-	std::function<void(PathEditorEventArgs)> onPathDeleted;
-	std::function<void()> onLastPathDeleted;
-	std::function<void()> onExit;
+	std::function<void(PathEditorEventArgs)> onFirstPathCreated = [](PathEditorEventArgs args){};
+	std::function<void(PathEditorEventArgs)> onPathCreated = [](PathEditorEventArgs args){};
+	std::function<void(PathEditorEventArgs)> onPathModified = [](PathEditorEventArgs args){};
+	std::function<void(PathEditorEventArgs)> onPathDeleted = [](PathEditorEventArgs args){};
+	std::function<void()> onLastPathDeleted = []{};
+	std::function<void()> onExit =[]{};
 
 
 
