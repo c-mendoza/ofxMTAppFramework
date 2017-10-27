@@ -19,7 +19,7 @@ public:
     {
         this->name = name;
         this->view = view;
-        addAllEventListeners();
+//        addAllEventListeners();
     }
     ~MTAppMode();
     void addAllEventListeners();

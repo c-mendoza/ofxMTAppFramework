@@ -13,6 +13,7 @@
 MTAppModePathEditor::MTAppModePathEditor(const PathEditorSettings& settings)
   : MTAppMode(settings.appModeName, settings.view)
 {
+	addAllEventListeners();
 	this->settings = settings;
 	onFirstPathCreated = [](PathEditorEventArgs args) {};
 	onPathCreated = [](PathEditorEventArgs args) {};
