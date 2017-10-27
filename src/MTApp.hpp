@@ -39,6 +39,14 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 */
 	virtual void createAppViews();
 
+	/**
+	 * @brief appWillRun is called after all of the views and windows 
+	 * have been created and immediately prior to the main loop running.
+	 * Anything created in createAppViews should have had its setup() method
+	 * called by now.
+	 * Default implementation does nothing.
+	 */
+	virtual void appWillRun(){}
 	virtual void runApp();
 
 	template<class T>

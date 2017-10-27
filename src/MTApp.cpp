@@ -175,7 +175,8 @@ void MTApp::runApp()
 		isInitialized = true;
 		newFile();
 	}
-
+	
+	appWillRun();
 	ofRunMainLoop();
 }
 
