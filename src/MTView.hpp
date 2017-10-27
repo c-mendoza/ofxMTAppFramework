@@ -13,6 +13,25 @@
 #include "glm/glm.hpp"
 #include "ofxImGui.h"
 
+enum MTViewResizePolicy
+{
+	// Default. Does not do any resizing when superview's size changes.
+	ResizePolicyNone = 0,
+
+	// Resizes to superview's size.
+	ResizePolicySuperview,
+
+	// Maintains exact pixel distance between respective edges of subview and superview.
+	ResizePolicyKeepExact,
+
+	// Maintains a proportional distance between respective edges of subview and superview.
+	ResizePolicyKeepProportional,
+
+	// Resizes maintaining subview's aspect ratio
+	ResizePolicyAspectRatio
+};
+
+
 class MTModel;
 class MTWindow;
 class MTAppModeChangeArgs;
@@ -198,7 +217,7 @@ class MTView : public MTEventListenerStore,
 	void setContentScale(float xs, float ys);
 	float getContentScaleX() { return contentScaleX; }
 	float getContentScaleY() { return contentScaleY; }
-	
+
 
 	/// TODO: Delete this method
 	const ofRectangle& getScreenFrame() { return screenFrame; }
@@ -219,6 +238,8 @@ class MTView : public MTEventListenerStore,
 	/// moment.
 	const glm::vec2& getLocalMouse() { return contentMouse; }
 
+	const glm::vec2& getPrevLocalMouse() { return prevContentMouse; }
+
 	/// \brief Returns the mouse down position in frame coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
@@ -230,6 +251,8 @@ class MTView : public MTEventListenerStore,
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
 	const glm::vec2& getLocalMouseUp() { return contentMouseUp; }
+
+	const glm::vec2& getLocalMouseDragStart() { return contentMouseDragStart; }
 
 	/// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
@@ -298,8 +321,14 @@ class MTView : public MTEventListenerStore,
 	  */
 	std::function<void()> onLayout = [](){};
 
-	/// \brief Enables or disables the drawing of this view's background.
-	/// The background is the extents of the view's frame.
+	MTViewResizePolicy resizePolicy = ResizePolicyNone;
+
+	//This should be private:
+	void performResizePolicy();
+
+	/** @brief Enables or disables the drawing of this view's background.
+	 *  The background is the extents of the view's frame.
+	 */
 	void setDrawBackground(bool drawIt)
 	{
 		if (drawIt != isDrawingBackground)
@@ -312,11 +341,11 @@ class MTView : public MTEventListenerStore,
 	bool getDrawBackground() { return isDrawingBackground; }
 
 	virtual void drawGui(){};
-	
+
 	void setImGuiEnabled(bool doGui);
 	ImGuiContext* imCtx;
 	ofxImGui::Gui & getGui();
-	
+
 	bool isRenderingEnabled = true;
 
 	//------------------------------------------------------//
@@ -431,19 +460,23 @@ class MTView : public MTEventListenerStore,
 
 	ofRectangle screenFrame;   // The Frame in screen coordinates and scale
 
+	void updateScreenFrame();
+
 	bool isDrawingBackground = true;
 	bool isImGuiEnabled = false;
 
 	//------------------------------------------------------//
 	// MOUSE
 	//------------------------------------------------------//
-	// The mouse position in frame coordinates
+	// The mouse position in content coordinates
 	glm::vec2 contentMouse;
 
-	// The mouse down position in frame coordinates
+	glm::vec2 prevContentMouse;
+
+	// The mouse down position in content coordinates
 	glm::vec2 contentMouseDown;
 
-	// The mouse up position in frame coordinates
+	// The mouse up position in content coordinates
 	glm::vec2 contentMouseUp;
 
 	glm::vec2 contentMouseDragStart;
@@ -463,12 +496,12 @@ class MTView : public MTEventListenerStore,
 
 	void frameChangedInternal();
 	void contentChangedInternal();
-	//	void superviewFrameChangedInternal();
+	void superviewFrameChangedInternal();
 	void superviewContentChangedInternal();
 	void layoutInternal();
 
 	bool isSetUp = false;
-	
+
 	float mouseWheel = 0;
 
 	//------------------------------------------------------//
