@@ -254,6 +254,12 @@ class MTView : public MTEventListenerStore,
 
 	const glm::vec2& getLocalMouseDragStart() { return contentMouseDragStart; }
 
+    const glm::vec2& getScreenMouseDown() { return screenMouseDown; }
+
+    const glm::vec2& getScreenMouseDragStart() { return screenMouseDragStart; }
+
+    const glm::vec2& getScreenMouse() { return screenMouse; }
+
 	/// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
 	glm::vec2 transformPoint(glm::vec2& coords, const MTView* toView);
@@ -262,11 +268,15 @@ class MTView : public MTEventListenerStore,
 	/// coordinates to the frame coordinate system of a given MTView.
 	glm::vec2 transformPoint(glm::vec2& coords, std::shared_ptr<MTView> toView);
 
-	/// \brief Transforms the passed point from frame
-	/// coordinates to content coordinates.
-	glm::vec2 frameToContent(glm::vec2& coords);
+    /// \brief Transforms the passed point from frame
+    /// coordinates to content coordinates.
+    glm::vec2 transformFramePointToContent(glm::vec2& coords);
 
-	/// \brief Returns a reference to the frame matrix. Modifying the reference
+    /// \brief Transforms the passed point from frame
+    /// coordinates to screen coordinates.
+    glm::vec2 transformFramePointToScreen(glm::vec2& coords);
+
+    /// \brief Returns a reference to the frame matrix. Modifying the reference
 	/// might result in unexpected behavior!
 	glm::mat4& getFrameMatrix() { return frameMatrix; }
 
@@ -448,6 +458,12 @@ class MTView : public MTEventListenerStore,
 
 	void updateMatrices();
 
+    /**
+     * @brief An FPS Counter for debugging or any other purposes. Call counter.newFrame()
+     * to make use of it, and counter.getFPS() to obtain the measured framerate.
+     */
+    ofFpsCounter counter;
+
   private:
 	//------------------------------------------------------//
 	// VIEW and MATRICES
@@ -481,6 +497,21 @@ class MTView : public MTEventListenerStore,
 
 	glm::vec2 contentMouseDragStart;
 
+    /**
+     * @brief Mouse in screen coordinates
+     */
+    glm::vec2 screenMouse;
+
+    /**
+     * @brief The mouse down position in screen coordinates
+     */
+    glm::vec2 screenMouseDown;
+
+    /**
+     * @brief The mouse drag start in screen coordinates
+     */
+    glm::vec2 screenMouseDragStart;
+
 	bool isDragging = false;
 
 	//------------------------------------------------------//
@@ -509,6 +540,7 @@ class MTView : public MTEventListenerStore,
 	//------------------------------------------------------//
 
 	bool isFocused = false;
+
 };
 
 #endif /* MTView_hpp */

@@ -268,12 +268,22 @@ glm::vec2 MTView::transformPoint(glm::vec2& coords,
 	return transformPoint(coords, toView.get());
 }
 
-glm::vec2 MTView::frameToContent(glm::vec2& coords)
+glm::vec2 MTView::transformFramePointToContent(glm::vec2& coords)
 {
 
 	auto windowCoords = frameMatrix * glm::vec4(coords.x, coords.y, 1, 1);
 	return (invContentMatrix * windowCoords).xy();
 }
+
+/// \brief Transforms the passed point from frame
+/// coordinates to content coordinates.
+glm::vec2 MTView::transformFramePointToScreen(glm::vec2& coords)
+{
+    auto windowCoords = frameMatrix * glm::vec4(coords.x, coords.y, 1, 1);
+    return windowCoords.xy();
+}
+
+
 
 //------------------------------------------------------//
 // VIEW HEIRARCHY                                       //
@@ -599,6 +609,7 @@ void MTView::mouseMoved(ofMouseEventArgs & mouse)
 {
 	prevContentMouse = contentMouse;
 	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    screenMouse = mouse.xy();
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Moved,
 												  contentMouse.x,
 												  contentMouse.y,
@@ -612,10 +623,12 @@ void MTView::mouseDragged(ofMouseEventArgs & mouse)
 {
 	prevContentMouse = contentMouse;
 	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    screenMouse = mouse.xy();
 	if (!isMouseDragging)
 	{
 		isMouseDragging = true;
 		contentMouseDragStart = contentMouseDown;
+        screenMouseDragStart = screenMouseDown;
 	}
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Dragged,
@@ -633,6 +646,7 @@ void MTView::mousePressed(ofMouseEventArgs & mouse)
 	prevContentMouse = contentMouse;
 	contentMouseDown =  (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
 	contentMouse = contentMouseDown;
+    screenMouseDown = mouse.xy();
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Pressed,
 												  contentMouse.x,
