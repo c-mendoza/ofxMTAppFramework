@@ -36,7 +36,7 @@ MTApp::MTApp()
 		fileExtension = "";
 
 		ofInit();
-		ofSetLogLevel(OF_LOG_NOTICE);
+//		ofSetLogLevel(OF_LOG_NOTICE);
 
 		addEventListener(modelLoadedEvent.newListener(
 		  [this](ofEventArgs& args) { modelLoaded(); },
@@ -220,7 +220,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(string windowName,
 										 ofWindowSettings& settings)
 {
 
-	auto window = shared_ptr<MTWindow>(new MTWindow(windowName));
+	auto window = std::make_shared<MTWindow>(windowName);
 	ofGetMainLoop()->addWindow(window);
 	windows.push_back(window);
 

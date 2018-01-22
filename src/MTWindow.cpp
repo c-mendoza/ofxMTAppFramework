@@ -6,14 +6,9 @@
 //
 //
 
-#ifndef MTWindow_h
-#define MTWindow_h
 
 #include "MTWindow.hpp"
-#include "MTAppMode.hpp"
-#include "MTApp.hpp"
-#include "MTModel.hpp"
-#include "MTView.hpp"
+#include "GLFW/glfw3.h"
 
 static ofEventArgs voidEventArgs;
 
@@ -41,6 +36,7 @@ void MTWindow::setup(const ofGLFWWindowSettings& settings)
 	ofAppGLFWWindow::setup(settings);
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
+    glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
 //	gui.setup();
 }
 #else
@@ -254,6 +250,16 @@ void MTWindow::setFocusedView(std::shared_ptr<MTView> view)
 	}
 }
 
+std::shared_ptr<MTView> MTWindow::getFocusedView()
+{
+    auto fv = focusedView.lock();
+    if (fv)
+    {
+        return fv;
+    }
+    return nullptr;
+}
+
 int MTWindow::getWidth()
 {
 	// line 1715 in ofGLProgrammableRenderer.cpp needs to be addressed
@@ -370,5 +376,21 @@ void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 		  mtWindow->mouseButtonInUse);
 	}
 }
+
+void MTWindow::mt_focus_callback(GLFWwindow* glfWwindow, int isFocused)
+{
+    ofAppGLFWWindow* instance =
+            static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(glfWwindow));
+
+    MTWindow* mtWindow = static_cast<MTWindow*>(instance);
+
+    if (isFocused == GLFW_TRUE)
+    {
+        MTWindowEventArgs focusArgs;
+        focusArgs.window = mtWindow->shared_from_this();
+        mtWindow->windowDidBecomeActiveEvent.notify(focusArgs);
+    }
+
+}
+
 #endif
-#endif /* MTWindow_h */

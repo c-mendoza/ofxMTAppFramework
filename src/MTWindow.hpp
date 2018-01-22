@@ -22,11 +22,17 @@
 class MTModel;
 class MTAppModeChangeArgs;
 class MTView;
+class MTWindowEventArgs;
 
 #ifndef TARGET_RASPBERRY_PI
-class MTWindow : public ofAppGLFWWindow, public MTEventListenerStore {
+class MTWindow : public ofAppGLFWWindow,
+                 public MTEventListenerStore,
+                 public std::enable_shared_from_this<MTWindow>
+{
+
 #else
-class MTWindow : public ofAppEGLWindow, public MTEventListenerStore {
+class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std::enable_shared_from_this<MTWindow>
+{
 #endif
   public:
 	MTWindow(string name);
@@ -74,6 +80,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore {
 	void touchDoubleTap(ofTouchEventArgs& touch);
 	void touchCancelled(ofTouchEventArgs& touch);
 
+    ofEvent<MTWindowEventArgs> windowDidBecomeActiveEvent;
 	//------------------------------------------------------//
 	// EVENTS / OVERRIDABLE
 	// //
@@ -93,6 +100,13 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore {
 	virtual void appModeChanged(MTAppModeChangeArgs& modeChange) {}
 
 	void setFocusedView(std::shared_ptr<MTView> view);
+
+    /**
+     * @return A shared pointer to the focused view if there is one,
+     * or nullptr if there is no focused view. Given that this pointer is derived
+     * from a weak_ptr, it is not recommended to retain this shared_ptr.
+     */
+    std::shared_ptr<MTView> getFocusedView();
 
 	//------------------------------------------------------//
 	// OP QUEUES
@@ -179,7 +193,14 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore {
 	 * window::getWidth() and window::getHeight() for getWindowSize().
 	 */
 	static void mt_motion_cb(GLFWwindow* windowP_, double x, double y);
+    static void mt_focus_callback(GLFWwindow* glfWwindow, int isFocused);
 #endif
 };
 
+
+class MTWindowEventArgs : public ofEventArgs
+{
+public:
+    std::weak_ptr<MTWindow> window;
+};
 #endif /* MTWindow_hpp */
