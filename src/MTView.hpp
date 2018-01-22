@@ -56,8 +56,10 @@ class MTView : public MTEventListenerStore,
 	// EVENTS: METHODS TO OVERRIDE //
 	//-----------------------------//
 
-	/// Called once the model is successfully loaded from file.
-	/// Default implementation does nothing.
+	/**
+	 * @brief 	Called once the model is successfully loaded from file.
+	 * Default implementation does nothing.
+	 */
 	virtual void modelLoaded() {}
 	virtual void setup() {}
 	virtual void update() {}
@@ -75,11 +77,10 @@ class MTView : public MTEventListenerStore,
 	/// Position is given in frame coordinates.
 	virtual void mouseMoved(int x, int y) {}
 
-	/// \brief Called on the active view when the mouse is dragged, i.e.
-	/// moved with a button pressed.
-	///
+	/// \brief Called on the active view when the mouse is dragged.
 	/// Position is given in frame coordinates.
 	virtual void mouseDragged(int x, int y, int button) {}
+
 	/// \brief Called on the active view when a mouse button is pressed.
 	///
 	/// Position is given in frame coordinates.
@@ -263,8 +264,10 @@ class MTView : public MTEventListenerStore,
     const glm::vec2& getPrevScreenMouse() { return prevScreenMouse; }
 
 
-    /// \brief Transforms the passed point from its local (frame)
-	/// coordinates to the frame coordinate system of a given MTView.
+/**
+ * @brief Transforms the passed point from its local (frame)
+ * coordinates to the frame coordinate system of a given MTView.
+ */
 	glm::vec2 transformPoint(glm::vec2& coords, const MTView* toView);
 
 	/// \brief Transforms the passed point from its local (frame)
@@ -287,11 +290,13 @@ class MTView : public MTEventListenerStore,
 	// VIEW HEIRARCHY                                       //
 	//------------------------------------------------------//
 
-	/// \brief Moves this view and its hierarchy to the specified MTWindow/
+	/// \brief Moves this view and its hierarchy to the specified MTWindow
 	void setWindow(std::weak_ptr<MTWindow> window);
 
-	/// \brief Gets this view's superview if there is one. Make sure to test the
-	/// returned shared_ptr!
+	/**
+	 * @brief
+	 * @return Returns this view's superview, or @code nullptr @endcode if there isn't one.
+	 */
 	std::shared_ptr<MTView> getSuperview();
 
 	/// \brief Adds a subview.

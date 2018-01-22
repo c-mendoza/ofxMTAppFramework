@@ -244,8 +244,6 @@ void MTView::updateScreenFrame()
 	{
 		glm::vec4 screenFramePosition = super->contentMatrix * glm::vec4(frame.getPosition(), 1);
 		screenFrame.setPosition(screenFramePosition.xyz());
-		/// TODO: Scale
-
 		auto size = getFrameSize().xyyy() * super->contentMatrix;
 		screenFrame.setSize(size.x, size.y);
 	}
@@ -362,10 +360,13 @@ bool MTView::removeFromSuperview()
 	return false;
 }
 
-/// \returns True if there was a view to be removed.
+/**
+ * @returns True if there was a view to be removed.
+ */
+
 bool MTView::removeLastSubview()
 {
-	if (subviews.size() > 0)
+	if (!subviews.empty())
 	{
 		auto sv = subviews.back();
 		sv->superview.reset();
