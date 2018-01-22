@@ -609,6 +609,7 @@ void MTView::mouseMoved(ofMouseEventArgs & mouse)
 {
 	prevContentMouse = contentMouse;
 	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    prevScreenMouse = screenMouse;
     screenMouse = mouse.xy();
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Moved,
 												  contentMouse.x,
@@ -623,6 +624,7 @@ void MTView::mouseDragged(ofMouseEventArgs & mouse)
 {
 	prevContentMouse = contentMouse;
 	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    prevScreenMouse = screenMouse;
     screenMouse = mouse.xy();
 	if (!isMouseDragging)
 	{
@@ -646,7 +648,10 @@ void MTView::mousePressed(ofMouseEventArgs & mouse)
 	prevContentMouse = contentMouse;
 	contentMouseDown =  (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
 	contentMouse = contentMouseDown;
-    screenMouseDown = mouse.xy();
+    prevScreenMouse = screenMouse;
+    screenMouse = mouse.xy();
+    screenMouseDown = screenMouse;
+
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Pressed,
 												  contentMouse.x,
@@ -663,6 +668,9 @@ void MTView::mouseReleased(ofMouseEventArgs & mouse)
 	prevContentMouse = contentMouse;
 	contentMouseUp = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
 	contentMouse = contentMouseUp;
+    prevScreenMouse = screenMouse;
+    screenMouse = mouse.xy();
+
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,
 												  contentMouse.x,
 												  contentMouse.y,

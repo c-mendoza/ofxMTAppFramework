@@ -260,7 +260,10 @@ class MTView : public MTEventListenerStore,
 
     const glm::vec2& getScreenMouse() { return screenMouse; }
 
-	/// \brief Transforms the passed point from its local (frame)
+    const glm::vec2& getPrevScreenMouse() { return prevScreenMouse; }
+
+
+    /// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
 	glm::vec2 transformPoint(glm::vec2& coords, const MTView* toView);
 
@@ -502,11 +505,13 @@ class MTView : public MTEventListenerStore,
      */
     glm::vec2 screenMouse;
 
+    glm::vec2 prevScreenMouse;
+
     /**
      * @brief The mouse down position in screen coordinates
      */
     glm::vec2 screenMouseDown;
-
+;
     /**
      * @brief The mouse drag start in screen coordinates
      */
