@@ -188,7 +188,7 @@ void MTView::frameChangedInternal()
 void MTView::contentChangedInternal()
 {
 	updateMatrices();
-	//	updateScreenFrame(); //?
+    updateScreenFrame(); //?
 
 	contentChanged();
 
@@ -211,6 +211,7 @@ void MTView::superviewFrameChangedInternal()
 void MTView::superviewContentChangedInternal()
 {
 	updateMatrices();
+    updateScreenFrame();
 	for (auto sv : subviews)
 	{
 		sv->superviewContentChangedInternal();
