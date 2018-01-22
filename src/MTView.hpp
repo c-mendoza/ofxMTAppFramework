@@ -50,7 +50,11 @@ class MTView : public MTEventListenerStore,
 	//-----------------------------//
 
 	ofParameter<ofFloatColor> backgroundColor;
-	ofParameter<string> name;
+
+    /**
+     * @brief A friendly name for the view
+     */
+	ofParameter<std::string> name;
 
 	//-----------------------------//
 	// EVENTS: METHODS TO OVERRIDE //

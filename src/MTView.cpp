@@ -361,9 +361,9 @@ bool MTView::removeFromSuperview()
 }
 
 /**
- * @returns True if there was a view to be removed.
+ * @brief
+ * returns true if there was a view to be removed.
  */
-
 bool MTView::removeLastSubview()
 {
 	if (!subviews.empty())
