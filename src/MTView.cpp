@@ -691,6 +691,11 @@ void MTView::mouseReleased(ofMouseEventArgs & mouse)
 
 void MTView::mouseScrolled( ofMouseEventArgs & mouse )
 {
+    prevContentMouse = contentMouse;
+    contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
+    prevScreenMouse = screenMouse;
+    screenMouse = mouse.xy();
+
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Scrolled,
 												  contentMouse.x,
 												  contentMouse.y,
