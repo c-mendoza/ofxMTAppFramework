@@ -7,10 +7,6 @@
 //
 
 #include "MTView.hpp"
-#include "MTApp.hpp"
-#include "MTModel.hpp"
-#include "MTWindow.hpp"
-#include "MTAppMode.hpp"
 
 MTView::MTView(string _name)
 {
@@ -59,23 +55,23 @@ void MTView::setFrameOrigin(float x, float y)
 	frameChangedInternal();
 }
 
-void MTView::setFrameOrigin(glm::vec3 pos)
+void MTView::setFrameOrigin(glm::vec2 pos)
 {
-	frame.setPosition(pos);
+	frame.setPosition(glm::vec3(pos, 0));
 	frameChangedInternal();
 }
 
-void MTView::shiftFrameOrigin(glm::vec3 shiftAmount)
+void MTView::shiftFrameOrigin(glm::vec2 shiftAmount)
 {
 	setFrameOrigin(frame.getPosition() + shiftAmount);
 }
 
-void MTView::setFrameFromCenter(glm::vec3 pos, glm::vec2 size)
+void MTView::setFrameFromCenter(glm::vec2 pos, glm::vec2 size)
 {
-	frame.setFromCenter(pos.xy(), size.x, size.y);
+	frame.setFromCenter(pos, size.x, size.y);
 }
 
-void MTView::setFrameCenter(glm::vec3 pos)
+void MTView::setFrameCenter(glm::vec2 pos)
 {
 	frame.setFromCenter(pos, frame.width, frame.height);
 	frameChangedInternal();
@@ -114,9 +110,10 @@ void MTView::setContent(ofRectangle newContentRect)
 	contentChangedInternal();
 }
 
-void MTView::setContentOrigin(glm::vec3 pos)
+void MTView::setContentOrigin(glm::vec2 pos)
 {
-	content.setPosition(pos);
+    // Making sure that we are not accidentally adding a z-coordinate here:
+	content.setPosition(glm::vec3(pos, 0));
 	contentChangedInternal();
 }
 
@@ -125,7 +122,7 @@ const glm::vec3& MTView::getContentOrigin()
 	return content.getPosition();
 }
 
-void MTView::shiftContentOrigin(glm::vec3 shiftAmount)
+void MTView::shiftContentOrigin(glm::vec2 shiftAmount)
 {
     setContentOrigin(content.position + shiftAmount);
 }
@@ -240,7 +237,11 @@ void MTView::performResizePolicy()
 			setFrameSize(super->getFrameSize());
 			break;
 
-	}
+        case ResizePolicyNone:break;
+        case ResizePolicyKeepExact:break;
+        case ResizePolicyKeepProportional:break;
+        case ResizePolicyAspectRatio:break;
+    }
 }
 
 void MTView::updateScreenFrame()
@@ -336,7 +337,7 @@ void MTView::addSubview(shared_ptr<MTView> subview)
 	subviews.push_back(subview);
 }
 
-vector<shared_ptr<MTView>>& MTView::getSubviews()
+std::vector<std::shared_ptr<MTView>>& MTView::getSubviews()
 {
 	return subviews;
 }
@@ -531,7 +532,8 @@ void MTView::draw(ofEventArgs & args)
 	}
 
 	// Load the content coordinates:
-	ofMultMatrix(contentMatrix);
+//    ofLoadIdentityMatrix();
+    ofMultMatrix(contentMatrix);
 
 	// Execute operations in the draw queue:
 	while (!drawOpQueue.empty())
@@ -612,12 +614,31 @@ void MTView::keyReleased(ofKeyEventArgs & key)
 	keyReleasedEvent.notify(this, key);
 }
 
+void MTView::updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord)
+{
+    prevContentMouse = contentMouse;
+    contentMouse = (invContentMatrix * glm::vec4(windowCoord.x, windowCoord.y, 1, 1)).xy();
+    prevWindowMouse = windowMouse;
+    windowMouse = windowCoord;
+}
+
+void MTView::updateMouseDownPositionsWithWindowCoordinate(glm::vec2 windowCoord)
+{
+    updateMousePositionsWithWindowCoordinate(windowCoord);
+    contentMouseDown =  contentMouse;
+    windowMouseDown = windowMouse;
+}
+
+void MTView::updateMouseUpPositionsWithWindowCoordinate(glm::vec2 windowCoord)
+{
+    updateMousePositionsWithWindowCoordinate(windowCoord);
+    contentMouseUp = contentMouse;
+//    windowMouseUp = windowMouse;
+}
+
 void MTView::mouseMoved(ofMouseEventArgs & mouse)
 {
-	prevContentMouse = contentMouse;
-	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-    prevScreenMouse = screenMouse;
-    screenMouse = mouse.xy();
+    updateMousePositionsWithWindowCoordinate(mouse);
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Moved,
 												  contentMouse.x,
 												  contentMouse.y,
@@ -629,15 +650,12 @@ void MTView::mouseMoved(ofMouseEventArgs & mouse)
 
 void MTView::mouseDragged(ofMouseEventArgs & mouse)
 {
-	prevContentMouse = contentMouse;
-	contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-    prevScreenMouse = screenMouse;
-    screenMouse = mouse.xy();
+    updateMousePositionsWithWindowCoordinate(mouse);
 	if (!isMouseDragging)
 	{
 		isMouseDragging = true;
 		contentMouseDragStart = contentMouseDown;
-        screenMouseDragStart = screenMouseDown;
+        windowMouseDragStart = windowMouseDown;
 	}
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Dragged,
@@ -652,13 +670,7 @@ void MTView::mouseDragged(ofMouseEventArgs & mouse)
 void MTView::mousePressed(ofMouseEventArgs & mouse)
 {
 //	ofLogVerbose("MTView") << "mousePressed: " << name.get();
-	prevContentMouse = contentMouse;
-	contentMouseDown =  (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-	contentMouse = contentMouseDown;
-    prevScreenMouse = screenMouse;
-    screenMouse = mouse.xy();
-    screenMouseDown = screenMouse;
-
+    updateMouseDownPositionsWithWindowCoordinate(mouse);
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Pressed,
 												  contentMouse.x,
@@ -672,11 +684,7 @@ void MTView::mousePressed(ofMouseEventArgs & mouse)
 void MTView::mouseReleased(ofMouseEventArgs & mouse)
 {
 	//	ofLogVerbose("MTView") << "mouseReleased: " << name.get();
-	prevContentMouse = contentMouse;
-	contentMouseUp = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-	contentMouse = contentMouseUp;
-    prevScreenMouse = screenMouse;
-    screenMouse = mouse.xy();
+    updateMouseUpPositionsWithWindowCoordinate(mouse);
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,
 												  contentMouse.x,
@@ -696,11 +704,7 @@ void MTView::mouseReleased(ofMouseEventArgs & mouse)
 
 void MTView::mouseScrolled( ofMouseEventArgs & mouse )
 {
-    prevContentMouse = contentMouse;
-    contentMouse = (invContentMatrix * glm::vec4(mouse.x, mouse.y, 1, 1)).xy();
-    prevScreenMouse = screenMouse;
-    screenMouse = mouse.xy();
-
+    updateMousePositionsWithWindowCoordinate(mouse);
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Scrolled,
 												  contentMouse.x,
 												  contentMouse.y,
@@ -795,9 +799,9 @@ void MTView::updateMatrices()
 	}
 
 	invFrameMatrix = glm::inverse(frameMatrix);
-
-	auto pos = glm::translate(frameMatrix, content.getPosition());
-	contentMatrix = glm::scale(pos, glm::vec3(contentScaleX.get(), contentScaleY.get(), 1));
+    auto scaleMatrix = glm::scale(glm::vec3(contentScaleX.get(), contentScaleY.get(), 1));
+    auto transMatrix = glm::translate(frameMatrix, content.getPosition());
+    contentMatrix = transMatrix * scaleMatrix;
 	invContentMatrix = glm::inverse(contentMatrix);
 
 	// TODO: Should updateMatrices recurse? prolly:
@@ -805,6 +809,28 @@ void MTView::updateMatrices()
 	{
 		sv->updateMatrices();
 	}
+}
+
+const ofParameter<ofFloatColor>& MTView::getBackgroundColor() const
+{
+    return backgroundColor;
+}
+
+const glm::mat4& MTView::getContentMatrix() const
+{
+    return contentMatrix;
+}
+
+const glm::mat4& MTView::getInvContentMatrix() const
+{
+    return invContentMatrix;
+}
+
+
+
+const glm::mat4& MTView::getInvFrameMatrix() const
+{
+    return invFrameMatrix;
 }
 
 
