@@ -237,27 +237,27 @@ class MTView : public MTEventListenerStore,
 	/// window coordinate.
 	virtual std::shared_ptr<MTView> hitTest(glm::vec2& windowCoord);
 
-	/// \brief Gets the mouse position in frame coordinates.
+	/// \brief Gets the mouse position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getLocalMouse() { return contentMouse; }
+	const glm::vec2& getContentMouse() { return contentMouse; }
 
-	const glm::vec2& getPrevLocalMouse() { return prevContentMouse; }
+	const glm::vec2& getPrevContentMouse() { return prevContentMouse; }
 
-	/// \brief Returns the mouse down position in frame coordinates.
+	/// \brief Returns the mouse down position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getLocalMouseDown() { return contentMouseDown; }
+	const glm::vec2& getContentMouseDown() { return contentMouseDown; }
 
-	/// \brief Returns the last mouse up position in frame coordinates.
+	/// \brief Returns the last mouse up position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getLocalMouseUp() { return contentMouseUp; }
+	const glm::vec2& getContentMouseUp() { return contentMouseUp; }
 
-	const glm::vec2& getLocalMouseDragStart() { return contentMouseDragStart; }
+	const glm::vec2& getContentMouseDragStart() { return contentMouseDragStart; }
 
     const glm::vec2& getScreenMouseDown() { return screenMouseDown; }
 

@@ -293,7 +293,7 @@ public:
 		onMouseDragged = [this](int x, int y, int button)
 		{
 			setFrameOrigin(getFrameOrigin() +
-						   (getLocalMouse() - getLocalMouseDown()));
+						   (getContentMouse() - getContentMouseDown()));
 		};
 
 		wantsFocus = false;

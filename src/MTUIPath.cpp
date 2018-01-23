@@ -799,7 +799,7 @@ void MTUIPathVertex::draw()
 
 /*
  *     glm::vec3 pos = view->getFrameOrigin();
-	view->setFrameOrigin(pos + (view->getLocalMouse() - view->getLocalMouseDown() ));
+	view->setFrameOrigin(pos + (view->getContentMouse() - view->getContentMouseDown() ));
 	*/
 
 
