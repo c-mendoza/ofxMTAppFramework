@@ -212,7 +212,7 @@ class MTView : public MTEventListenerStore,
 	ofRectangle getContent() { return content; }
 	void setContentOrigin(glm::vec3 pos);
 	const glm::vec3& getContentOrigin();
-
+    void shiftContentOrigin(glm::vec3 shiftAmount);
 	void setContentSize(glm::vec2 size);
 	void setContentSize(float width, float height);
 	glm::vec2 getContentSize();

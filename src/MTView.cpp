@@ -125,6 +125,11 @@ const glm::vec3& MTView::getContentOrigin()
 	return content.getPosition();
 }
 
+void MTView::shiftContentOrigin(glm::vec3 shiftAmount)
+{
+    setContentOrigin(content.position + shiftAmount);
+}
+
 void MTView::setContentSize(glm::vec2 size)
 {
 	setContentSize(size.x, size.y);
