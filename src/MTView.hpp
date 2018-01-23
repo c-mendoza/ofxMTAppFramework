@@ -190,16 +190,16 @@ class MTView : public MTEventListenerStore,
 	float getHeight() { return frame.height; }
 
 	void setFrameOrigin(float x, float y);
-	void setFrameOrigin(glm::vec3 pos);
-	void shiftFrameOrigin(glm::vec3 shiftAmount);
+	void setFrameOrigin(glm::vec2 pos);
+	void shiftFrameOrigin(glm::vec2 shiftAmount);
 	const glm::vec3& getFrameOrigin();
 
 	void setFrameSize(glm::vec2 size);
 	void setFrameSize(float width, float height);
 	glm::vec2 getFrameSize();
 
-	void setFrameFromCenter(glm::vec3 pos, glm::vec2 size);
-	void setFrameCenter(glm::vec3 pos);
+	void setFrameFromCenter(glm::vec2 pos, glm::vec2 size);
+	void setFrameCenter(glm::vec2 pos);
 	glm::vec3 getFrameCenter();
 
 	bool clipToFrame = false;
@@ -210,9 +210,9 @@ class MTView : public MTEventListenerStore,
 	 * @return an ofRectangle
 	 */
 	ofRectangle getContent() { return content; }
-	void setContentOrigin(glm::vec3 pos);
+	void setContentOrigin(glm::vec2 pos);
 	const glm::vec3& getContentOrigin();
-    void shiftContentOrigin(glm::vec3 shiftAmount);
+    void shiftContentOrigin(glm::vec2 shiftAmount);
 	void setContentSize(glm::vec2 size);
 	void setContentSize(float width, float height);
 	glm::vec2 getContentSize();
@@ -259,13 +259,13 @@ class MTView : public MTEventListenerStore,
 
 	const glm::vec2& getContentMouseDragStart() { return contentMouseDragStart; }
 
-    const glm::vec2& getScreenMouseDown() { return screenMouseDown; }
+    const glm::vec2& getScreenMouseDown() { return windowMouseDown; }
 
-    const glm::vec2& getScreenMouseDragStart() { return screenMouseDragStart; }
+    const glm::vec2& getScreenMouseDragStart() { return windowMouseDragStart; }
 
-    const glm::vec2& getScreenMouse() { return screenMouse; }
+    const glm::vec2& getScreenMouse() { return windowMouse; }
 
-    const glm::vec2& getPrevScreenMouse() { return prevScreenMouse; }
+    const glm::vec2& getPrevScreenMouse() { return prevWindowMouse; }
 
 
 /**
@@ -306,7 +306,7 @@ class MTView : public MTEventListenerStore,
 	/// \brief Adds a subview.
 	void addSubview(shared_ptr<MTView> subview);
 
-	vector<shared_ptr<MTView>>& getSubviews();
+	std::vector<std::shared_ptr<MTView>>& getSubviews();
 
 	void setSuperview(shared_ptr<MTView> view);
 
@@ -401,7 +401,13 @@ class MTView : public MTEventListenerStore,
 	void messageReceived(ofMessage& message);
 	void modelLoaded(ofEventArgs& args);
 
-	//------------------------------------------------------//
+private:
+    void updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord);
+    void updateMouseDownPositionsWithWindowCoordinate(glm::vec2 windowCoord);
+    void updateMouseUpPositionsWithWindowCoordinate(glm::vec2 windowCoord);
+
+public:
+    //------------------------------------------------------//
 	// EVENTS
 	//
 	//------------------------------------------------------//
@@ -443,7 +449,7 @@ class MTView : public MTEventListenerStore,
   protected:
 	std::weak_ptr<MTWindow> window;
 	std::weak_ptr<MTView> superview;
-	vector<shared_ptr<MTView>> subviews;
+	std::vector<std::shared_ptr<MTView>> subviews;
 
 	std::shared_ptr<MTAppMode> currentAppMode;
 
@@ -485,8 +491,18 @@ class MTView : public MTEventListenerStore,
 	glm::mat4 invContentMatrix;
 	glm::mat4 frameMatrix;
 	glm::mat4 invFrameMatrix;
+public:
+    const ofParameter<ofFloatColor>& getBackgroundColor() const;
 
-	ofRectangle screenFrame;   // The Frame in screen coordinates and scale
+    const glm::mat4& getContentMatrix() const;
+
+    const glm::mat4& getInvContentMatrix() const;
+
+    const glm::mat4& getInvFrameMatrix() const;
+
+private:
+
+    ofRectangle screenFrame;   // The Frame in screen coordinates and scale
 
 	void updateScreenFrame();
 
@@ -512,19 +528,19 @@ class MTView : public MTEventListenerStore,
     /**
      * @brief Mouse in screen coordinates
      */
-    glm::vec2 screenMouse;
+    glm::vec2 windowMouse;
 
-    glm::vec2 prevScreenMouse;
+    glm::vec2 prevWindowMouse;
 
     /**
-     * @brief The mouse down position in screen coordinates
+     * @brief The mouse down position in window coordinates
      */
-    glm::vec2 screenMouseDown;
+    glm::vec2 windowMouseDown;
 ;
     /**
      * @brief The mouse drag start in screen coordinates
      */
-    glm::vec2 screenMouseDragStart;
+    glm::vec2 windowMouseDragStart;
 
 	bool isDragging = false;
 
@@ -555,6 +571,7 @@ class MTView : public MTEventListenerStore,
 
 	bool isFocused = false;
 
+    const glm::mat4& getFrameMatrix() const;
 };
 
 #endif /* MTView_hpp */
