@@ -35,12 +35,12 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 {
 #endif
   public:
-	MTWindow(string name);
+	MTWindow(std::string name);
 	~MTWindow();
 
-	ofParameter<string> name;
+	ofParameter<std::string> name;
 
-	shared_ptr<MTView> contentView;
+    std::shared_ptr<MTView> contentView;
 
 	//TODO: mouseX and mouseY in MTWindow
 	int mouseX, mouseY;   // for processing heads
@@ -116,7 +116,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 * @brief enqueueDrawOperation
 	 * @param funct
 	 */
-	void enqueueDrawOperation(function<void()> funct)
+	void enqueueDrawOperation(std::function<void()> funct)
 	{
 		drawOpQueue.push(funct);
 	}
@@ -125,7 +125,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 * @brief enqueueUpdateOperation
 	 * @param f
 	 */
-	void enqueueUpdateOperation(function<void()> f) { updateOpQueue.push(f); }
+	void enqueueUpdateOperation(std::function<void()> f) { updateOpQueue.push(f); }
 
 	//------------------------------------------------------//
 	// OFBASEWINDOW OVERRIDES
@@ -169,8 +169,8 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	ofMatrix4x4 transMatrix;
 	ofMatrix4x4 invTransMatrix;   // Just a cached value
 
-	queue<function<void()>> updateOpQueue;
-	queue<function<void()>> drawOpQueue;
+    std::queue<std::function<void()>> updateOpQueue;
+    std::queue<std::function<void()>> drawOpQueue;
 
 	std::weak_ptr<MTView> focusedView;
 	std::weak_ptr<MTView> mouseOverView;

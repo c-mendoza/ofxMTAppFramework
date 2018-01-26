@@ -1,6 +1,8 @@
 #pragma once
 
-#include "ofMain.h"
+//#include "ofMain.h"
+#include <3d/ofCamera.h>
+#include "ofAppRunner.h"
 
 // Ortho camera is a custom
 //	camera we've created in

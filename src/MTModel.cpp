@@ -8,10 +8,8 @@
 
 #include "MTModel.hpp"
 #include "ofXml.h"
-#include "ofParameter.h"
-#include "ofParameterGroup.h"
 
-MTModel::MTModel(string _name)
+MTModel::MTModel(std::string _name)
 {
     name = _name;
     parameters.setName(name);
@@ -27,12 +25,12 @@ MTModel::MTModel(string _name)
 //    eventListeners.clear();
 //}
 
-string MTModel::getName()
+std::string MTModel::getName()
 {
     return name;
 }
 
-void MTModel::setName(string n)
+void MTModel::setName(std::string n)
 {
     name = n;
     parameters.setName(n);
@@ -54,7 +52,7 @@ void MTModel::deserialize(ofXml &serializer)
 	
 	for (auto &parameter : parameters)
 	{
-		string escapedName = parameter->getEscapedName();
+        std::string escapedName = parameter->getEscapedName();
 		auto child = serializer.getChild(escapedName);
 		if(parameter->type() == typeid(ofParameter <int> ).name()){
 			parameter->cast <int>() = child.getIntValue();
@@ -62,8 +60,8 @@ void MTModel::deserialize(ofXml &serializer)
 			parameter->cast <float>() = child.getFloatValue();
 		}else if(parameter->type() == typeid(ofParameter <bool> ).name()){
 			parameter->cast <bool>() = child.getBoolValue();
-		}else if(parameter->type() == typeid(ofParameter <string> ).name()){
-			parameter->cast <string>() = child.getValue();
+		}else if(parameter->type() == typeid(ofParameter <std::string> ).name()){
+			parameter->cast <std::string>() = child.getValue();
 		} else if(parameter->type() == typeid(ofParameterGroup).name()) {
 			//Ignore groups
 		

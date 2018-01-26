@@ -2,6 +2,7 @@
 #define MTAPPMODEPATHEDITOR_HPP
 
 #include "ofxMTAppFramework.h"
+#include "ofPath.h"
 
 class MTUIPath;
 
@@ -15,7 +16,7 @@ public:
 class PathEditorSettings
 {
 public:
-	shared_ptr<MTView> view;
+    std::shared_ptr<MTView> view;
 
 	/**
 	 * @brief allowMultiplePaths
@@ -40,7 +41,7 @@ public:
 	 * @brief If @property allowMultiplePaths is true then this
 	 * member must contain a valid vector of shared_ptr<ofPath>
 	 */
-	vector<std::shared_ptr<ofPath>> *paths;
+    std::vector<std::shared_ptr<ofPath>> *paths;
 	/**
 	 * @brief If @property allowMultiplePaths is false then this
 	 * member must contain a valid shared_ptr<ofPath>
@@ -55,7 +56,7 @@ public:
 	 */
 
 	int maxPaths = INT_MAX;
-	string appModeName = "";
+    std::string appModeName = "";
 
 	ofColor pathColor = ofColor::yellow;
 	float pathStrokeWidth = 3;
@@ -99,12 +100,12 @@ class MTAppModePathEditor : public MTAppMode {
   protected:
 	PathEditorEventArgs pEventArgs;
 	PathEditorSettings settings;
-	shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p);
-	bool removeUIPath(shared_ptr<MTUIPath> p);
+    std::shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p);
+	bool removeUIPath(std::shared_ptr<MTUIPath> p);
 	typedef ofPath::Command ofPathCommand;
-	vector<std::shared_ptr<MTUIPath>> uiPaths;
-	vector<std::shared_ptr<ofPath>> pathCollection;
-	shared_ptr<MTUIPath> activeUIPath = nullptr;
+    std::vector<std::shared_ptr<MTUIPath>> uiPaths;
+    std::vector<std::shared_ptr<ofPath>> pathCollection;
+    std::shared_ptr<MTUIPath> activeUIPath = nullptr;
 	void handleMoved(const void* handle, ofMouseEventArgs& args);
 	bool handleWasPressed = false;
 };

@@ -21,7 +21,7 @@
 //	#define ofGetMouseY mtGetLocalMouseY
 //#endif
 
-#include "ofMain.h"
+//#include "ofMain.h"
 #include "MTAppFrameworkUtils.hpp"
 #include "MTAppMode.hpp"
 #include "MTApp.hpp"

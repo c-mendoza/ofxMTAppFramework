@@ -10,7 +10,9 @@
 #define MTView_hpp
 
 #include "ofxMTAppFramework.h"
-#include "glm/glm.hpp"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 #include "ofxImGui.h"
 
 enum MTViewResizePolicy
@@ -42,7 +44,7 @@ class MTView : public MTEventListenerStore,
 {
 
   public:
-	MTView(string _name);
+	MTView(std::string _name);
 	virtual ~MTView();
 
 	//-----------------------------//
@@ -304,11 +306,11 @@ class MTView : public MTEventListenerStore,
 	std::shared_ptr<MTView> getSuperview();
 
 	/// \brief Adds a subview.
-	void addSubview(shared_ptr<MTView> subview);
+	void addSubview(std::shared_ptr<MTView> subview);
 
 	std::vector<std::shared_ptr<MTView>>& getSubviews();
 
-	void setSuperview(shared_ptr<MTView> view);
+	void setSuperview(std::shared_ptr<MTView> view);
 
 	/// \returns True if successful.
 	bool removeFromSuperview();
@@ -437,12 +439,12 @@ public:
 	// OPERATION QUEUES
 	//------------------------------------------------------//
 
-	void enqueueDrawOperation(function<void()> funct)
+	void enqueueDrawOperation(std::function<void()> funct)
 	{
 		drawOpQueue.push(funct);
 	}
 
-	void enqueueUpdateOperation(function<void()> f) { updateOpQueue.push(f); }
+	void enqueueUpdateOperation(std::function<void()> f) { updateOpQueue.push(f); }
 
 	friend class MTWindow;
 
@@ -548,8 +550,8 @@ private:
 	// QUEUES
 	//------------------------------------------------------//
 
-	queue<function<void()>> updateOpQueue;
-	queue<function<void()>> drawOpQueue;
+    std::queue<std::function<void()>> updateOpQueue;
+    std::queue<std::function<void()>> drawOpQueue;
 
 	//------------------------------------------------------//
 	// INTERNALS / CONVENIENCE

@@ -1,4 +1,6 @@
+#include <math/ofMatrix4x4.h>
 #include "OrthoCamera.h"
+#include "ofGraphics.h"
 
 // Ortho camera is a custom
 //	camera we've created in
@@ -40,7 +42,7 @@ void orthoCamera::begin(ofRectangle rect){
 	// Setup projection
 
 	ofSetMatrixMode(OF_MATRIX_PROJECTION);
-	
+
     ofMatrix4x4 ortho;
     ortho.makeOrthoMatrix(-scalex, scalex, -scaley, scaley, -20 * scale, 28 * scale );
     ofLoadMatrix( ortho );

@@ -9,8 +9,9 @@
 #ifndef MTUIPath_h
 #define MTUIPath_h
 
-#include "ofMain.h"
 #include "MTView.hpp"
+#include "ofPath.h"
+#include "ofGraphics.h"
 #include <bitset>
 
 class MTUIPathEventArgs;
@@ -88,7 +89,7 @@ public:
 	/////////////////////////////////
 
 	///Returns true if the handle is found and deleted
-	bool deleteHandle(shared_ptr<MTUIPathVertex> handle);
+	bool deleteHandle(std::shared_ptr<MTUIPathVertex> handle);
 
 	///Deletes all selected handles
 	void deleteSelected();
@@ -108,13 +109,13 @@ public:
 	/////////////////////////////////
 
 	///Adds a handle to the selection
-	void addToSelection(shared_ptr<MTUIPathVertex> handle);
+	void addToSelection(std::shared_ptr<MTUIPathVertex> handle);
 
 	///Removes a handle from the selection
-	void removeFromSelection(shared_ptr<MTUIPathVertex> handle);
+	void removeFromSelection(std::shared_ptr<MTUIPathVertex> handle);
 
 	///Sets the selection to the specified handle, removing all others from the selection
-	void setSelection(shared_ptr<MTUIPathVertex> handle);
+	void setSelection(std::shared_ptr<MTUIPathVertex> handle);
 
 	///Removes all from selection
 	void deselectAll();
@@ -123,7 +124,7 @@ public:
 	void selectAll();
 
 	///Gets the selected handles. It is not safe to modify this vector nor to change the Path commands directly.
-	const vector<shared_ptr<MTView>> getSelection();
+	const std::vector<std::shared_ptr<MTView>> getSelection();
 
 //    ///
 //    /// \brief addEventListeners adds mouse and keyboard
@@ -188,8 +189,8 @@ protected:
 	typedef ofPath::Command ofPathCommand;
 	std::shared_ptr<ofPath> path = NULL;
 	bool isClosed = false;
-	vector<shared_ptr<MTUIPathVertex>> pathVertices;
-	vector<shared_ptr<MTUIPathVertex>> selectedVertices;
+    std::vector<std::shared_ptr<MTUIPathVertex>> pathVertices;
+    std::vector<std::shared_ptr<MTUIPathVertex>> selectedVertices;
 	void handlePressed(MTUIPathVertex* vertex, ofMouseEventArgs &args);
 	void handleReleased(MTUIPathVertex* vertex, ofMouseEventArgs &args);
 //    ofEventListener* drawListener;
@@ -216,7 +217,7 @@ protected:
 		glm::vec3 pos;
 	};
 
-	vector<Midpoint> midpoints;
+    std::vector<Midpoint> midpoints;
 	Midpoint closestMidpoint;
 	Midpoint& getClosestMidpoint(const glm::vec3 & point);
 
@@ -233,9 +234,9 @@ class MTUIPathVertex : public MTEventListenerStore
 	unsigned int index;
 	std::weak_ptr<MTUIPathVertex> nextVertex;
 	std::weak_ptr<MTUIPathVertex> prevVertex;
-	shared_ptr<MTUIHandle> toHandle;
-	shared_ptr<MTUIHandle> cp1Handle;
-	shared_ptr<MTUIHandle> cp2Handle;
+    std::shared_ptr<MTUIHandle> toHandle;
+    std::shared_ptr<MTUIHandle> cp1Handle;
+    std::shared_ptr<MTUIHandle> cp2Handle;
 	ofStyle currentStyle;
 
 	bool mirroredControlPoints = false;
@@ -288,7 +289,7 @@ class MTUIHandle : public MTView
 {
 public:
 
-	MTUIHandle(string _name) : MTView(_name)
+	MTUIHandle(std::string _name) : MTView(_name)
 	{
 		onMouseDragged = [this](int x, int y, int button)
 		{

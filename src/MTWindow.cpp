@@ -9,10 +9,12 @@
 
 #include "MTWindow.hpp"
 #include "GLFW/glfw3.h"
+#include "ofGraphics.h"
+#include "ofAppRunner.h"
 
 static ofEventArgs voidEventArgs;
 
-MTWindow::MTWindow(string name)
+MTWindow::MTWindow(std::string name)
 {
 	contentView = std::make_shared<MTView>("root");
 	contentView->backgroundColor = ofColor(0);
@@ -351,7 +353,7 @@ void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 
 	MTWindow* mtWindow = static_cast<MTWindow*>(instance);
 
-	shared_ptr<ofMainLoop> mainLoop = ofGetMainLoop();
+    std::shared_ptr<ofMainLoop> mainLoop = ofGetMainLoop();
 
 	if (mainLoop)
 	{

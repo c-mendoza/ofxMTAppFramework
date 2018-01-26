@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "MTAppFrameworkUtils.hpp"
+#include "ofxImGui.h"
 
 class ofXml;
 class ofParameterGroup;
@@ -18,14 +19,20 @@ class ofParameterGroup;
 class MTModel : public MTEventListenerStore
 {
 public:
-	MTModel(string _name);
+	MTModel(std::string _name);
 	virtual ~MTModel(){}
-	string getName();
-	void setName(string n);
+    std::string getName();
+	void setName(std::string n);
 	ofParameterGroup& getParameters();
 
 	virtual void serialize(ofXml& serializer);
 	virtual void deserialize(ofXml& serializer);
+
+    /**
+     * @brief Override this to allow the model to draw its own gui
+     * via ImGui
+     */
+    virtual void drawGui(ofxImGui::Settings& settings){}
 //	virtual void loadFromSerializer(ofXml& serializer) = 0;
 //	virtual void saveWithSerializer(ofXml& serializer) = 0;
 
@@ -33,7 +40,7 @@ protected:
 	ofParameterGroup parameters;
 
 private:
-	string name;
+    std::string name;
 };
 
 #endif /* ofxMTModel_hpp */

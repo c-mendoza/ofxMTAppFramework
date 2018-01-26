@@ -1,15 +1,23 @@
 #ifndef ofxMTApp_hpp
 #define ofxMTApp_hpp
 
+#include <utils/ofXml.h>
+#include <unordered_map>
 #include "ofxMTAppFramework.h"
+#include "MTModel.hpp"
 #include "ofxImGui.h"
+#include "ofBaseApp.h"
+
 
 class MTWindow;
 class MTView;
 class MTModel;
 class MTAppMode;
+class ofAppBaseWindow;
+class ofWindowSettings;
+class Gui;
 
-typedef string MTAppModeName;
+typedef std::string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
@@ -50,7 +58,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	virtual void runApp();
 
 	template<class T>
-	static shared_ptr<T> Model()
+	static std::shared_ptr<T> Model()
 	{
 		auto outModel = std::dynamic_pointer_cast<T>(MTApp::sharedApp->model);
 		return outModel;
@@ -91,7 +99,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 * is stored
 	 * by the MTApp class.
 	 */
-	std::shared_ptr<MTWindow> createWindow(string windowName,
+	std::shared_ptr<MTWindow> createWindow(std::string windowName,
 										 ofWindowSettings& settings);
 
 	/**
@@ -103,7 +111,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 * @return A weak reference to the created window.
 	 */
 	std::shared_ptr<MTWindow> createWindowForView(std::shared_ptr<MTView> view,
-												string windowName,
+												std::string windowName,
 												ofWindowSettings& settings);
 
 	/// Returns the mouse x-position in local coordinates of the current window
@@ -128,11 +136,11 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 
 	/////// UTILITY
 	/// Stringifies a path.
-	static string pathToString(ofPath& path);
+	static std::string pathToString(ofPath& path);
 
 	/// Makes an ofPath from a stringified representation.
-	static ofPath pathFromString(string s);
-	ofParameter<string> MTPrefLastFile;
+	static ofPath pathFromString(std::string s);
+	ofParameter<std::string> MTPrefLastFile;
 	ofParameter<bool> NSPrefAutoloadLastFile;
 	ofParameter<bool> NSPrefLaunchInFullScreen;
 
@@ -155,18 +163,18 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	ofXml appPrefsXml;
 
 	/// The name of the current file.
-	string fileName;
+	std::string fileName;
 
 	/// Full path of the file
-	string filePath;
+	std::string filePath;
 
 	/// The file extension you want your documents to have. Defaults to ".xml",
 	/// but it can be anything you want.
-	string fileExtension = "xml";
+	std::string fileExtension = "xml";
 
-	shared_ptr<MTWindow> mainWindow;
-	shared_ptr<MTModel> model;
-	const static string APP_PREFERENCES_FILE;
+	std::shared_ptr<MTWindow> mainWindow;
+    std::shared_ptr<MTModel> model;
+	const static std::string APP_PREFERENCES_FILE;
 	bool isInitialized;
 	ofParameterGroup appPreferences;
 	ofParameterGroup MTPrefsWindowsGroup;
@@ -191,7 +199,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 
 	// APP MODES
 	MTAppModeName currentMode;
-	vector<MTAppModeName> appModes;
+    std::vector<MTAppModeName> appModes;
 
 	//////////////////////////////
 	//	CONVENIENCE
@@ -204,9 +212,9 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
   private:
 	bool ofAppInitialized = false;
 
-	bool saveAsImpl(string newName);
+	bool saveAsImpl(std::string newName);
 	bool saveImpl();
-	bool openImpl(string file);
+	bool openImpl(std::string file);
 
 	void loadAppPreferences();
 	//	void newFileImpl();
@@ -214,15 +222,15 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	// UI / Convenience
 	//	void storeViewParameters(ofxMTView* view);
 
-	const static string MTPrefsWindowsGroupName;
-	const static string MTPrefsWindowPositionName;
-	const static string MTPrefsWindowSizeName;
+	const static std::string MTPrefsWindowsGroupName;
+	const static std::string MTPrefsWindowPositionName;
+	const static std::string MTPrefsWindowSizeName;
 
 	ofEventListener exitHandler;
 
 	struct WindowParams
 	{
-		string name;
+		std::string name;
 		glm::vec2 position;
 		glm::vec2 size;
 	};

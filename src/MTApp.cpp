@@ -1,13 +1,17 @@
-#include "MTApp.hpp"
-#include "MTAppMode.hpp"
-#include "MTModel.hpp"
-#include "MTView.hpp"
-#include "MTWindow.hpp"
 
-const string MTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
-const string MTApp::MTPrefsWindowsGroupName = "//app_preferences/windows";
-const string MTApp::MTPrefsWindowPositionName = "Position";
-const string MTApp::MTPrefsWindowSizeName = "Size";
+
+//#include <ofMain.h>
+#include "ofAppRunner.h"
+#include "ofAppGLFWWindow.h"
+#include "ofWindowSettings.h"
+#include "ofSystemUtils.h"
+#include "ofPath.h"
+#include "MTApp.hpp"
+
+const std::string MTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
+const std::string MTApp::MTPrefsWindowsGroupName = "//app_preferences/windows";
+const std::string MTApp::MTPrefsWindowPositionName = "Position";
+const std::string MTApp::MTPrefsWindowSizeName = "Size";
 
 ofEvent<MTAppModeChangeArgs> MTApp::appChangeModeEvent;
 ofEvent<ofEventArgs> MTApp::modelLoadedEvent;
@@ -161,7 +165,7 @@ void MTApp::runApp()
 
 		if (!isInitialized)
 		{
-			string msg = "Tried to open " + MTPrefLastFile.get() +
+            std::string msg = "Tried to open " + MTPrefLastFile.get() +
 						 " but could not find it";
 			ofSystemAlertDialog(msg);
 			isInitialized = true;
@@ -207,7 +211,7 @@ MTAppModeName MTApp::getCurrentMode()
 // TODO: Revisit MTApp::mainWindow. Think about either removing it or making it a weak_ptr
 
 std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> view,
-												   string windowName,
+												   std::string windowName,
 												   ofWindowSettings& settings)
 {
 	auto win = createWindow(windowName, settings);
@@ -216,7 +220,7 @@ std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> vie
 	return win;
 }
 
-std::shared_ptr<MTWindow> MTApp::createWindow(string windowName,
+std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 										 ofWindowSettings& settings)
 {
 
@@ -347,7 +351,7 @@ void MTApp::removeAllEvents(MTWindow* w)
 }
 
 //// UI
-weak_ptr<ofAppBaseWindow> MTApp::getMainWindow()
+std::weak_ptr<ofAppBaseWindow> MTApp::getMainWindow()
 {
 	return mainWindow;
 }
@@ -365,7 +369,7 @@ void MTApp::open()
 
 void MTApp::save()
 {
-	if (MTPrefLastFile.get() == string(""))
+	if (MTPrefLastFile.get() == std::string(""))
 	{
 		saveAs();
 	}
@@ -397,9 +401,9 @@ void MTApp::saveAs()
 	}
 }
 
-bool MTApp::saveAsImpl(string filePath)
+bool MTApp::saveAsImpl(std::string filePath)
 {
-	string temp = MTPrefLastFile;
+    std::string temp = MTPrefLastFile;
 	MTPrefLastFile.setWithoutEventNotifications(filePath);
 
 	if (!saveImpl())
@@ -432,7 +436,7 @@ bool MTApp::saveImpl()
 }
 
 /// Open sesame.
-bool MTApp::openImpl(string filePath)
+bool MTApp::openImpl(std::string filePath)
 {
 
 	if (filePath == "")
@@ -617,14 +621,14 @@ int mtGetLocalMouseY()
 	return MTApp::sharedApp->getLocalMouseY();
 }
 
-ofPath MTApp::pathFromString(string s)
+ofPath MTApp::pathFromString(std::string s)
 {
-	vector<string> commandStrings = ofSplitString(s, "{", true, true);
+    std::vector<std::string> commandStrings = ofSplitString(s, "{", true, true);
 	ofPath thePath;
 
 	for (auto cs : commandStrings)
 	{
-		vector<string> commandStringElements =
+        std::vector<std::string> commandStringElements =
 		  ofSplitString(cs, ";", true, true);
 
 		ofPath::Command* thisCommand;
@@ -663,11 +667,11 @@ ofPath MTApp::pathFromString(string s)
 	return thePath;
 }
 
-string MTApp::pathToString(ofPath& path)
+std::string MTApp::pathToString(ofPath& path)
 {
-	vector<ofPath::Command> commands = path.getCommands();
+    std::vector<ofPath::Command> commands = path.getCommands();
 
-	string out = "";
+    std::string out = "";
 
 	for (auto c : commands)
 	{

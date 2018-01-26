@@ -7,7 +7,6 @@
 //
 
 #include "MTAppMode.hpp"
-#include "MTView.hpp"
 
 MTAppMode::~MTAppMode()
 {

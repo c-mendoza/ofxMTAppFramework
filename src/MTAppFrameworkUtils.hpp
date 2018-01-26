@@ -1,6 +1,11 @@
 #pragma once
-#include "ofMain.h"
+//#include "ofMain.h"
 //#include "ofxMTAppFramework.h"
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <queue>
+#include <events/ofEvent.h>
 
 //------------------------------------------------------//
 // MT-PROCEDURE     									//
@@ -12,8 +17,8 @@ class MTProcedureStep
 {
 public:
     int index;
-    string name = "Step";
-    string information = "Descriptive text goes here";
+    std::string name = "Step";
+    std::string information = "Descriptive text goes here";
     ///If you test for success, and it is successful, you get sweet success action
     std::function<bool()> successTest = []{ return false; };
     ///When tests mean success, Action is your reward.
@@ -94,5 +99,5 @@ public:
     }
 
 protected:
-    vector<ofEventListener> eventListeners;
+    std::vector<ofEventListener> eventListeners;
 };

@@ -38,7 +38,7 @@ void MTAppModePathEditor::setup()
 	view->enqueueUpdateOperation([this]() { ofShowCursor(); });
 }
 
-shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
+std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
   std::shared_ptr<ofPath> p)
 {
 	auto uiPath = std::make_shared<MTUIPath>();
@@ -164,7 +164,7 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 			{
 				if (settings.options.test(PathEditorSettings::PathEditorOptions::AllowsMultiplePaths))
 				{
-					auto pathPtr = shared_ptr<ofPath>(new ofPath);
+					auto pathPtr = std::shared_ptr<ofPath>(new ofPath);
 					activeUIPath = createUIPath(pathPtr);
 					auto command =
 							ofPath::Command(ofPath::Command::moveTo, glm::vec3(x, y, 0));

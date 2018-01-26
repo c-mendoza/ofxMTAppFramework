@@ -7,8 +7,10 @@
 //
 
 #include "MTView.hpp"
+#include "ofGraphics.h"
+#include <glm/matrix.hpp>
 
-MTView::MTView(string _name)
+MTView::MTView(std::string _name)
 {
 	name.set("View Name", _name);
 	contentScaleX.set("Content Scale X", 1);
@@ -299,7 +301,7 @@ std::shared_ptr<MTView> MTView::getSuperview()
 	return superview.lock();
 }
 
-void MTView::setSuperview(shared_ptr<MTView> view)
+void MTView::setSuperview(std::shared_ptr<MTView> view)
 {
 	superview = view;
 	
@@ -319,7 +321,7 @@ void MTView::setSuperview(shared_ptr<MTView> view)
 }
 /// \brief Adds a subview.
 
-void MTView::addSubview(shared_ptr<MTView> subview)
+void MTView::addSubview(std::shared_ptr<MTView> subview)
 {
 	//	subview->window = window; // window for the subview is set in setSuperview
 	ofEventArgs args;
@@ -345,19 +347,6 @@ std::vector<std::shared_ptr<MTView>>& MTView::getSubviews()
 /// \returns True if successful.
 bool MTView::removeFromSuperview()
 {
-//    if (auto s = superview.lock())
-//    {
-//        auto sv = s->getSubviews();
-//        auto iter = std::find(sv.begin(), sv.end(), shared_from_this());
-//        if (iter != sv.end())
-//        {
-//            superview.reset();
-//            sv.erase(iter);
-//            return true;
-//        }
-//    }
-
-//    return false;
 	if (auto s = superview.lock())
 	{
 		return s->removeSubview(shared_from_this());
@@ -557,10 +546,12 @@ void MTView::draw(ofEventArgs & args)
 		ImGui::SetCurrentContext(imCtx);
 		auto& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
+//        io.DisplaySize = ImVec2(getWidth(), getHeight());
 		io.MouseWheel = mouseWheel;
 		mouseWheel = 0;
 		getGui().begin();
-		drawGui();
+//        io.MousePos = ImVec2(f.x, contentMouse.y);
+        drawGui();
 		getGui().end();
 	}
 
@@ -831,6 +822,11 @@ const glm::mat4& MTView::getInvContentMatrix() const
 const glm::mat4& MTView::getInvFrameMatrix() const
 {
     return invFrameMatrix;
+}
+
+const glm::mat4& MTView::getFrameMatrix() const
+{
+    return frameMatrix;
 }
 
 

@@ -15,7 +15,7 @@ class MTView;
 
 class MTAppMode : public MTEventListenerStore {
 public:
-    MTAppMode(string name, std::shared_ptr<MTView> view)
+    MTAppMode(std::string name, std::shared_ptr<MTView> view)
     {
         this->name = name;
         this->view = view;
@@ -25,7 +25,7 @@ public:
     void addAllEventListeners();
     //    void removeAllEventListeners();
     std::string getName() { return name; }
-    void setName(string name) { this->name = name; }
+    void setName(std::string name) { this->name = name; }
 
     virtual void setup() = 0;
     virtual void exit(){};
@@ -45,7 +45,7 @@ public:
     //	virtual void dragEvent(ofDragInfo dragInfo);
     //	virtual void gotMessage(ofMessage msg);
 protected:
-    shared_ptr<MTView> view = nullptr;
+    std::shared_ptr<MTView> view = nullptr;
     std::string name;
 };
 
