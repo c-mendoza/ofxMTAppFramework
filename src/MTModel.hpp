@@ -9,9 +9,8 @@
 #ifndef ofxMTModel_hpp
 #define ofxMTModel_hpp
 
-#include <stdio.h>
+#include <Helpers.h>
 #include "MTAppFrameworkUtils.hpp"
-#include "ofxImGui.h"
 
 class ofXml;
 class ofParameterGroup;
