@@ -8,7 +8,6 @@
 
 #include "MTView.hpp"
 #include "ofGraphics.h"
-#include <glm/matrix.hpp>
 
 MTView::MTView(std::string _name)
 {
@@ -156,9 +155,9 @@ void MTView::setContentScale(float xs, float ys)
 
 void MTView::setSize(float width, float height)
 {
-	content.setSize(width, height);
-	frame.setSize(width, height);
-	updateMatrices(); //?
+    setFrameSize(width, height);
+    setContentSize(width, height);
+//	updateMatrices(); //?
 }
 
 void MTView::setSize(glm::vec2 size)
@@ -220,6 +219,9 @@ void MTView::superviewContentChangedInternal()
 	{
 		sv->superviewContentChangedInternal();
 	}
+
+    // Call the user's function:
+    superviewContentChanged();
 }
 
 void MTView::layoutInternal()
@@ -252,7 +254,7 @@ void MTView::updateScreenFrame()
 	{
 		glm::vec4 screenFramePosition = super->contentMatrix * glm::vec4(frame.getPosition(), 1);
 		screenFrame.setPosition(screenFramePosition.xyz());
-		auto size = getFrameSize().xyyy() * super->contentMatrix;
+		auto size = getFrameSize().xyyy() * super->contentMatrix; //TODO: check if this is correct
 		screenFrame.setSize(size.x, size.y);
 	}
 	else
@@ -330,6 +332,8 @@ void MTView::addSubview(std::shared_ptr<MTView> subview)
 
 	if (this->isSetUp) // If setupInternal has run already, then call the subview's setup
 	{
+        // Enqueue it in update() so that we may call setup() under the right
+        // OpenGL context.
 		enqueueUpdateOperation([this, subview]()
 		{
 			auto args = ofEventArgs();
@@ -494,6 +498,7 @@ void MTView::draw(ofEventArgs & args)
 //	ofPushView();
 //	ofViewport(screenFrame);
 	if(!isRenderingEnabled) return;
+    ofSetBackgroundAuto(true);
 
 	auto w = window.lock();
 	//					glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
@@ -537,7 +542,14 @@ void MTView::draw(ofEventArgs & args)
 	onDraw();
 
 	// Should I fire a drawEvent here instead? It would make sense...
-	if (MTApp::sharedApp->autoDrawAppModes) currentAppMode->draw();
+	if (MTApp::sharedApp->autoDrawAppModes)
+	{
+		if (currentAppMode != nullptr)
+		{
+			currentAppMode->draw();
+		}
+
+	}
 
 	ofPopMatrix();
 
@@ -545,10 +557,11 @@ void MTView::draw(ofEventArgs & args)
 	{
 		ImGui::SetCurrentContext(imCtx);
 		auto& io = ImGui::GetIO();
+
 		io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
 //        io.DisplaySize = ImVec2(getWidth(), getHeight());
 		io.MouseWheel = mouseWheel;
-		mouseWheel = 0;
+//		mouseWheel = 0;
 		getGui().begin();
 //        io.MousePos = ImVec2(f.x, contentMouse.y);
         drawGui();
@@ -588,6 +601,7 @@ void MTView::windowResized(ofResizeEventArgs & resize)
 		view->windowResized(resize);
 	}
 }
+//#pragma mark KEYBOARD EVENTS
 
 void MTView::keyPressed(ofKeyEventArgs & key)
 {
@@ -604,6 +618,8 @@ void MTView::keyReleased(ofKeyEventArgs & key)
 	onKeyReleased(key.key);
 	keyReleasedEvent.notify(this, key);
 }
+
+//#pragma mark MOUSE EVENTS
 
 void MTView::updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord)
 {
@@ -817,8 +833,6 @@ const glm::mat4& MTView::getInvContentMatrix() const
     return invContentMatrix;
 }
 
-
-
 const glm::mat4& MTView::getInvFrameMatrix() const
 {
     return invFrameMatrix;
@@ -829,65 +843,54 @@ const glm::mat4& MTView::getFrameMatrix() const
     return frameMatrix;
 }
 
+#pragma mark MT OFFSCREEN VIEW
 
-//void MTView::addAllEvents()
-//{
-//    if (auto w = window.lock())
-//    {
-//        w->events().enable();
-//        ofAddListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
-//        ofAddListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
-//        //    ofAddListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
-//        //    ofAddListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
-//        //    ofAddListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
-//        //    ofAddListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
-//        //    ofAddListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-//        ofAddListener(MTApp::modelLoadedEvent, this, &MTView::modelLoaded,OF_EVENT_ORDER_AFTER_APP);
-//        ofAddListener(MTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP);
-//    }
+#include "ofGLUtils.h"
 
-//}
-//void MTView::removeAllEvents()
-//{
-//    if (auto w = window.lock()) //Acquire the shared_ptr if it exists
-//    {
-//        ofRemoveListener(w->events().setup, this, &MTView::setup, OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().update, this, &MTView::update,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().draw, this, &MTView::draw,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().exit,this, &MTView::exit,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().keyPressed,this, &MTView::keyPressed,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().keyReleased,this, &MTView::keyReleased,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mouseMoved,this, &MTView::mouseMoved,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mouseDragged,this, &MTView::mouseDragged,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mousePressed,this, &MTView::mousePressed,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mouseReleased,this, &MTView::mouseReleased,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mouseScrolled,this, &MTView::mouseScrolled,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mouseEntered,this, &MTView::mouseEntered,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().mouseExited,this, &MTView::mouseExited,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().windowResized,this, &MTView::windowResized,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().messageEvent,this, &MTView::messageReceived,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(w->events().fileDragEvent,this, &MTView::dragged,OF_EVENT_ORDER_APP);
-////        ofRemoveListener(w->events().touchCancelled,this, &ofxMTView::touchCancelled,OF_EVENT_ORDER_APP);
-////        ofRemoveListener(w->events().touchDoubleTap,this, &ofxMTView::touchDoubleTap,OF_EVENT_ORDER_APP);
-////        ofRemoveListener(w->events().touchDown,this, &ofxMTView::touchDown,OF_EVENT_ORDER_APP);
-////        ofRemoveListener(w->events().touchMoved,this, &ofxMTView::touchMoved,OF_EVENT_ORDER_APP);
-////        ofRemoveListener(w->events().touchUp,this, &ofxMTView::touchUp,OF_EVENT_ORDER_APP);
-//        ofRemoveListener(MTApp::modelLoadedEvent, this, &MTView::modelLoaded,OF_EVENT_ORDER_AFTER_APP);
-//        ofRemoveListener(MTApp::appChangeModeEvent, this, &MTView::appModeChanged,OF_EVENT_ORDER_AFTER_APP);
-//    }
-//}
+MTOffscreenView::MTOffscreenView(std::string name) : MTView(name) {}
 
+void MTOffscreenView::setup()
+{
+    bool isUsingArbTex = ofGetUsingArbTex();
+    if (isUsingArbTex)
+    {
+        ofDisableArbTex();
+    }
+    ofFbo::Settings s;
+    s.width = getWidth();
+    s.height = getHeight();
+    s.internalformat = GL_RGBA;
+	s.textureTarget = GL_TEXTURE_2D;
+    s.numSamples = 4;
+    viewFbo.allocate(s);
+    ofGetGLRenderer()->begin(viewFbo, ofFboBeginMode::Perspective | ofFboBeginMode::MatrixFlip);
+    ofClear(255);
+    ofGetGLRenderer()->end(viewFbo);
+	if (isUsingArbTex)
+	{
+		ofEnableArbTex();
+	}
+}
+
+void MTOffscreenView::drawOffscreen()
+{
+//	ofLogError("before    ") << glGetError();
+    ofGetGLRenderer()->begin(viewFbo, ofFboBeginMode::Perspective | ofFboBeginMode::MatrixFlip);
+    ofEventArgs args;
+    MTView::draw(args);
+//	ofLogError("inside    ") << glGetError();
+    ofGetGLRenderer()->end(viewFbo);
+//	ofLogError("outside   ") << glGetError();
+
+}
+
+void MTOffscreenView::frameChanged()
+{
+    MTView::frameChanged();
+    setup();
+}
+
+ofTexture& MTOffscreenView::getViewTexture()
+{
+    return viewFbo.getTexture();
+}

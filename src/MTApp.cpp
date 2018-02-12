@@ -177,7 +177,9 @@ void MTApp::runApp()
 		isInitialized = true;
 		newFile();
 	}
-	
+
+    MTApp::updateDisplays();
+    glfwSetMonitorCallback(&setMonitorCb);
 	appWillRun();
 	ofRunMainLoop();
 }
@@ -680,4 +682,31 @@ std::string MTApp::pathToString(ofPath& path)
 	}
 
 	return out;
+}
+
+std::vector<MTApp::MTDisplay> MTApp::displays;
+
+void MTApp::updateDisplays()
+{
+    int num;
+    auto glfwMonitors = glfwGetMonitors(&num);
+    MTApp::displays.clear();
+
+    for (int i = 0; i < num; i++)
+    {
+        MTDisplay mtMonitor;
+        auto monitor = glfwMonitors[i];
+        mtMonitor.name = std::string(glfwGetMonitorName(monitor));
+        int x, y;
+        glfwGetMonitorPos(monitor, &x, &y);
+        auto mode = glfwGetVideoMode(monitor);
+        mtMonitor.frame = ofRectangle(x, y, mode->width, mode->height);
+        MTApp::displays.push_back(mtMonitor);
+    }
+
+}
+
+ void MTApp::setMonitorCb(GLFWmonitor* monitor, int connected)
+{
+    MTApp::updateDisplays();
 }

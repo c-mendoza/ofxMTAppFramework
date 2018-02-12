@@ -18,25 +18,22 @@ class PathEditorSettings
 public:
     std::shared_ptr<MTView> view;
 
-	/**
-	 * @brief allowMultiplePaths
-	 * @default true
-	 */
-	std::bitset<8> options;
 	
 	enum PathEditorOptions
 	{
-		AllowsMultiplePaths = 0,
+        CanAddPoints = 0,
+        CanDeletePoints,
+        CanConvertPoints,
+        LimitToRegion,
+		AllowsMultiplePaths,
 		CanAddPaths,
 		CanDeletePaths,
-		CanAddPoints,
-		CanDeletePoints,
-		CanConvertPoints,
 		PathsAreClosed,
-		DragEventsNotified
+		DragEventsNotified,
+        LimitToView
 	};
 
-
+    std::bitset<10> options;
 	/**
 	 * @brief If @property allowMultiplePaths is true then this
 	 * member must contain a valid vector of shared_ptr<ofPath>
@@ -61,6 +58,15 @@ public:
 	ofColor pathColor = ofColor::yellow;
 	float pathStrokeWidth = 3;
 
+    /**
+     * @brief A rectantgular region that denotes the maximum and minimum values for the
+     * handles in this editor. Points outside of the validRegion will be clamped.
+     * If PathEditorOptions::LimitToRegion is set, you must provide a validRegion.
+     * If PathEditorOptions::LimitToView is set, the validRegion will be created automatically
+     * based on the view.
+     */
+    ofRectangle validRegion;
+
 	//TODO style options for pathEditor
 
 };
@@ -68,7 +74,7 @@ public:
 
 class MTAppModePathEditor : public MTAppMode {
   public:
-	MTAppModePathEditor(const PathEditorSettings &settings);
+	MTAppModePathEditor(PathEditorSettings& settings);
 	virtual void setup();
 	virtual void exit();
 	virtual void draw();

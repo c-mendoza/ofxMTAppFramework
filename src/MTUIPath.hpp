@@ -16,6 +16,7 @@
 
 class MTUIPathEventArgs;
 class MTUIPathVertex;
+class MTUIPathHandle;
 /**
 ///
  Events:
@@ -27,9 +28,9 @@ class MTUIPathVertex;
 
 */
 
-const unsigned char MTUIPathOptionCanAddPoints		= 1 << 0;
-const unsigned char MTUIPathOptionCanDeletePoints	= 1 << 1;
-const unsigned char MTUIPathOptionCanConvertPoints  = 1 << 2;
+//const unsigned char MTUIPathOptionCanAddPoints		= 1 << 0;
+//const unsigned char MTUIPathOptionCanDeletePoints	= 1 << 1;
+//const unsigned char MTUIPathOptionCanConvertPoints  = 1 << 2;
 
 class MTUIPath :
 		public std::enable_shared_from_this<MTUIPath>
@@ -76,14 +77,16 @@ public:
 	bool getClosed() { return isClosed; }
 	void toggleVisibility();
 
+    void setRegion(ofRectangle region) { this->region = region; }
 	enum MTUIPathOptions
 	{
 		CanAddPoints = 0,
 		CanDeletePoints,
-		CanConvertPoints
+		CanConvertPoints,
+        LimitToRegion
 	};
 
-	std::bitset<3> pathOptionFlags;
+	std::bitset<4> pathOptionFlags;
 
 	//DATA HANDLING
 	/////////////////////////////////
@@ -221,6 +224,8 @@ protected:
 	Midpoint closestMidpoint;
 	Midpoint& getClosestMidpoint(const glm::vec3 & point);
 
+    ofRectangle region;
+
 };
 
 class MTUIHandle; // Forward declaration
@@ -289,48 +294,42 @@ class MTUIHandle : public MTView
 {
 public:
 
-	MTUIHandle(std::string _name) : MTView(_name)
-	{
-		onMouseDragged = [this](int x, int y, int button)
-		{
-			setFrameOrigin(getFrameOrigin() +
-						   (getContentMouse() - getContentMouseDown()));
-		};
+	MTUIHandle(std::string _name);
 
-		wantsFocus = false;
-	}
+	void draw() override;
+    void mouseDragged(int x, int y, int button) override;
+    void mousePressed(int x, int y, int button) override;
+    void mouseReleased(int x, int y, int button) override;
+    void mouseEntered(int x, int y) override;
+    void mouseExited(int x, int y) override;
+    void superviewContentChanged() override;
 
-	void draw()
-	{
-		ofSetColor(255);
-		ofFill();
-		ofDrawRectangle(0, 0,
-						getFrameSize().x,
-						getFrameSize().y);
+    enum HandleState
+    {
+        NORMAL = 0,
+        SELECTED,
+        PRESSED,
+        INACTIVE
+    };
 
-		ofPushMatrix();
-		ofLoadIdentityMatrix();
-		ofSetColor(ofColor::yellow, 50);
-		ofSetLineWidth(2);
-		ofDrawRectangle(getScreenFrame());
-		ofPopMatrix();
-	}
+    struct HandleStyle
+    {
+        float size;
+        ofColor strokeColor;
+        float strokeWeight;
+        ofColor fillColor;
+        bool useFill;
+        bool useStroke;
+    };
 
-	enum HandleType
-	{
-		SQUARE,
-		ROUND
-	};
-
-	enum HandleState
-	{
-		DEFAULT,
-		SELECTED
-	};
+    void setHandleStyleForState(HandleStyle style, HandleState state);
 
 protected:
-	HandleType type;
 	HandleState state;
+    std::unordered_map<int, HandleStyle> stylesMap;
+    float originalWidth;
+    float originalHeight;
+
 };
 
 

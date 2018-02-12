@@ -3,6 +3,7 @@
 
 #include <utils/ofXml.h>
 #include <unordered_map>
+#include "GLFW/glfw3.h"
 #include "ofxMTAppFramework.h"
 #include "MTModel.hpp"
 #include "ofxImGui.h"
@@ -18,6 +19,7 @@ class ofWindowSettings;
 class Gui;
 
 typedef std::string MTAppModeName;
+
 
 class MTAppModeChangeArgs;
 
@@ -209,6 +211,33 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	void addAllEvents(MTWindow* w);
 	void removeAllEvents(MTWindow* w);
 
+#pragma mark DISPLAY MANAGEMENT
+public:
+
+    struct MTDisplay
+    {
+        std::string name;
+        ofRectangle frame;
+    };
+
+    /**
+     * @brief Gets the currently connected displays.
+     * @return A std::vector of MTDisplay structs.
+     * @sa MTDisplay
+     */
+    static const std::vector<MTDisplay>& getDisplays() { return displays; }
+
+    /**
+     * @brief Updates the internal count of available displays.
+     * You should not have to call this function.
+     */
+    static void updateDisplays();
+    static void setMonitorCb(GLFWmonitor* monitor, int connected);
+protected:
+    static std::vector<MTDisplay> displays;
+
+#pragma mark INTERNALS
+
   private:
 	bool ofAppInitialized = false;
 
@@ -236,6 +265,9 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	};
 
 	std::unordered_map<std::string, WindowParams> wpMap;
+
+
+
 };
 
 class MTAppModeChangeArgs : public ofEventArgs {

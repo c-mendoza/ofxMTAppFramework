@@ -7,8 +7,6 @@
 //
 
 #include "MTUIPath.hpp"
-#include <glm/geometric.hpp>
-#include <functional>
 
 int MTUIPath::vertexHandleSize = 10;
 int MTUIPath::cpHandleSize = 10;
@@ -36,7 +34,7 @@ MTUIPath::~MTUIPath()
 void MTUIPath::setup(std::shared_ptr<ofPath> p,
                      std::shared_ptr<MTView> view)
 {
-    setup(p, view, 0x111);
+    setup(p, view, (unsigned int) pathOptionFlags.to_ulong());
 }
 
 void MTUIPath::setup(std::shared_ptr<ofPath> p,
@@ -47,9 +45,8 @@ void MTUIPath::setup(std::shared_ptr<ofPath> p,
     pathVertices.clear();
     selectedVertices.clear();
     this->view = view;
-
+    pathOptionFlags = std::bitset<4>(options);
     if (isClosed) arrangeClosedPath();
-
     addEventListeners();
 
     //Create handles for verts
@@ -68,7 +65,6 @@ void MTUIPath::setup(std::shared_ptr<ofPath> p,
         pathVertices.push_back(vertex);
     }
 
-    pathOptionFlags = std::bitset<3>(options);
     updatePath();
 }
 
@@ -163,7 +159,7 @@ void MTUIPath::setClosed(bool closed)
 
     //I think that this updates the path:
     path->getCommands();
-    setup(path, view, pathOptionFlags.to_ulong()); // Necessary??? TODO: Check
+    setup(path, view, (unsigned int) pathOptionFlags.to_ulong()); // Necessary??? TODO: Check
 }
 
 ///The actual drawing method
@@ -405,7 +401,7 @@ bool MTUIPath::deleteHandle(std::shared_ptr<MTUIPathVertex> handle)
         }
         else
         {
-            setup(path, view, pathOptionFlags.to_ulong());
+            setup(path, view, (unsigned int) pathOptionFlags.to_ulong());
             pathChangedEvent.notify(this);
             if (selectsLastInsertion)
             {
@@ -500,7 +496,7 @@ void MTUIPath::insertCommand(ofPath::Command& command, int index)
     //	vertexHandle->setup(this, &path->getCommands()[index]);
     //	vertexHandles.insert(vertexHandles.begin() + index, vertexHandle);
 
-    setup(path, view, pathOptionFlags.to_ulong());
+    setup(path, view, (unsigned int) pathOptionFlags.to_ulong());
     pathChangedEvent.notify(this);
 
     if (selectsLastInsertion)
@@ -649,25 +645,29 @@ void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
                  this->uiPath->pathHandleReleasedEvent.notify(this, args);
              }, OF_EVENT_ORDER_BEFORE_APP));
 
-    addEventListener(toHandle->frameChangedEvent.newListener
+    addEventListener(toHandle->mouseDraggedEvent.newListener
             ([this](ofEventArgs& args)
              {
                  updateCommand();
              }, OF_EVENT_ORDER_AFTER_APP));
 
-    addEventListener(cp1Handle->frameChangedEvent.newListener
+    addEventListener(cp1Handle->mouseDraggedEvent.newListener
             ([this](ofEventArgs& args)
              {
                  updateCommand();
              }, OF_EVENT_ORDER_AFTER_APP));
 
-    addEventListener(cp2Handle->frameChangedEvent.newListener
+    addEventListener(cp2Handle->mouseDraggedEvent.newListener
             ([this](ofEventArgs& args)
              {
                  updateCommand();
              }, OF_EVENT_ORDER_AFTER_APP));
 
     setControlPoints();
+
+    // This call is to clamp path points to the region
+    // at instantiation if necessary.
+    updateCommand();
     currentStyle = MTUIPath::vertexHandleStyle;
 
 }
@@ -746,9 +746,38 @@ void MTUIPathVertex::updateCommand()
     if (command->type == ofPath::Command::bezierTo ||
         command->type == ofPath::Command::quadBezierTo)
     {
+        if (uiPath->pathOptionFlags.test(MTUIPath::LimitToRegion))
+        {
+            auto pos = cp1Handle->getFrameCenter();
+            cp1Handle->setFrameCenter(glm::vec2(ofClamp(pos.x,
+                                                        uiPath->region.getMinX(),
+                                                        uiPath->region.getMaxX()),
+                                                ofClamp(pos.y,
+                                                        uiPath->region.getMinY(),
+                                                        uiPath->region.getMaxY())));
+            pos = cp2Handle->getFrameCenter();
+            cp2Handle->setFrameCenter(glm::vec2(ofClamp(pos.x,
+                                                        uiPath->region.getMinX(),
+                                                        uiPath->region.getMaxX()),
+                                                ofClamp(pos.y,
+                                                        uiPath->region.getMinY(),
+                                                        uiPath->region.getMaxY())));
+        }
         command->cp1 = cp1Handle->getFrameCenter();
         command->cp2 = cp2Handle->getFrameCenter();
     }
+
+    if (uiPath->pathOptionFlags.test(MTUIPath::LimitToRegion))
+    {
+        auto pos = toHandle->getFrameCenter();
+        toHandle->setFrameCenter(glm::vec2(ofClamp(pos.x,
+                                                   uiPath->region.getMinX(),
+                                                   uiPath->region.getMaxX()),
+                                           ofClamp(pos.y,
+                                                   uiPath->region.getMinY(),
+                                                   uiPath->region.getMaxY())));
+    }
+
 
     command->to = toHandle->getFrameCenter();
     uiPath->updatePath();
@@ -794,28 +823,67 @@ void MTUIPathVertex::draw()
 //    ofPopStyle();
 }
 
-//------------------------------------------------------//
-// MTUIHandle       									//
-//------------------------------------------------------//
+#pragma mark MTUIHandle
 
+MTUIHandle::MTUIHandle(std::string _name) : MTView(_name)
+{
+    wantsFocus = false;
+}
 
-//MTUIHandle::mouseDragged(int x, int y, int button)
-//{
+void MTUIHandle::draw()
+{
+    ofSetColor(255);
+    ofFill();
+    ofDrawRectangle(0, 0,
+                    getFrameSize().x,
+                    getFrameSize().y);
 
-//}
+    ofPushMatrix();
+    ofLoadIdentityMatrix();
+    ofSetColor(ofColor::yellow, 50);
+    ofSetLineWidth(1);
+    ofDrawRectangle(getScreenFrame());
+    ofPopMatrix();
+}
 
+void MTUIHandle::mouseDragged(int x, int y, int button)
+{
+    if (button == 0)
+    {
+        setFrameOrigin(getFrameOrigin() +
+                       (getContentMouse() - getContentMouseDown()));
+    }
+}
 
-/*
- *     glm::vec3 pos = view->getFrameOrigin();
-	view->setFrameOrigin(pos + (view->getContentMouse() - view->getContentMouseDown() ));
-	*/
+void MTUIHandle::mousePressed(int x, int y, int button)
+{
+    MTView::mousePressed(x, y, button);
+}
 
+void MTUIHandle::mouseReleased(int x, int y, int button)
+{
+    MTView::mouseReleased(x, y, button);
+}
 
+void MTUIHandle::mouseEntered(int x, int y)
+{
+    MTView::mouseEntered(x, y);
+}
 
+void MTUIHandle::mouseExited(int x, int y)
+{
+    MTView::mouseExited(x, y);
+}
 
+void MTUIHandle::superviewContentChanged()
+{
+    auto su = superview.lock();
+    if (!su) return;
 
-
-
+    auto sx = 1.0 / su->getContentScaleX();
+    auto sy = 1.0 / su->getContentScaleY();
+    setFrameSize(getScreenFrame().getWidth() * sx, getScreenFrame().getHeight() * sy);
+}
 
 
 

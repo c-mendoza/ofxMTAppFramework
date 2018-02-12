@@ -13,6 +13,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
+#include <gl/ofFbo.h>
 #include "ofxImGui.h"
 
 enum MTViewResizePolicy
@@ -58,6 +59,7 @@ class MTView : public MTEventListenerStore,
      */
 	ofParameter<std::string> name;
 
+#pragma mark EVENT METHODS TO OVERRIDE
 	//-----------------------------//
 	// EVENTS: METHODS TO OVERRIDE //
 	//-----------------------------//
@@ -167,15 +169,8 @@ class MTView : public MTEventListenerStore,
 	std::function<void(int, int)> onMouseEntered = [](int x, int y) {};
 	std::function<void(int, int)> onMouseExited = [](int x, int y) {};
 
-	bool isMouseDown = false;
-	bool isMouseDragging = false;
 
-	bool hasFocus();
-
-	/// Set this to false if you want this MTView to ignore
-	/// keyboard focus
-	bool wantsFocus = true;
-
+#pragma mark FRAME AND CONTENT
 	//------------------------------------------------------//
 	// FRAME AND CONTENT                                    //
 	//------------------------------------------------------//
@@ -188,8 +183,15 @@ class MTView : public MTEventListenerStore,
 	 */
 	ofRectangle getFrame() { return frame; }
 
+    /**
+     * @return Returns the width of the view's frame
+     */
 	float getWidth() { return frame.width; }
-	float getHeight() { return frame.height; }
+
+    /**
+     * @return Returns the height of the view's frame
+     */
+    float getHeight() { return frame.height; }
 
 	void setFrameOrigin(float x, float y);
 	void setFrameOrigin(glm::vec2 pos);
@@ -239,6 +241,8 @@ class MTView : public MTEventListenerStore,
 	/// window coordinate.
 	virtual std::shared_ptr<MTView> hitTest(glm::vec2& windowCoord);
 
+
+#pragma mark MOUSE
 	/// \brief Gets the mouse position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
@@ -292,7 +296,9 @@ class MTView : public MTEventListenerStore,
 	/// might result in unexpected behavior!
 	glm::mat4& getFrameMatrix() { return frameMatrix; }
 
-	//------------------------------------------------------//
+
+#pragma mark VIEW HEIRARCHY
+    //------------------------------------------------------//
 	// VIEW HEIRARCHY                                       //
 	//------------------------------------------------------//
 
@@ -325,6 +331,8 @@ class MTView : public MTEventListenerStore,
 	int getWindowWidth();
 	int getWindowHeight();
 
+
+#pragma mark VIEW RELATED
 	//------------------------------------------------------//
 	// VIEW Releated                                        //
 	//------------------------------------------------------//
@@ -355,11 +363,12 @@ class MTView : public MTEventListenerStore,
 	 */
 	void setDrawBackground(bool drawIt)
 	{
-		if (drawIt != isDrawingBackground)
-		{
-			enqueueUpdateOperation(
-			  [this, drawIt]() { isDrawingBackground = drawIt; });
-		}
+//		if (drawIt != isDrawingBackground)
+//		{
+//			enqueueUpdateOperation(
+//			  [this, drawIt]() { isDrawingBackground = drawIt; });
+//		}
+        isDrawingBackground = drawIt;
 	}
 
 	bool getDrawBackground() { return isDrawingBackground; }
@@ -378,6 +387,8 @@ class MTView : public MTEventListenerStore,
 
 	virtual void appModeChanged(MTAppModeChangeArgs& modeChange) {}
 
+
+#pragma mark INTERNAL EVENT LISTENERS
 	//------------------------------------------------------//
 	// INTERNAL EVENT LISTENERS
 	//
@@ -409,6 +420,8 @@ private:
     void updateMouseUpPositionsWithWindowCoordinate(glm::vec2 windowCoord);
 
 public:
+
+#pragma mark EVENTS
     //------------------------------------------------------//
 	// EVENTS
 	//
@@ -435,6 +448,17 @@ public:
 	/// \brief Notified before this MTView is destroyed.
 	ofEvent<ofEventArgs> exitEvent;
 
+    bool isMouseDown = false;
+    bool isMouseDragging = false;
+
+    bool hasFocus();
+
+    /// Set this to false if you want this MTView to ignore
+    /// keyboard focus
+    bool wantsFocus = true;
+
+
+#pragma mark OPERATION QUEUES
 	//------------------------------------------------------//
 	// OPERATION QUEUES
 	//------------------------------------------------------//
@@ -453,7 +477,20 @@ public:
 	std::weak_ptr<MTView> superview;
 	std::vector<std::shared_ptr<MTView>> subviews;
 
-	std::shared_ptr<MTAppMode> currentAppMode;
+public:
+    /// @brief Directly sets this view's app mode. This does not change
+    /// the app mode that is managed by MTApp.
+    /// @param mode
+    void setViewAppMode(std::shared_ptr<MTAppMode> mode) { currentAppMode = mode; }
+
+    /// @brief Gets the current app mode assigned to this view. This may or may not
+    /// be the same as the app's MTAppMode, depending on whether you've assigned this
+    /// directly.
+    /// @return  The current MTAppMode assigned to this view.
+    std::shared_ptr<MTAppMode> getViewAppMode() { return currentAppMode; }
+
+protected:
+    std::shared_ptr<MTAppMode> currentAppMode;
 
 	/// \brief The rectangle that specifies the size and position of
 	/// the actual content of the view.
@@ -484,6 +521,8 @@ public:
      */
     ofFpsCounter counter;
 
+
+#pragma mark VIEW AND MATRICES
   private:
 	//------------------------------------------------------//
 	// VIEW and MATRICES
@@ -575,5 +614,21 @@ private:
 
     const glm::mat4& getFrameMatrix() const;
 };
+
+class ofTexture;
+
+class MTOffscreenView : public MTView
+{
+
+private:
+    ofFbo viewFbo;
+public:
+    MTOffscreenView(std::string name);
+    void setup();
+    void drawOffscreen();
+    void frameChanged() override;
+    ofTexture& getViewTexture();
+};
+
 
 #endif /* MTView_hpp */
