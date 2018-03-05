@@ -45,7 +45,7 @@ void MTUIPath::setup(std::shared_ptr<ofPath> p,
     pathVertices.clear();
     selectedVertices.clear();
     this->view = view;
-    pathOptionFlags = std::bitset<4>(options);
+    pathOptionFlags = std::bitset<5>(options);
     if (isClosed) arrangeClosedPath();
     addEventListeners();
 
@@ -555,7 +555,6 @@ void MTUIPath::selectAll()
     }
 }
 
-
 #pragma mark MTUIPathHandle
 
 //////////////////////////
@@ -620,8 +619,10 @@ void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
                      cp2Handle->shiftFrameOrigin(diff);
                       */
                  }
-
-//		this->uiPath->pathHandleMovedEvent.notify(this, args);
+                if (this->uiPath->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
+                {
+                    this->uiPath->pathHandleMovedEvent.notify(this, args);
+                }
              }, OF_EVENT_ORDER_BEFORE_APP));
 
     addEventListener(toHandle->mouseDraggedEndEvent.newListener
@@ -684,7 +685,10 @@ void MTUIPathVertex::setControlPoints()
                 auto h = (MTUIHandle*) handle;
                 command->cp1 = args.xyx();
                 this->updateCommand();
-                uiPath->pathHandleMovedEvent.notify(this, args);
+                if (this->uiPath->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
+                {
+                    this->uiPath->pathHandleMovedEvent.notify(this, args);
+                }
             }, OF_EVENT_ORDER_BEFORE_APP));
 
     addEventListener(cp1Handle->mousePressedEvent.newListener
@@ -704,7 +708,7 @@ void MTUIPathVertex::setControlPoints()
     addEventListener(cp1Handle->mouseDraggedEndEvent.newListener
             ([this](const void* handle, ofMouseEventArgs& args)
              {
-                 this->uiPath->pathChangedEvent.notify(this->uiPath);
+                 this->uiPath->pathHandleMovedEvent.notify(this, args);
              }, OF_EVENT_ORDER_BEFORE_APP));
 
     cp2Handle->setFrameFromCenter(command->cp2,
@@ -717,7 +721,10 @@ void MTUIPathVertex::setControlPoints()
                 auto h = (MTUIHandle*) handle;
                 command->cp2 = args.xyx();
                 this->updateCommand();
-                uiPath->pathHandleMovedEvent.notify(this, args);
+                if (this->uiPath->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
+                {
+                    this->uiPath->pathHandleMovedEvent.notify(this, args);
+                }
             }, OF_EVENT_ORDER_BEFORE_APP));
 
     addEventListener(cp2Handle->mousePressedEvent.newListener
@@ -737,7 +744,8 @@ void MTUIPathVertex::setControlPoints()
     addEventListener(cp2Handle->mouseDraggedEndEvent.newListener
             ([this](const void* handle, ofMouseEventArgs& args)
              {
-                 this->uiPath->pathChangedEvent.notify(this->uiPath);
+                 this->uiPath->pathHandleMovedEvent.notify(this, args);
+//                 this->uiPath->pathChangedEvent.notify(this->uiPath);
              }, OF_EVENT_ORDER_BEFORE_APP));
 }
 
@@ -877,15 +885,37 @@ void MTUIHandle::mouseExited(int x, int y)
 
 void MTUIHandle::superviewContentChanged()
 {
-    auto su = superview.lock();
-    if (!su) return;
+	// Resize the handle so that its size appears consistent regardless of the
+	// scale (zoom) of its superview(s)
 
-    auto sx = 1.0 / su->getContentScaleX();
-    auto sy = 1.0 / su->getContentScaleY();
-    setFrameSize(getScreenFrame().getWidth() * sx, getScreenFrame().getHeight() * sy);
+    auto su = superview.lock();
+	auto invMatrix = getInvFrameMatrix();
+	/*
+	 * http://www.c-jump.com/bcc/common/Talk3/Math/GLM/W01_0100_scaling_matrix_exampl.htm
+	 *     m4[0].x = scale.x;
+    m4[1].y = scale.y;
+    m4[2].z = scale.z;
+	 */
+
+	// Multiply the wanted screen size by the x and y components of the scale portion
+	// of the inverse matrix. That gets us the size that we need to render the handle at
+	// in order for it to appear at the right size.
+    auto sx = MTUIPath::vertexHandleSize * (invMatrix[0].x);
+    auto sy = MTUIPath::vertexHandleSize * (invMatrix[1].y);
+
+	// We need to recenter the frame, since scaling occurs from corner:
+	setFrameFromCenter(getFrameCenter().xy, glm::vec2(sx, sy));
 }
 
+MTUIHandle::HandleState MTUIHandle::getState()
+{
+    return state;
+}
 
+void MTUIHandle::setState(MTUIHandle::HandleState newState)
+{
+    state = newState;
+}
 
 
 

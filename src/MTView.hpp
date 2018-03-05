@@ -302,9 +302,15 @@ class MTView : public MTEventListenerStore,
 	// VIEW HEIRARCHY                                       //
 	//------------------------------------------------------//
 
-	/// \brief Moves this view and its hierarchy to the specified MTWindow
+protected:
+	/**
+	 * @brief Sets the window for this view and its subviews.
+	 * This method is not meant to move a view to a window; it just sets the window
+	 * pointer of the view and its subviews.
+	 */
 	void setWindow(std::weak_ptr<MTWindow> window);
 
+public:
 	/**
 	 * @brief
 	 * @return Returns this view's superview, or @code nullptr @endcode if there isn't one.
@@ -601,6 +607,7 @@ private:
 	void superviewFrameChangedInternal();
 	void superviewContentChangedInternal();
 	void layoutInternal();
+	void resetWindowPointer();
 
 	bool isSetUp = false;
 
@@ -613,6 +620,7 @@ private:
 	bool isFocused = false;
 
     const glm::mat4& getFrameMatrix() const;
+
 };
 
 class ofTexture;
@@ -624,7 +632,7 @@ private:
     ofFbo viewFbo;
 public:
     MTOffscreenView(std::string name);
-    void setup();
+    void setup() override;
     void drawOffscreen();
     void frameChanged() override;
     ofTexture& getViewTexture();

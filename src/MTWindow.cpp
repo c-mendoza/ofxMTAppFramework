@@ -20,6 +20,7 @@ MTWindow::MTWindow(std::string name)
 	contentView->backgroundColor = ofColor(0);
 	focusedView = contentView;
 	mouseOverView = contentView;
+//	contentView->setWindow(shared_from_this());
 	this->name.set("Window Name", name);
 }
 
@@ -36,6 +37,8 @@ MTWindow::~MTWindow()
 void MTWindow::setup(const ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
+	contentView->setWindow(shared_from_this());
+
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
     glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
@@ -92,7 +95,7 @@ void MTWindow::draw(ofEventArgs& args)
 
 void MTWindow::exit(ofEventArgs& args)
 {
-	MTApp::sharedApp->windowClosing(this);
+	MTApp::sharedApp->windowClosing(shared_from_this());
 	contentView->exit(args);
 	contentView = nullptr;
 }

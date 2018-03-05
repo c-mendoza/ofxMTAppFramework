@@ -28,7 +28,7 @@ MTAppModePathEditor::MTAppModePathEditor(PathEditorSettings& settings)
 
     if (settings.options.test(PathEditorSettings::LimitToRegion))
     {
-        if (settings.validRegion.getWidth() == 0)
+        if (settings.validRegion.getWidth() == 0 || settings.validRegionsMap.empty())
         {
             ofLogError("MTAppModePathEditor") << "Settings specify LimitToRegion, but no region was passed. "
                                               << "Using view as region";
@@ -50,9 +50,9 @@ void MTAppModePathEditor::setup()
 
     if (settings.path == nullptr)
     {
-        for (int j = 0; j < settings.paths->size(); j++)
-        {
-            auto uiPath = createUIPath(settings.paths->at(j));
+        for (const auto& path : *settings.paths)
+		{
+            auto uiPath = createUIPath(path);
             activeUIPath = uiPath;
         }
     }
@@ -72,13 +72,30 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
     // There has to be a less stupid way of doing this...
     // I feel that OR'd flags would be simpler....
     auto uiPath = std::make_shared<MTUIPath>();
-    std::bitset<4> uiPathOptions;
+    std::bitset<5> uiPathOptions;
 
     if (settings.options.test(PathEditorSettings::LimitToRegion))
-    {
-        uiPathOptions.set(MTUIPath::LimitToRegion);
-        uiPath->setRegion(settings.validRegion);
-    }
+	{
+		uiPathOptions.set(MTUIPath::LimitToRegion);
+		auto regions = settings.validRegionsMap;
+		if (regions.size() > 0)
+		{
+			auto region = regions.find(p.get());
+			if (region != regions.end())
+			{
+				uiPath->setRegion(region->second);
+			}
+			else
+			{
+				ofLogFatalError("PathEditorSettings") << "Failed to find region in validRegionsMap";
+				std::exit(-1);
+			}
+		}
+		else
+		{
+			uiPath->setRegion(settings.validRegion);
+		}
+	}
     if (settings.options.test(PathEditorSettings::CanAddPaths))
     {
         uiPathOptions.set(MTUIPath::CanAddPoints);
@@ -95,6 +112,10 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
     {
         uiPath->setClosed(true);
     }
+    if (settings.options.test(PathEditorSettings::NotifyOnHandleDragged))
+    {
+        uiPathOptions.set(MTUIPath::NotifyOnHandleDragged);
+    }
 
     uiPath->setup(p, view, (unsigned int) uiPathOptions.to_ulong());
 
@@ -102,7 +123,7 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
     uiPath->getPath()->setFilled(false);
     uiPath->getPath()->setStrokeWidth(settings.pathStrokeWidth);
 
-#pragma mark MTAppModePathEditor listeners
+#pragma mark listeners
 
     addEventListener(uiPath->pathChangedEvent.newListener(
             [this](const void* theUiPath)
@@ -221,11 +242,6 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
             }
         }
     }
-    //        else
-    //        {
-    //            handleWasPressed = false;
-    //        }
-    //    }
 }
 
 void MTAppModePathEditor::keyReleased(int key)

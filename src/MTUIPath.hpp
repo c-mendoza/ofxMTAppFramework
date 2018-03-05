@@ -78,15 +78,22 @@ public:
 	void toggleVisibility();
 
     void setRegion(ofRectangle region) { this->region = region; }
-	enum MTUIPathOptions
+
+    /**
+     * @brief
+     * NotifyOnHandleDragged: Notifies listeners of pathHandleMoved while a handle is being dragged.
+     * If you want to only be notified when the handle is done moving, set this option to false.
+     */
+    enum MTUIPathOptions
 	{
 		CanAddPoints = 0,
 		CanDeletePoints,
 		CanConvertPoints,
-        LimitToRegion
+        LimitToRegion,
+        NotifyOnHandleDragged
 	};
 
-	std::bitset<4> pathOptionFlags;
+	std::bitset<5> pathOptionFlags;
 
 	//DATA HANDLING
 	/////////////////////////////////
@@ -323,6 +330,8 @@ public:
     };
 
     void setHandleStyleForState(HandleStyle style, HandleState state);
+    HandleState getState();
+    void setState(HandleState newState);
 
 protected:
 	HandleState state;

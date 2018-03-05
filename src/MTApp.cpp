@@ -40,6 +40,8 @@ MTApp::MTApp()
 		fileExtension = "";
 
 		ofInit();
+        glfwInit();
+        MTApp::updateDisplays();
 //		ofSetLogLevel(OF_LOG_NOTICE);
 
 		addEventListener(modelLoadedEvent.newListener(
@@ -178,7 +180,6 @@ void MTApp::runApp()
 		newFile();
 	}
 
-    MTApp::updateDisplays();
     glfwSetMonitorCallback(&setMonitorCb);
 	appWillRun();
 	ofRunMainLoop();
@@ -229,11 +230,9 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 	auto window = std::make_shared<MTWindow>(windowName);
 	ofGetMainLoop()->addWindow(window);
 	windows.push_back(window);
-
-	window->contentView->setWindow(window);
 #ifndef TARGET_RASPBERRY_PI
-	ofGLFWWindowSettings glfwWS = (ofGLFWWindowSettings)settings;
-	window->setup(glfwWS);
+	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
+	window->setup(*glfwWS);
 #else
 	ofGLESWindowSettings esWS = (ofGLESWindowSettings)settings;
 	window->setup(esWS);
@@ -271,7 +270,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 	}
 #endif
 	// The ofApp system only notifies setup for the first window it creates,
-	// the rest are on their own aparently. So we check if we have initilized
+	// the rest are on their own apparently. So we check if we have initialized
 	// the ofApp system, and if we have, then
 	// that means that we need to notify setup for the window we are creating
 
@@ -286,10 +285,27 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 		window->events().notifySetup();
 	}
 	
-	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
-	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased);
+//	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
+//	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased);
 
 	return window;
+}
+
+void MTApp::removeWindow(std::shared_ptr<MTWindow> window)
+{
+    auto wIter = std::find(windows.begin(), windows.end(), window);
+    windows.erase(wIter);
+    window->setWindowShouldClose(); // Likely redundant, but probably harmless
+    removeAllEvents(window.get());
+    ofRemoveListener(window->events().keyPressed,
+                  this,
+                  &MTApp::keyPressed,
+                  OF_EVENT_ORDER_BEFORE_APP);
+    ofRemoveListener(window->events().keyReleased,
+                  this,
+                  &MTApp::keyReleased,
+                  OF_EVENT_ORDER_BEFORE_APP);
+    wpMap.erase(window->name);
 }
 
 void MTApp::addAllEvents(MTWindow* w)
@@ -522,7 +538,7 @@ bool MTApp::saveAppPreferences()
 }
 
 //// EVENTS
-void MTApp::windowClosing(MTWindow* window)
+void MTApp::windowClosing(std::shared_ptr<MTWindow> window)
 {
 
 	ofLogVerbose() << "Closing " << window->name;
@@ -534,30 +550,31 @@ void MTApp::windowClosing(MTWindow* window)
 
 	saveAppPreferences();
 
-	ofRemoveListener(window->events().keyPressed,
-					 this,
-					 &MTApp::keyPressed,
-					 OF_EVENT_ORDER_BEFORE_APP);
-	ofRemoveListener(window->events().keyReleased,
-					 this,
-					 &MTApp::keyReleased,
-					 OF_EVENT_ORDER_BEFORE_APP);
-	//    ofRemoveListener(modelLoadedEvent, view,
-	//    &MTWindow::modelLoadedInternal, OF_EVENT_ORDER_AFTER_APP);
-
-	// This is another:
-	auto it =
-	  std::find_if(windows.begin(),
-				   windows.end(),
-				   [&](std::shared_ptr<ofAppBaseWindow> const& current) {
-					   return current.get() == window;
-				   });
-
-	if (it != windows.end())
-	{
-		(*it)->events().disable();
-		windows.erase(it);
-	}
+	removeWindow(window);
+//	ofRemoveListener(window->events().keyPressed,
+//					 this,
+//					 &MTApp::keyPressed,
+//					 OF_EVENT_ORDER_BEFORE_APP);
+//	ofRemoveListener(window->events().keyReleased,
+//					 this,
+//					 &MTApp::keyReleased,
+//					 OF_EVENT_ORDER_BEFORE_APP);
+//	//    ofRemoveListener(modelLoadedEvent, view,
+//	//    &MTWindow::modelLoadedInternal, OF_EVENT_ORDER_AFTER_APP);
+//
+//	// This is another:
+//	auto it =
+//	  std::find_if(windows.begin(),
+//				   windows.end(),
+//				   [&](std::shared_ptr<ofAppBaseWindow> const& current) {
+//					   return current.get() == window;
+//				   });
+//
+//	if (it != windows.end())
+//	{
+//		(*it)->events().disable();
+//		windows.erase(it);
+//	}
 
 }
 
@@ -684,7 +701,7 @@ std::string MTApp::pathToString(ofPath& path)
 	return out;
 }
 
-std::vector<MTApp::MTDisplay> MTApp::displays;
+std::vector<MTDisplay> MTApp::displays;
 
 void MTApp::updateDisplays()
 {
@@ -694,19 +711,21 @@ void MTApp::updateDisplays()
 
     for (int i = 0; i < num; i++)
     {
-        MTDisplay mtMonitor;
+        MTDisplay mtDisplay;
         auto monitor = glfwMonitors[i];
-        mtMonitor.name = std::string(glfwGetMonitorName(monitor));
+        mtDisplay.name = std::string(glfwGetMonitorName(monitor));
         int x, y;
         glfwGetMonitorPos(monitor, &x, &y);
         auto mode = glfwGetVideoMode(monitor);
-        mtMonitor.frame = ofRectangle(x, y, mode->width, mode->height);
-        MTApp::displays.push_back(mtMonitor);
+        mtDisplay.frame = ofRectangle(x, y, mode->width, mode->height);
+        mtDisplay.id = i;
+        MTApp::displays.push_back(mtDisplay);
     }
-
 }
 
  void MTApp::setMonitorCb(GLFWmonitor* monitor, int connected)
 {
     MTApp::updateDisplays();
+    ofEventArgs args;
+    MTApp::sharedApp->displaysChangedEvent.notify(args);
 }

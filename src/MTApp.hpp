@@ -23,6 +23,13 @@ typedef std::string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
+struct MTDisplay
+{
+    std::string name;
+    ofRectangle frame;
+    int id;
+};
+
 class MTApp : public ofBaseApp, public MTEventListenerStore {
 
   public:
@@ -97,9 +104,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 * @brief Creates a window.
 	 * @param windowName
 	 * @param settings
-	 * @return A weak reference to the created window. The pointer to the window
-	 * is stored
-	 * by the MTApp class.
+	 * @return A shared_ptr to the MTWindow
 	 */
 	std::shared_ptr<MTWindow> createWindow(std::string windowName,
 										 ofWindowSettings& settings);
@@ -110,18 +115,19 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 * @param view
 	 * @param windowName
 	 * @param settings The ofWindowSettings for the window.
-	 * @return A weak reference to the created window.
+	 * @return A shared_ptr to the MTWindow
 	 */
 	std::shared_ptr<MTWindow> createWindowForView(std::shared_ptr<MTView> view,
 												std::string windowName,
 												ofWindowSettings& settings);
 
+    void removeWindow(std::shared_ptr<MTWindow> window);
 	/// Returns the mouse x-position in local coordinates of the current window
 	int getLocalMouseX();
 	/// Returns the mouse y-position in local coordinates of the current window
 	int getLocalMouseY();
 
-	void windowClosing(MTWindow* window);
+	void windowClosing(std::shared_ptr<MTWindow> window);
 
 	/////// FILE HANDLING
 	void saveAs();
@@ -159,6 +165,15 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 
 	bool autoUpdateAppModes = true;
 	bool autoDrawAppModes = true;
+
+#pragma mark EVENTS
+    /**
+     * @brief Fires when displays are connected or disconnected.
+     * When displays change, the MTApp::displays vector is recreated,
+     * so if you are relying on MTDisplay references in your code
+     * you will need to update them.
+     */
+    ofEvent<ofEventArgs> displaysChangedEvent;
 
   protected:
 	ofXml serializer;
@@ -213,12 +228,6 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 
 #pragma mark DISPLAY MANAGEMENT
 public:
-
-    struct MTDisplay
-    {
-        std::string name;
-        ofRectangle frame;
-    };
 
     /**
      * @brief Gets the currently connected displays.

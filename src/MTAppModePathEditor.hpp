@@ -29,7 +29,7 @@ public:
 		CanAddPaths,
 		CanDeletePaths,
 		PathsAreClosed,
-		DragEventsNotified,
+        NotifyOnHandleDragged,
         LimitToView
 	};
 
@@ -63,9 +63,20 @@ public:
      * handles in this editor. Points outside of the validRegion will be clamped.
      * If PathEditorOptions::LimitToRegion is set, you must provide a validRegion.
      * If PathEditorOptions::LimitToView is set, the validRegion will be created automatically
-     * based on the view.
+     * based on the view's frame.
      */
     ofRectangle validRegion;
+
+	/**
+	 * @brief An unordered_map containing valid regions keyed to the ofPath they correspond to,
+	 * allowing the usage of a valid region for a given ofPath. If using this option, each ofPath
+	 * must have a validRegion ofRectangle assigned to it.
+	 * Both PathEditionOptions::LimitToRegion and PathEditorOptions::AllowMultiplePaths must
+	 * be set for this option to be used.
+	 * If the validRegionsMap is not assigned, either PathEditorSettings::validRegion must be provided
+	 * or PathEditorOptions::LimitToView must be set.
+	 */
+	std::unordered_map<ofPath*, ofRectangle> validRegionsMap;
 
 	//TODO style options for pathEditor
 

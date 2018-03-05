@@ -6,7 +6,8 @@
 #include <string>
 #include <queue>
 #include <events/ofEvent.h>
-
+#include <types/ofRectangle.h>
+#include <glm/mat4x4.hpp>
 //------------------------------------------------------//
 // MT-PROCEDURE     									//
 //------------------------------------------------------//
@@ -100,4 +101,26 @@ public:
 
 protected:
     std::vector<ofEventListener> eventListeners;
+};
+
+/*
+ *  HomographyHelper
+ *  Created by Elliot Woods on 26/11/2010.
+ *  Edited by Krisjanis Rijnieks on 23/01/2016
+ *
+ *  Adapted from ofxPiMapper on 21 FEB 2018
+ *
+ *  Based entirely on arturo castro's homography implementation
+ *  Created 08/01/2010, arturo castro
+ *
+ */
+
+class MTHomographyHelper {
+public:
+	static void gaussian_elimination(float *input, int n);
+	static glm::mat4 findHomography(float src[4][2], float dst[4][2]);
+
+	static glm::mat4 calculateHomography(std::vector<glm::vec3> vertices);
+
+private:
 };
