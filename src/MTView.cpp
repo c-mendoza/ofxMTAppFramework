@@ -45,6 +45,7 @@ void MTView::setWindow(std::weak_ptr<MTWindow> window)
 	this->window = window;
 	ofEventArgs args;
 	addedToWindowEvent.notify(args);
+	addedToWindow();
 	for (auto& sv : subviews)
 	{
 		sv->setWindow(window);
@@ -379,6 +380,9 @@ bool MTView::removeLastSubview()
 void MTView::resetWindowPointer()
 {
 	window.reset();
+	ofEventArgs args;
+	removedFromWindowEvent.notify(args);
+	removedFromWindow();
 	for (auto& sv : subviews)
 	{
 		sv->resetWindowPointer();

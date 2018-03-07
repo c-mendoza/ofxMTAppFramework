@@ -81,6 +81,16 @@ class MTView : public MTEventListenerStore,
 	virtual void keyPressed(int key) {}
 	virtual void keyReleased(int key) {}
 
+	/**
+	 * @brief Called when this view's window property is set.
+	 */
+	virtual void addedToWindow(){}
+
+	/**
+	 * @brief Called when this view's window property is invalidated.
+	 */
+	virtual void removedFromWindow(){}
+
 	/// \brief Called on the active view when the mouse is moved.
 	/// Position is given in frame coordinates.
 	virtual void mouseMoved(int x, int y) {}
@@ -450,6 +460,7 @@ public:
 	ofEvent<ofEventArgs> frameChangedEvent;
 	ofEvent<ofResizeEventArgs> windowResizedEvent;   //?
 	ofEvent<ofEventArgs> addedToWindowEvent;
+	ofEvent<ofEventArgs> removedFromWindowEvent;
 
 	/// \brief Notified before this MTView is destroyed.
 	ofEvent<ofEventArgs> exitEvent;
