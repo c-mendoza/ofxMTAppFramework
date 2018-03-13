@@ -39,7 +39,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	// TODO: Proper singleton
 	static MTApp* sharedApp;
 
-	static ofxImGui::Gui gui;
+//	static ofxImGui::Gui gui;
 
 	/**
 	 * @brief initialize Extra "constructor" for the user. It is the last thing
