@@ -21,7 +21,6 @@ MTView::MTView(std::string _name)
 				  this,
 				  &MTView::appModeChanged,
 				  OF_EVENT_ORDER_AFTER_APP);
-	imCtx = NULL;
 	currentAppMode = std::make_shared<MTAppModeVoid>(nullptr);
 }
 
@@ -32,7 +31,6 @@ MTView::~MTView()
 					 &MTView::appModeChanged,
 					 OF_EVENT_ORDER_AFTER_APP);
 	subviews.clear();
-	if (imCtx) ImGui::DestroyContext(imCtx);
 	ofLogVerbose("View Destruct: ") << name;
 }
 
@@ -441,36 +439,6 @@ int MTView::getWindowHeight()
 	}
 }
 
-void MTView::setImGuiEnabled(bool doGui)
-{
-	if (isImGuiEnabled == doGui) return;
-
-	isImGuiEnabled = doGui;
-
-	if (doGui)
-	{
-		enqueueUpdateOperation([this]()
-							   {
-								   imCtx = ImGui::CreateContext();
-								   ImGui::SetCurrentContext(imCtx);
-								   getGui().setup();
-							   });
-
-	}
-	else
-	{
-		enqueueUpdateOperation([this]()
-							   {
-								   ImGui::DestroyContext(imCtx);
-							   });
-	}
-}
-
-ofxImGui::Gui& MTView::getGui()
-{
-	return MTApp::gui;
-}
-
 //------------------------------------------------------//
 // INTERNAL EVENT LISTENERS
 //
@@ -568,21 +536,6 @@ void MTView::draw(ofEventArgs& args)
 	}
 
 	ofPopMatrix();
-
-	if (isImGuiEnabled)
-	{
-		ImGui::SetCurrentContext(imCtx);
-		auto& io = ImGui::GetIO();
-
-		io.DisplaySize = ImVec2(getWindowWidth(), getWindowHeight());
-//        io.DisplaySize = ImVec2(getWidth(), getHeight());
-		io.MouseWheel = mouseWheel;
-//		mouseWheel = 0;
-		getGui().begin();
-//        io.MousePos = ImVec2(f.x, contentMouse.y);
-		drawGui();
-		getGui().end();
-	}
 
 	// Draw subviews:
 	for (auto sv : subviews)

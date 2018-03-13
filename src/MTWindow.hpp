@@ -150,8 +150,30 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 * @return The height of the MTView that is currently focused.
 	 */
 	int getHeight();
-	
-//	ofxImGui::Gui gui;
+
+
+#pragma mark ImGui
+
+	/**
+	 * @brief Enables or disables ofxImGui for this window. Because the ImGui context is destroyed
+	 * immediately after disabling, make sure that this window is not in the process of drawing any views,
+	 * otherwise you will likely get a crash. It is safe to call this method after creating your window
+	 * however.
+	 * @param doGui
+	 */
+	void setImGuiEnabled(bool doGui);
+	ofxImGui::Gui & getGui();
+private:
+	/**
+	 * @brief Recursively calls drawGui() on this view and all of its subviews
+	 * @param view
+	 */
+	void drawImGuiForView(std::shared_ptr<MTView> view);
+	bool isImGuiEnabled = false;
+	ImGuiContext* imCtx;
+	ofxImGui::Gui gui;
+
+#pragma mark Internals
 
   protected:
 	void removeAllEvents();

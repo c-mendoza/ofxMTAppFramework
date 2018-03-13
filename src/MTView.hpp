@@ -391,9 +391,7 @@ public:
 
 	virtual void drawGui(){};
 
-	void setImGuiEnabled(bool doGui);
-	ImGuiContext* imCtx;
-	ofxImGui::Gui & getGui();
+
 
 	bool isRenderingEnabled = true;
 

@@ -22,10 +22,16 @@ MTWindow::MTWindow(std::string name)
 	mouseOverView = contentView;
 //	contentView->setWindow(shared_from_this());
 	this->name.set("Window Name", name);
+	imCtx = NULL;
+
 }
 
 MTWindow::~MTWindow()
 {
+	if(isImGuiEnabled)
+	{
+		ImGui::SetCurrentContext(imCtx);
+	}
 }
 
 // void MTWindow::setup(ofEventArgs & args)
@@ -34,6 +40,7 @@ MTWindow::~MTWindow()
 //}
 
 #ifndef TARGET_RASPBERRY_PI
+
 void MTWindow::setup(const ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
@@ -41,9 +48,9 @@ void MTWindow::setup(const ofGLFWWindowSettings& settings)
 
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
-    glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
-//	gui.setup();
+	glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
 }
+
 #else
 void MTWindow::setup(const ofGLESWindowSettings& settings)
 {
@@ -67,7 +74,7 @@ void MTWindow::setupInternal(ofEventArgs& args)
 	ofLogVerbose("MTWindow::setupInternal") << "contentView size: " <<  contentView->getContentSize();
 #endif
 
-	
+
 	contentView->setFrameOrigin(glm::vec3(0, 0, 0));
 	contentView->setup(args);
 }
@@ -81,23 +88,46 @@ void MTWindow::draw(ofEventArgs& args)
 {
 #ifndef TARGET_RASPBERRY_PI
 	ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(),
-						 ofAppGLFWWindow::getHeight());
+							 ofAppGLFWWindow::getHeight());
 #else
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
 	ofBackground(0);
 	contentView->draw(args);
-//	gui.begin();
-//	contentView->drawGuiInternal();
-//	gui.end();
+
+	if (isImGuiEnabled)
+	{
+		ImGui::SetCurrentContext(imCtx);
+		auto& io = ImGui::GetIO();
+		io.DisplaySize = ImVec2(getWidth(), getHeight());
+		getGui().begin();
+		drawImGuiForView(contentView);
+		getGui().end();
+	}
 }
+
+void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
+{
+	for (auto& sv : view->getSubviews())
+	{
+		drawImGuiForView(sv);
+	}
+
+	view->drawGui();
+}
+
 
 void MTWindow::exit(ofEventArgs& args)
 {
 	MTApp::sharedApp->windowClosing(shared_from_this());
 	contentView->exit(args);
 	contentView = nullptr;
+	if (isImGuiEnabled)
+	{
+		gui.close();
+		if (imCtx) ImGui::DestroyContext(imCtx);
+	}
 }
 
 void MTWindow::windowResized(ofResizeEventArgs& resize)
@@ -203,20 +233,24 @@ void MTWindow::mouseEntered(ofMouseEventArgs& mouse)
 {
 	mouseButtonInUse = mouse.button;
 }
+
 void MTWindow::mouseExited(ofMouseEventArgs& mouse)
 {
 	mouseButtonInUse = mouse.button;
 }
+
 void MTWindow::dragged(ofDragInfo& drag)
 {
 }
+
 void MTWindow::messageReceived(ofMessage& message)
 {
 }
 
 void MTWindow::modelLoaded(ofEventArgs& args)
 {
-	enqueueUpdateOperation([this]() { modelLoaded(); });
+	enqueueUpdateOperation([this]()
+						   { modelLoaded(); });
 
 	contentView->modelLoaded(args);
 }
@@ -225,15 +259,19 @@ void MTWindow::modelLoaded(ofEventArgs& args)
 void MTWindow::touchDown(ofTouchEventArgs& touch)
 {
 }
+
 void MTWindow::touchMoved(ofTouchEventArgs& touch)
 {
 }
+
 void MTWindow::touchUp(ofTouchEventArgs& touch)
 {
 }
+
 void MTWindow::touchDoubleTap(ofTouchEventArgs& touch)
 {
 }
+
 void MTWindow::touchCancelled(ofTouchEventArgs& touch)
 {
 }
@@ -257,12 +295,12 @@ void MTWindow::setFocusedView(std::shared_ptr<MTView> view)
 
 std::shared_ptr<MTView> MTWindow::getFocusedView()
 {
-    auto fv = focusedView.lock();
-    if (fv)
-    {
-        return fv;
-    }
-    return nullptr;
+	auto fv = focusedView.lock();
+	if (fv)
+	{
+		return fv;
+	}
+	return nullptr;
 }
 
 int MTWindow::getWidth()
@@ -303,6 +341,34 @@ void MTWindow::removeAllEvents()
 
 void MTWindow::addAllEvents()
 {
+}
+
+#pragma mark ImGui
+
+ofxImGui::Gui& MTWindow::getGui()
+{
+	return gui;
+}
+
+void MTWindow::setImGuiEnabled(bool doGui)
+{
+	if (isImGuiEnabled == doGui) return;
+
+	isImGuiEnabled = doGui;
+
+	if (doGui)
+	{
+
+		imCtx = ImGui::CreateContext();
+		ImGui::SetCurrentContext(imCtx);
+		if (getGui().engine == NULL)
+			getGui().setup();
+
+	}
+	else
+	{
+		ImGui::DestroyContext(imCtx);
+	}
 }
 
 //-------------------------------------------------------------
@@ -349,14 +415,15 @@ static void mt_rotateMouseXY(ofOrientation orientation,
 }
 
 #ifndef TARGET_RASPBERRY_PI
+
 void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 {
 	ofAppGLFWWindow* instance =
-	  static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(windowP_));
+			static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(windowP_));
 
 	MTWindow* mtWindow = static_cast<MTWindow*>(instance);
 
-    std::shared_ptr<ofMainLoop> mainLoop = ofGetMainLoop();
+	std::shared_ptr<ofMainLoop> mainLoop = ofGetMainLoop();
 
 	if (mainLoop)
 	{
@@ -370,32 +437,33 @@ void MTWindow::mt_motion_cb(GLFWwindow* windowP_, double x, double y)
 	if (!mtWindow->isMouseDown)
 	{
 		instance->events().notifyMouseMoved(
-		  x * instance->getPixelScreenCoordScale(),
-		  y * instance->getPixelScreenCoordScale());
+				x * instance->getPixelScreenCoordScale(),
+				y * instance->getPixelScreenCoordScale());
 	}
 	else
 	{
 		instance->events().notifyMouseDragged(
-		  x * instance->getPixelScreenCoordScale(),
-		  y * instance->getPixelScreenCoordScale(),
-		  mtWindow->mouseButtonInUse);
+				x * instance->getPixelScreenCoordScale(),
+				y * instance->getPixelScreenCoordScale(),
+				mtWindow->mouseButtonInUse);
 	}
 }
 
 void MTWindow::mt_focus_callback(GLFWwindow* glfWwindow, int isFocused)
 {
-    ofAppGLFWWindow* instance =
-            static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(glfWwindow));
+	ofAppGLFWWindow* instance =
+			static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(glfWwindow));
 
-    MTWindow* mtWindow = static_cast<MTWindow*>(instance);
+	MTWindow* mtWindow = static_cast<MTWindow*>(instance);
 
-    if (isFocused == GLFW_TRUE)
-    {
-        MTWindowEventArgs focusArgs;
-        focusArgs.window = mtWindow->shared_from_this();
-        mtWindow->windowDidBecomeActiveEvent.notify(focusArgs);
-    }
+	if (isFocused == GLFW_TRUE)
+	{
+		MTWindowEventArgs focusArgs;
+		focusArgs.window = mtWindow->shared_from_this();
+		mtWindow->windowDidBecomeActiveEvent.notify(focusArgs);
+	}
 
 }
+
 
 #endif

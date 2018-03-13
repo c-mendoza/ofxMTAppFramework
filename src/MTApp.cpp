@@ -16,7 +16,7 @@ const std::string MTApp::MTPrefsWindowSizeName = "Size";
 ofEvent<MTAppModeChangeArgs> MTApp::appChangeModeEvent;
 ofEvent<ofEventArgs> MTApp::modelLoadedEvent;
 MTApp* MTApp::sharedApp = 0;
-ofxImGui::Gui MTApp::gui;
+//ofxImGui::Gui MTApp::gui;
 
 
 MTApp::MTApp()
@@ -137,8 +137,7 @@ void MTApp::createAppViews()
 #else
 	ofGLESWindowSettings windowSettings;
 #endif
-	windowSettings.width = 1280;
-	windowSettings.height = 800;
+	windowSettings.setSize(1280, 800);
 	mainWindow = createWindow("Main Window", windowSettings);
 }
 
@@ -150,7 +149,7 @@ void MTApp::runApp()
 	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()),
 			 std::shared_ptr<ofBaseApp>(this));
 
-	MTApp::gui.setup();
+//	MTApp::gui.setup();
 	// Only the first window gets notified of setup when ofRunApp is called
 	// so we need to do that ourselves:
 	for (auto iter = windows.begin()+1; iter < windows.end(); iter++)
@@ -590,7 +589,7 @@ void MTApp::exit()
 			iter->second.size = w->getWindowSize();
 		}
 	}
-	
+
 	saveAppPreferences();
 }
 
