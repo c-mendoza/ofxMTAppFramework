@@ -201,15 +201,13 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	virtual void keyPressed(ofKeyEventArgs& key);
 	virtual void keyReleased(ofKeyEventArgs& key);
 
-	/// Called whenever there is a key pressed anywhere in the app. Other than
-	/// the built-in behavior, default
+	/// Called whenever there is a key pressed anywhere in the app. Default
 	/// implementation does nothing.
-	virtual void appKeyPressed(int key){}
+	virtual void appKeyPressed(ofKeyEventArgs& key){}
 
-	/// Called whenever there is a key released anywhere in the app. Other than
-	/// the built-in behavior, default
+	/// Called whenever there is a key released anywhere in the app. Default
 	/// implementation does nothing.
-	virtual void appKeyReleased(int key){}
+	virtual void appKeyReleased(ofKeyEventArgs& key){}
 
 	/// Called once the model is loaded
 	virtual void modelLoaded(){}
