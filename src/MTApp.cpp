@@ -182,6 +182,8 @@ void MTApp::runApp()
     glfwSetMonitorCallback(&setMonitorCb);
 	appWillRun();
 	ofRunMainLoop();
+
+//	ImGui::Shutdown();
 }
 
 /// APP MODES
