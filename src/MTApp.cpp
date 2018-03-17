@@ -90,7 +90,7 @@ void MTApp::registerAppPreference(ofAbstractParameter& preference)
 
 void MTApp::keyPressed(ofKeyEventArgs& key)
 {
-	appKeyPressed(key.key);
+	appKeyPressed(key);
 }
 
 void MTApp::keyReleased(ofKeyEventArgs& key)
@@ -116,7 +116,7 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 		}
 	}
 
-	appKeyReleased(key.key);
+	appKeyReleased(key);
 }
 /// Method is called in the MTApp contructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
@@ -182,6 +182,8 @@ void MTApp::runApp()
     glfwSetMonitorCallback(&setMonitorCb);
 	appWillRun();
 	ofRunMainLoop();
+
+//	ImGui::Shutdown();
 }
 
 /// APP MODES

@@ -121,7 +121,7 @@ public:
 	static void gaussian_elimination(float *input, int n);
 	static glm::mat4 findHomography(float src[4][2], float dst[4][2]);
 
-	static glm::mat4 calculateHomography(std::vector<glm::vec3> vertices);
+	static glm::mat4 calculateHomography(ofRectangle source, std::vector<glm::vec3> vertices);
 
 private:
 };
