@@ -163,28 +163,33 @@ glm::mat4 MTHomographyHelper::findHomography(float src[4][2], float dst[4][2]){
 }
 
 
-glm::mat4 MTHomographyHelper::calculateHomography(std::vector<glm::vec3> vertices){
+glm::mat4 MTHomographyHelper::calculateHomography(ofRectangle source, std::vector<glm::vec3> destination){
 	float src[4][2];
 	float dst[4][2];
-	assert(vertices.size() == 4);
-
-	ofPolyline polyline;
-	polyline.addVertices(vertices);
-	ofRectangle box = polyline.getBoundingBox();
+	assert(destination.size() == 4);
 
 	src[0][0] = 0;
 	src[0][1] = 0;
-	src[1][0] = box.width;
+	src[1][0] = source.width;
 	src[1][1] = 0;
-	src[2][0] = box.width;
-	src[2][1] = box.height;
+	src[2][0] = source.width;
+	src[2][1] = source.height;
 	src[3][0] = 0;
-	src[3][1] = box.height;
+	src[3][1] = source.height;
 
-	glm::vec3 p0 = vertices[0];
-	glm::vec3 p1 = vertices[1];
-	glm::vec3 p2 = vertices[2];
-	glm::vec3 p3 = vertices[3];
+	src[0][0] = 0;
+	src[0][1] = 0;
+	src[1][0] = 1920;
+	src[1][1] = 0;
+	src[2][0] = 1920;
+	src[2][1] = 1200;
+	src[3][0] = 0;
+	src[3][1] = 1200;
+
+	glm::vec3 p0 = destination[0];
+	glm::vec3 p1 = destination[1];
+	glm::vec3 p2 = destination[2];
+	glm::vec3 p3 = destination[3];
 
 	dst[0][0] = p0.x;
 	dst[0][1] = p0.y;
