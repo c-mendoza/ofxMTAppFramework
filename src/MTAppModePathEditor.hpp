@@ -78,6 +78,9 @@ public:
 	 */
 	std::unordered_map<ofPath*, ofRectangle> validRegionsMap;
 
+	std::vector<std::shared_ptr<ofPath>> *validRegions;
+
+
 	//TODO style options for pathEditor
 
 };
@@ -117,7 +120,7 @@ class MTAppModePathEditor : public MTAppMode {
   protected:
 	PathEditorEventArgs pEventArgs;
 	PathEditorSettings settings;
-    std::shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p);
+    std::shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p, std::shared_ptr<ofRectangle> validRegion = nullptr);
 	bool removeUIPath(std::shared_ptr<MTUIPath> p);
 	typedef ofPath::Command ofPathCommand;
     std::vector<std::shared_ptr<MTUIPath>> uiPaths;

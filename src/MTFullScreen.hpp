@@ -9,35 +9,38 @@
 
 struct MTFullScreenDisplayInfo
 {
+	/**
+	 * @brief The physical display that will be used.
+	 */
 	MTDisplay display;
+	/**
+	 * @brief The rectangular area of the overall output that will be shown by this display.
+	 */
+	std::shared_ptr<ofRectangle> outputArea;
+	/**
+	 * @brief The perspective transformation points for this display.
+	 */
 	std::shared_ptr<ofPath> outputQuad;
 };
 
-class MTFullScreen
+
+namespace MTFullScreen
 {
-public:
-
-	MTFullScreen()
-	{}
-
-	void setup(std::vector<MTFullScreenDisplayInfo> displayOutputs,
-			   std::shared_ptr<MTWindow> windowWithOutput,
+	void setup(std::shared_ptr<MTWindow> windowWithOutput,
 			   ofTexture& outputTexture);
+	void updateFullscreenDisplays();
 	void toggleFullScreen();
 	void setFullScreen(bool fs);
+	void addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo> fsDisplay);
+	void addFullScreenDisplay();
+	void removeFullScreenDisplay();
+	std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator begin();
+	std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator end();
+	int getDisplayCount();
+	std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> getDisplayOutputs();
 
-protected:
-	std::vector<std::shared_ptr<MTWindow>> fullScreenWindows;
-	bool isFullScreen;
-	std::vector<MTFullScreenDisplayInfo> displayOutputs;
-	std::shared_ptr<MTWindow> windowWithOutput;
 
-private:
-	void enterFullScreen();
-	void exitFullScreen();
-	ofTexture outputTexture;
-	glm::vec2 windowPos;
-};
+}
 
 #include "ofMesh.h"
 
@@ -47,15 +50,15 @@ protected:
 	ofFbo outputFbo;
 	ofTexture outputTexture;
 	ofTexture testTexture;
-	std::shared_ptr<ofPath> outputSurface;
+	std::shared_ptr<ofPath> outputQuad;
 	ofMesh outputMesh;
 	glm::mat4 perspectiveMatrix;
+	std::weak_ptr<MTFullScreenDisplayInfo> fullScreenDisplay;
 
 public:
 	MTFullScreenView(std::string name,
-					 ofTexture& outputTexture,
-					 ofRectangle textureSubsection,
-					 std::shared_ptr<ofPath> outputSurface);
+					 std::shared_ptr<MTFullScreenDisplayInfo> fullScreenDisplay,
+					 ofTexture& outputTexture);
 
 	void setup() override;
 	void update() override;
