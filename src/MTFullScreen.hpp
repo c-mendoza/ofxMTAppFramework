@@ -23,38 +23,24 @@ struct MTFullScreenDisplayInfo
 	std::shared_ptr<ofPath> outputQuad;
 };
 
-class MTFullScreen
+
+namespace MTFullScreen
 {
-public:
-
-//	MTFullScreen()
-//	{}
-
-	static void setup(std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> displayOutputs,
-			   std::shared_ptr<MTWindow> windowWithOutput,
+	void setup(std::shared_ptr<MTWindow> windowWithOutput,
 			   ofTexture& outputTexture);
-	static void updateFullscreenDisplays();
-	static void toggleFullScreen();
-	static void setFullScreen(bool fs);
-	static void addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo> fsDisplay);
-	static void addFullScreenDisplay();
-	static void removeFullScreenDisplay();
-	static std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator begin();
-	static std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator end();
-protected:
-	static std::vector<std::shared_ptr<MTWindow>> fullScreenWindows;
-	static bool isFullScreen;
-	static std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> displayOutputs;
-	static std::shared_ptr<MTWindow> windowWithOutput;
-	static float outputWidth;
-	static float outputHeight;
+	void updateFullscreenDisplays();
+	void toggleFullScreen();
+	void setFullScreen(bool fs);
+	void addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo> fsDisplay);
+	void addFullScreenDisplay();
+	void removeFullScreenDisplay();
+	std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator begin();
+	std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator end();
+	int getDisplayCount();
+	std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> getDisplayOutputs();
 
-private:
-	static void enterFullScreen();
-	static void exitFullScreen();
-	static ofTexture outputTexture;
-	static glm::vec2 windowPos;
-};
+
+}
 
 #include "ofMesh.h"
 

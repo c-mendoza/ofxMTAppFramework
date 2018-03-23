@@ -6,13 +6,28 @@
 #include "ofGraphics.h"
 #include "ofPath.h"
 
-void MTFullScreen::setup(std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> displayOutputs,
-						 std::shared_ptr<MTWindow> windowWithOutput,
-						 ofTexture& outputTexture)
+using namespace MTFullScreen;
+
+std::vector<std::shared_ptr<MTWindow>> fullScreenWindows;
+bool isFullScreen;
+std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> displayOutputs;
+std::shared_ptr<MTWindow> windowWithOutput;
+float outputWidth;
+float outputHeight;
+ofTexture outputTexture;
+glm::vec2 windowPos;
+
+namespace priv
 {
-	this->displayOutputs = displayOutputs;
-	this->windowWithOutput = windowWithOutput;
-	this->outputTexture = outputTexture;
+	void enterFullScreen();
+	void exitFullScreen();
+}
+
+void MTFullScreen::setup(std::shared_ptr<MTWindow> _windowWithOutput,
+						 ofTexture& _outputTexture)
+{
+	windowWithOutput = _windowWithOutput;
+	outputTexture = _outputTexture;
 	outputWidth = outputTexture.getWidth();
 	outputHeight = outputTexture.getHeight();
 }
@@ -27,18 +42,18 @@ void MTFullScreen::updateFullscreenDisplays()
 
 		if (count == 0)
 		{
-			fsDisplay->outputArea.setPosition(0, 0);
+			fsDisplay->outputArea->setPosition(0, 0);
 		}
 		else
 		{
-			fsDisplay->outputArea.setPosition(oneWidth * count, 0);
+			fsDisplay->outputArea->setPosition(oneWidth * count, 0);
 		}
-		fsDisplay->outputArea.setSize(oneWidth,
-									  outputHeight);
+		fsDisplay->outputArea->setSize(oneWidth,
+									   outputHeight);
 		if (fsDisplay->outputQuad == nullptr)
 		{
 			fsDisplay->outputQuad = std::make_shared<ofPath>();
-			fsDisplay->outputQuad->rectangle(fsDisplay->outputArea);
+			fsDisplay->outputQuad->rectangle(*fsDisplay->outputArea);
 		}
 
 		count++;
@@ -55,15 +70,15 @@ void MTFullScreen::setFullScreen(bool fs)
 	isFullScreen = fs;
 	if (fs)
 	{
-		enterFullScreen();
+		priv::enterFullScreen();
 	}
 	else
 	{
-		exitFullScreen();
+		priv::exitFullScreen();
 	}
 }
 
-void MTFullScreen::enterFullScreen()
+void priv::enterFullScreen()
 {
 	int count = 0;
 	glm::vec3 lastPosition;
@@ -80,21 +95,22 @@ void MTFullScreen::enterFullScreen()
 
 		if (count == 0)
 		{
-			fsDisplay->outputArea.setPosition(0, 0);
+			fsDisplay->outputArea->setPosition(0, 0);
 		}
 		else
 		{
-			fsDisplay->outputArea.setPosition(oneWidth * count, 0);
+			fsDisplay->outputArea->setPosition(oneWidth * count, 0);
 		}
-		fsDisplay->outputArea.setSize(oneWidth,
-									  outputHeight);
+		fsDisplay->outputArea->setSize(oneWidth,
+									   outputHeight);
 
 		auto window = MTApp::sharedApp->createWindow("FS " + ofToString(count), glfwWindowSettings);
 		auto fsView = std::make_shared<MTFullScreenView>("FS View " + ofToString(count),
 														 fsDisplay,
-														 outputTexture,
+														 outputTexture);
 
 		window->contentView->addSubview(fsView);
+		fsView->setSize(window->contentView->getFrameSize());
 		fullScreenWindows.push_back(window);
 		count++;
 	}
@@ -104,7 +120,7 @@ void MTFullScreen::enterFullScreen()
 //	windowWithOutput->setWindowPosition(-windowWithOutput->getWidth(), -windowWithOutput->getHeight());
 }
 
-void MTFullScreen::exitFullScreen()
+void priv::exitFullScreen()
 {
 	fullScreenWindows.at(0)->setFullscreen(false);
 	for (auto window : fullScreenWindows)
@@ -119,6 +135,23 @@ void MTFullScreen::exitFullScreen()
 
 void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo> fsDisplay)
 {
+	if (fsDisplay->outputArea == nullptr)
+	{
+		auto outputArea = std::make_shared<ofRectangle>();
+		fsDisplay->outputArea = outputArea;
+	}
+
+	if (fsDisplay->outputQuad == nullptr)
+	{
+		auto quad = std::make_shared<ofPath>();
+		quad->rectangle(*fsDisplay->outputArea.get());
+	}
+	if (fsDisplay->outputQuad->getCommands().size() != 4)
+	{
+		fsDisplay->outputQuad->clear();
+		fsDisplay->outputQuad->rectangle(*fsDisplay->outputArea.get());
+	}
+
 	displayOutputs.push_back(fsDisplay);
 	updateFullscreenDisplays();
 	auto bla = displayOutputs.begin();
@@ -127,8 +160,7 @@ void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo>
 void MTFullScreen::addFullScreenDisplay()
 {
 	auto fsDisplay = std::make_shared<MTFullScreenDisplayInfo>();
-	displayOutputs.push_back(fsDisplay);
-	updateFullscreenDisplays();
+	addFullScreenDisplay(fsDisplay);
 }
 
 void MTFullScreen::removeFullScreenDisplay()
@@ -147,6 +179,16 @@ std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator MTFullScreen::e
 	return displayOutputs.end();
 }
 
+std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> MTFullScreen::getDisplayOutputs()
+{
+	return displayOutputs;
+}
+
+int MTFullScreen::getDisplayCount()
+{
+	return displayOutputs.size();
+}
+
 #pragma mark MTFullScreenView
 
 MTFullScreenView::MTFullScreenView(std::string name,
@@ -159,11 +201,11 @@ MTFullScreenView::MTFullScreenView(std::string name,
 	bool wasHackEnabled = ofIsTextureEdgeHackEnabled();
 	ofEnableTextureEdgeHack();
 	outputMesh = outputTexture.getMeshForSubsection(0, 0, 0,
-													fullScreenDisplay->outputArea.getWidth(),
-													fullScreenDisplay->outputArea.getHeight(),
-													fullScreenDisplay->outputArea.x, fullScreenDisplay->outputArea.y,
-													fullScreenDisplay->outputArea.getWidth(),
-													fullScreenDisplay->outputArea.getHeight(),
+													fullScreenDisplay->outputArea->getWidth(),
+													fullScreenDisplay->outputArea->getHeight(),
+													fullScreenDisplay->outputArea->x, fullScreenDisplay->outputArea->y,
+													fullScreenDisplay->outputArea->getWidth(),
+													fullScreenDisplay->outputArea->getHeight(),
 													true, OF_RECTMODE_CORNER);
 	if (!wasHackEnabled) ofDisableTextureEdgeHack();
 	perspectiveMatrix = glm::mat4();
@@ -184,12 +226,12 @@ void MTFullScreenView::draw()
 	ofClear(255, 0, 0);
 	ofSetColor(ofColor::white);
 	ofFill();
-
-	if (outputQuad->hasChanged())
-	{
-		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
-																	outputQuad->getOutline()[0].getVertices());
-	}
+//
+//	if (outputQuad->hasChanged())
+//	{
+//		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
+//																	outputQuad->getOutline()[0].getVertices());
+//	}
 	ofPushMatrix();
 	ofMultMatrix(perspectiveMatrix);
 	outputTexture.bind();
