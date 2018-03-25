@@ -39,13 +39,13 @@ MTAppModePathEditor::MTAppModePathEditor(PathEditorSettings& settings)
 		}
 		else
 		{
-			if (settings.validRegions->size() != settings.paths->size())
-			{
-				ofLogError("MTAppModePathEditor")
-						<< "Settings specify LimitToRegion using a vector of paths "
-						<< "but no equivalent vector of regions was passed.\n "
-						<< "We should probably kill this here...";
-			}
+//			if (settings.validRegions->size() != settings.paths->size())
+//			{
+//				ofLogError("MTAppModePathEditor")
+//						<< "Settings specify LimitToRegion using a vector of paths "
+//						<< "but no equivalent vector of regions was passed.\n "
+//						<< "We should probably kill this here...";
+//			}
 		}
 	}
 	if (settings.options.test(PathEditorSettings::LimitToView))
