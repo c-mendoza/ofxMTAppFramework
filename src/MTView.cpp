@@ -320,8 +320,8 @@ void MTView::setSuperview(std::shared_ptr<MTView> view)
 	frameChangedInternal();
 	performResizePolicy();
 	layoutInternal();
-
-
+	ofEventArgs voidArgs;
+	addedToSuperviewEvent.notify(voidArgs);
 }
 /// \brief Adds a subview.
 
@@ -353,7 +353,11 @@ bool MTView::removeFromSuperview()
 {
 	if (auto s = superview.lock())
 	{
-		return s->removeSubview(shared_from_this());
+		if(s->removeSubview(shared_from_this()))
+		{
+			ofEventArgs voidArgs;
+			removedFromSuperviewEvent.notify(voidArgs);
+		}
 	}
 
 	return false;

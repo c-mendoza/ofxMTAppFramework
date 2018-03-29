@@ -44,7 +44,7 @@ class MTView : public MTEventListenerStore,
 			   public std::enable_shared_from_this<MTView>
 {
 
-  public:
+public:
 	MTView(std::string _name);
 	virtual ~MTView();
 
@@ -54,9 +54,9 @@ class MTView : public MTEventListenerStore,
 
 	ofParameter<ofFloatColor> backgroundColor;
 
-    /**
-     * @brief A friendly name for the view
-     */
+	/**
+	 * @brief A friendly name for the view
+	 */
 	ofParameter<std::string> name;
 
 #pragma mark EVENT METHODS TO OVERRIDE
@@ -223,10 +223,12 @@ class MTView : public MTEventListenerStore,
 	 * @brief getContent returns a copy of the content rect
 	 * @return an ofRectangle
 	 */
-	ofRectangle getContent() { return content; }
+	ofRectangle getContent()
+	{ return content; }
+
 	void setContentOrigin(glm::vec2 pos);
 	const glm::vec3& getContentOrigin();
-    void shiftContentOrigin(glm::vec2 shiftAmount);
+	void shiftContentOrigin(glm::vec2 shiftAmount);
 	void setContentSize(glm::vec2 size);
 	void setContentSize(float width, float height);
 	glm::vec2 getContentSize();
@@ -234,12 +236,17 @@ class MTView : public MTEventListenerStore,
 	/// \brief Sets the scale of the content matrix in a normalized scale
 	/// (1 means no scaling, 0.5 means half scale, -1 means inverse scale).
 	void setContentScale(float xs, float ys);
-	float getContentScaleX() { return contentScaleX; }
-	float getContentScaleY() { return contentScaleY; }
+
+	float getContentScaleX()
+	{ return contentScaleX; }
+
+	float getContentScaleY()
+	{ return contentScaleY; }
 
 
 	/// TODO: Delete this method
-	const ofRectangle& getScreenFrame() { return screenFrame; }
+	const ofRectangle& getScreenFrame()
+	{ return screenFrame; }
 
 	/// \brief Sets the size of both the frame and the content
 	void setSize(glm::vec2 size);
@@ -253,35 +260,45 @@ class MTView : public MTEventListenerStore,
 
 
 #pragma mark MOUSE
+
 	/// \brief Gets the mouse position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getContentMouse() { return contentMouse; }
+	const glm::vec2& getContentMouse()
+	{ return contentMouse; }
 
-	const glm::vec2& getPrevContentMouse() { return prevContentMouse; }
+	const glm::vec2& getPrevContentMouse()
+	{ return prevContentMouse; }
 
 	/// \brief Returns the mouse down position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getContentMouseDown() { return contentMouseDown; }
+	const glm::vec2& getContentMouseDown()
+	{ return contentMouseDown; }
 
 	/// \brief Returns the last mouse up position in content coordinates.
 	/// This will only report a useful number if the mouse
 	/// is over the view instance. Other cases are undefined for the
 	/// moment.
-	const glm::vec2& getContentMouseUp() { return contentMouseUp; }
+	const glm::vec2& getContentMouseUp()
+	{ return contentMouseUp; }
 
-	const glm::vec2& getContentMouseDragStart() { return contentMouseDragStart; }
+	const glm::vec2& getContentMouseDragStart()
+	{ return contentMouseDragStart; }
 
-    const glm::vec2& getScreenMouseDown() { return windowMouseDown; }
+	const glm::vec2& getScreenMouseDown()
+	{ return windowMouseDown; }
 
-    const glm::vec2& getScreenMouseDragStart() { return windowMouseDragStart; }
+	const glm::vec2& getScreenMouseDragStart()
+	{ return windowMouseDragStart; }
 
-    const glm::vec2& getScreenMouse() { return windowMouse; }
+	const glm::vec2& getScreenMouse()
+	{ return windowMouse; }
 
-    const glm::vec2& getPrevScreenMouse() { return prevWindowMouse; }
+	const glm::vec2& getPrevScreenMouse()
+	{ return prevWindowMouse; }
 
 
 /**
@@ -294,21 +311,22 @@ class MTView : public MTEventListenerStore,
 	/// coordinates to the frame coordinate system of a given MTView.
 	glm::vec2 transformPoint(glm::vec2& coords, std::shared_ptr<MTView> toView);
 
-    /// \brief Transforms the passed point from frame
-    /// coordinates to content coordinates.
-    glm::vec2 transformFramePointToContent(glm::vec2& coords);
+	/// \brief Transforms the passed point from frame
+	/// coordinates to content coordinates.
+	glm::vec2 transformFramePointToContent(glm::vec2& coords);
 
-    /// \brief Transforms the passed point from frame
-    /// coordinates to screen coordinates.
-    glm::vec2 transformFramePointToScreen(glm::vec2& coords);
+	/// \brief Transforms the passed point from frame
+	/// coordinates to screen coordinates.
+	glm::vec2 transformFramePointToScreen(glm::vec2& coords);
 
-    /// \brief Returns a reference to the frame matrix. Modifying the reference
+	/// \brief Returns a reference to the frame matrix. Modifying the reference
 	/// might result in unexpected behavior!
-	glm::mat4& getFrameMatrix() { return frameMatrix; }
+	glm::mat4& getFrameMatrix()
+	{ return frameMatrix; }
 
 
 #pragma mark VIEW HEIRARCHY
-    //------------------------------------------------------//
+	//------------------------------------------------------//
 	// VIEW HEIRARCHY                                       //
 	//------------------------------------------------------//
 
@@ -384,13 +402,14 @@ public:
 //			enqueueUpdateOperation(
 //			  [this, drawIt]() { isDrawingBackground = drawIt; });
 //		}
-        isDrawingBackground = drawIt;
+		isDrawingBackground = drawIt;
 	}
 
-	bool getDrawBackground() { return isDrawingBackground; }
+	bool getDrawBackground()
+	{ return isDrawingBackground; }
 
-	virtual void drawGui(){};
-
+	virtual void drawGui()
+	{};
 
 
 	bool isRenderingEnabled = true;
@@ -429,14 +448,14 @@ public:
 	void modelLoaded(ofEventArgs& args);
 
 private:
-    void updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord);
-    void updateMouseDownPositionsWithWindowCoordinate(glm::vec2 windowCoord);
-    void updateMouseUpPositionsWithWindowCoordinate(glm::vec2 windowCoord);
+	void updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord);
+	void updateMouseDownPositionsWithWindowCoordinate(glm::vec2 windowCoord);
+	void updateMouseUpPositionsWithWindowCoordinate(glm::vec2 windowCoord);
 
 public:
 
 #pragma mark EVENTS
-    //------------------------------------------------------//
+	//------------------------------------------------------//
 	// EVENTS
 	//
 	//------------------------------------------------------//
@@ -459,18 +478,25 @@ public:
 	ofEvent<ofResizeEventArgs> windowResizedEvent;   //?
 	ofEvent<ofEventArgs> addedToWindowEvent;
 	ofEvent<ofEventArgs> removedFromWindowEvent;
-
-	/// \brief Notified before this MTView is destroyed.
+	/**
+	 * @brief Notifies when this view is added to a view hierarchy.
+	 */
+	ofEvent<ofEventArgs> addedToSuperviewEvent;
+	ofEvent<ofEventArgs> removedFromSuperviewEvent;
+	/**
+	 * @brief Notifies before this MTView is destroyed.
+	 */
 	ofEvent<ofEventArgs> exitEvent;
 
-    bool isMouseDown = false;
-    bool isMouseDragging = false;
+	bool isMouseDown = false;
+	bool isMouseDragging = false;
 
-    bool hasFocus();
+	bool hasFocus();
 
-    /// Set this to false if you want this MTView to ignore
-    /// keyboard focus
-    bool wantsFocus = true;
+	/**
+	 * @brief Set this to false if you want this MTView to ignore keyboard focus
+	 */
+	bool wantsFocus = true;
 
 
 #pragma mark OPERATION QUEUES
@@ -483,35 +509,42 @@ public:
 		drawOpQueue.push(funct);
 	}
 
-	void enqueueUpdateOperation(std::function<void()> f) { updateOpQueue.push(f); }
+	void enqueueUpdateOperation(std::function<void()> f)
+	{ updateOpQueue.push(f); }
 
 	friend class MTWindow;
 
-  protected:
+protected:
 	std::weak_ptr<MTWindow> window;
 	std::weak_ptr<MTView> superview;
 	std::vector<std::shared_ptr<MTView>> subviews;
 
 public:
-    /// @brief Directly sets this view's app mode. This does not change
-    /// the app mode that is managed by MTApp.
-    /// @param mode
-    void setViewAppMode(std::shared_ptr<MTAppMode> mode) { currentAppMode = mode; }
+	/**
+	 * @brief Directly sets this view's app mode. This does not change
+	 * the app mode that is managed by MTApp.
+	 * @param mode
+	 */
+	void setViewAppMode(std::shared_ptr<MTAppMode> mode)
+	{ currentAppMode = mode; }
 
-    /// @brief Gets the current app mode assigned to this view. This may or may not
-    /// be the same as the app's MTAppMode, depending on whether you've assigned this
-    /// directly.
-    /// @return  The current MTAppMode assigned to this view.
-    std::shared_ptr<MTAppMode> getViewAppMode() { return currentAppMode; }
+	/**
+	 * @brief Gets the current app mode assigned to this view. This may or may not
+	 * be the same as the app's MTAppMode, depending on whether you've assigned this
+	 * directly.
+	 * @return  The current MTAppMode assigned to this view.
+	 */
+	std::shared_ptr<MTAppMode> getViewAppMode()
+	{ return currentAppMode; }
 
 protected:
-    std::shared_ptr<MTAppMode> currentAppMode;
+	std::shared_ptr<MTAppMode> currentAppMode;
 
-	/// \brief The rectangle that specifies the size and position of
-	/// the actual content of the view.
-	///
-	/// The location of the content is specified in the view's coordinate
-	/// system.
+	/**
+	 * @brief The rectangle that specifies the size and position of
+	 * the actual content of the view.
+	 * The location of the content is specified in the view's coordinate system.
+	 */
 	ofRectangle content;
 
 	/// \brief The rectangle that determines the visible part of the content.
@@ -530,15 +563,15 @@ protected:
 
 	void updateMatrices();
 
-    /**
-     * @brief An FPS Counter for debugging or any other purposes. Call counter.newFrame()
-     * to make use of it, and counter.getFPS() to obtain the measured framerate.
-     */
-    ofFpsCounter counter;
+	/**
+	 * @brief An FPS Counter for debugging or any other purposes. Call counter.newFrame()
+	 * to make use of it, and counter.getFPS() to obtain the measured framerate.
+	 */
+	ofFpsCounter counter;
 
 
 #pragma mark VIEW AND MATRICES
-  private:
+private:
 	//------------------------------------------------------//
 	// VIEW and MATRICES
 	//------------------------------------------------------//
@@ -548,17 +581,17 @@ protected:
 	glm::mat4 frameMatrix;
 	glm::mat4 invFrameMatrix;
 public:
-    const ofParameter<ofFloatColor>& getBackgroundColor() const;
+	const ofParameter<ofFloatColor>& getBackgroundColor() const;
 
-    const glm::mat4& getContentMatrix() const;
+	const glm::mat4& getContentMatrix() const;
 
-    const glm::mat4& getInvContentMatrix() const;
+	const glm::mat4& getInvContentMatrix() const;
 
-    const glm::mat4& getInvFrameMatrix() const;
+	const glm::mat4& getInvFrameMatrix() const;
 
 private:
 
-    ofRectangle screenFrame;   // The Frame in screen coordinates and scale
+	ofRectangle screenFrame;   // The Frame in screen coordinates and scale
 
 	void updateScreenFrame();
 
@@ -581,22 +614,21 @@ private:
 
 	glm::vec2 contentMouseDragStart;
 
-    /**
-     * @brief Mouse in screen coordinates
-     */
-    glm::vec2 windowMouse;
+	/**
+	 * @brief Mouse in screen coordinates
+	 */
+	glm::vec2 windowMouse;
 
-    glm::vec2 prevWindowMouse;
+	glm::vec2 prevWindowMouse;
 
-    /**
-     * @brief The mouse down position in window coordinates
-     */
-    glm::vec2 windowMouseDown;
-;
-    /**
-     * @brief The mouse drag start in screen coordinates
-     */
-    glm::vec2 windowMouseDragStart;
+	/**
+	 * @brief The mouse down position in window coordinates
+	 */
+	glm::vec2 windowMouseDown;;
+	/**
+	 * @brief The mouse drag start in screen coordinates
+	 */
+	glm::vec2 windowMouseDragStart;
 
 	bool isDragging = false;
 
@@ -604,8 +636,8 @@ private:
 	// QUEUES
 	//------------------------------------------------------//
 
-    std::queue<std::function<void()>> updateOpQueue;
-    std::queue<std::function<void()>> drawOpQueue;
+	std::queue<std::function<void()>> updateOpQueue;
+	std::queue<std::function<void()>> drawOpQueue;
 
 	//------------------------------------------------------//
 	// INTERNALS / CONVENIENCE
@@ -628,7 +660,7 @@ private:
 
 	bool isFocused = false;
 
-    const glm::mat4& getFrameMatrix() const;
+	const glm::mat4& getFrameMatrix() const;
 
 };
 
@@ -638,13 +670,13 @@ class MTOffscreenView : public MTView
 {
 
 private:
-    ofFbo viewFbo;
+	ofFbo viewFbo;
 public:
-    MTOffscreenView(std::string name);
-    void setup() override;
-    void drawOffscreen();
-    void frameChanged() override;
-    ofTexture& getViewTexture();
+	MTOffscreenView(std::string name);
+	void setup() override;
+	void drawOffscreen();
+	void frameChanged() override;
+	ofTexture& getViewTexture();
 };
 
 
