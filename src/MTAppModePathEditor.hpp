@@ -19,7 +19,7 @@ public:
     std::shared_ptr<MTView> view;
 
 	
-	enum PathEditorOptions
+	enum Options
 	{
         CanAddPoints = 0,
         CanDeletePoints,

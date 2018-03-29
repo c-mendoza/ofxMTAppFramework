@@ -232,7 +232,7 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 		if (ofGetKeyPressed(OF_KEY_SHIFT))
 		{
 			if (activeUIPath != nullptr &&
-				settings.options.test(PathEditorSettings::PathEditorOptions::CanAddPoints))
+				settings.options.test(PathEditorSettings::CanAddPoints))
 			{
 				auto command =
 						ofPath::Command(ofPath::Command::lineTo, glm::vec3(x, y, 0));
@@ -240,14 +240,14 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 			}
 			else
 			{
-				if (settings.options.test(PathEditorSettings::PathEditorOptions::AllowsMultiplePaths))
+				if (settings.options.test(PathEditorSettings::AllowsMultiplePaths))
 				{
-					auto pathPtr = std::shared_ptr<ofPath>(new ofPath);
+					auto pathPtr = std::make_shared<ofPath>();
 					activeUIPath = createUIPath(pathPtr);
 					auto command =
 							ofPath::Command(ofPath::Command::moveTo, glm::vec3(x, y, 0));
 					activeUIPath->addCommand(command);
-					settings.paths->push_back(pathPtr);
+//					settings.paths->push_back(pathPtr);
 					pEventArgs.path = pathPtr;
 					pathCreatedEvent.notify(pEventArgs);
 					ofLogVerbose() << "Active UI Path: " << activeUIPath;
