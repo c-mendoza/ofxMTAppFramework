@@ -15,7 +15,9 @@
 #include <bitset>
 
 class MTUIPathEventArgs;
+
 class MTUIPathVertex;
+
 class MTUIPathHandle;
 /**
 ///
@@ -36,6 +38,7 @@ class MTUIPath :
 		public std::enable_shared_from_this<MTUIPath>
 {
 	friend class MTUIPathVertex;
+
 public:
 	~MTUIPath();
 
@@ -56,17 +59,17 @@ public:
 			   std::shared_ptr<MTView> view,
 			   unsigned int options);
 
-	 /**
-	 * @brief Sets up the UIPath with all of the options enabled.
-	 * @param path is a shared_ptr pointer to the ofPath to be manipulated.
-	 * It is possible to modify the path outside and still have
-	 * MTUIPath work as expected, but it is not thread-safe.
-	 * @param view The MTView that the MTUIPath will be drawn on.
-	 * The MTView is retained, so it won't be destroyed
-	 * until the MTUIPath is destroyed.
-	 * The view also provides the reference coordinate system for
-	 * the path and the MTUIPath.
-	 */
+	/**
+	* @brief Sets up the UIPath with all of the options enabled.
+	* @param path is a shared_ptr pointer to the ofPath to be manipulated.
+	* It is possible to modify the path outside and still have
+	* MTUIPath work as expected, but it is not thread-safe.
+	* @param view The MTView that the MTUIPath will be drawn on.
+	* The MTView is retained, so it won't be destroyed
+	* until the MTUIPath is destroyed.
+	* The view also provides the reference coordinate system for
+	* the path and the MTUIPath.
+	*/
 
 	void setup(std::shared_ptr<ofPath> path,
 			   std::shared_ptr<MTView> view);
@@ -74,23 +77,27 @@ public:
 //    void setAutoDraw(bool autoDraw);
 	void setVisibility(bool visible);
 	void setClosed(bool closed);
-	bool getClosed() { return isClosed; }
+
+	bool getClosed()
+	{ return isClosed; }
+
 	void toggleVisibility();
 
-    void setRegion(ofRectangle region) { this->region = region; }
+	void setRegion(ofRectangle region)
+	{ this->region = region; }
 
-    /**
-     * @brief
-     * NotifyOnHandleDragged: Notifies listeners of pathHandleMoved while a handle is being dragged.
-     * If you want to only be notified when the handle is done moving, set this option to false.
-     */
-    enum MTUIPathOptions
+	/**
+	 * @brief
+	 * NotifyOnHandleDragged: Notifies listeners of pathHandleMoved while a handle is being dragged.
+	 * If you want to only be notified when the handle is done moving, set this option to false.
+	 */
+	enum MTUIPathOptions
 	{
 		CanAddPoints = 0,
 		CanDeletePoints,
 		CanConvertPoints,
-        LimitToRegion,
-        NotifyOnHandleDragged
+		LimitToRegion,
+		NotifyOnHandleDragged
 	};
 
 	std::bitset<5> pathOptionFlags;
@@ -105,15 +112,17 @@ public:
 	void deleteSelected();
 
 	///Adds a command and its corresponding handle after the last command in the path.
-	void addCommand(ofPath::Command &command);
+	void addCommand(ofPath::Command& command);
 
 	///Inserts a command in the path at the specified index.
-	void insertCommand(ofPath::Command &command, int index);
+	void insertCommand(ofPath::Command& command, int index);
 
 	/// Adds a user data pointer, which gets returned via the MTUIPath events.
 	/// Useful to attach data to the UIPath that needs to be referenced when the UIPath changes.
 	void* userData = NULL;
-	void addUserData(void* data) { userData = data; }
+
+	void addUserData(void* data)
+	{ userData = data; }
 
 	//SELECTION
 	/////////////////////////////////
@@ -193,16 +202,17 @@ public:
 	static ofStyle cpHandleStyle;
 	static MTUIPathEventArgs pathEventArgs;
 
-	std::shared_ptr<ofPath> getPath() { return path; }
+	std::shared_ptr<ofPath> getPath()
+	{ return path; }
 
 protected:
 	typedef ofPath::Command ofPathCommand;
 	std::shared_ptr<ofPath> path = NULL;
 	bool isClosed = false;
-    std::vector<std::shared_ptr<MTUIPathVertex>> pathVertices;
-    std::vector<std::shared_ptr<MTUIPathVertex>> selectedVertices;
-	void handlePressed(MTUIPathVertex* vertex, ofMouseEventArgs &args);
-	void handleReleased(MTUIPathVertex* vertex, ofMouseEventArgs &args);
+	std::vector<std::shared_ptr<MTUIPathVertex>> pathVertices;
+	std::vector<std::shared_ptr<MTUIPathVertex>> selectedVertices;
+	void handlePressed(MTUIPathVertex* vertex, ofMouseEventArgs& args);
+	void handleReleased(MTUIPathVertex* vertex, ofMouseEventArgs& args);
 //    ofEventListener* drawListener;
 //    void drawEvent(ofEventArgs& args);
 
@@ -227,11 +237,11 @@ protected:
 		glm::vec3 pos;
 	};
 
-    std::vector<Midpoint> midpoints;
+	std::vector<Midpoint> midpoints;
 	Midpoint closestMidpoint;
-	Midpoint& getClosestMidpoint(const glm::vec3 & point);
+	Midpoint& getClosestMidpoint(const glm::vec3& point);
 
-    ofRectangle region;
+	ofRectangle region;
 
 };
 
@@ -246,9 +256,9 @@ class MTUIPathVertex : public MTEventListenerStore
 	unsigned int index;
 	std::weak_ptr<MTUIPathVertex> nextVertex;
 	std::weak_ptr<MTUIPathVertex> prevVertex;
-    std::shared_ptr<MTUIHandle> toHandle;
-    std::shared_ptr<MTUIHandle> cp1Handle;
-    std::shared_ptr<MTUIHandle> cp2Handle;
+	std::shared_ptr<MTUIHandle> toHandle;
+	std::shared_ptr<MTUIHandle> cp1Handle;
+	std::shared_ptr<MTUIHandle> cp2Handle;
 	ofStyle currentStyle;
 
 	bool mirroredControlPoints = false;
@@ -264,7 +274,8 @@ public:
 	///to true. If false, you are in charge of feeding event information to the MTView for
 	///proper functionality.
 //    void setAutoEventListeners(bool useEvents);
-	bool getUseAutoEventListeners() { return useAutoEventListeners; }
+	bool getUseAutoEventListeners()
+	{ return useAutoEventListeners; }
 
 	///If you are handling events yourself make sure to call these functions when necessary.
 	void mouseMoved(ofMouseEventArgs& args);
@@ -278,12 +289,24 @@ public:
 	void keyReleased(ofKeyEventArgs& args);
 
 	void draw();
-	std::shared_ptr<MTUIHandle> getPointHandle() { return toHandle; }
-	std::shared_ptr<MTUIHandle> getCP1Handle() { return cp1Handle; }
-	std::shared_ptr<MTUIHandle> getCP2Handle() { return cp2Handle; }
-	std::shared_ptr<ofPath> getPath() { return uiPath->getPath(); }
-	ofPath::Command* getCommand() { return command; }
-	MTUIPath* getUIPath() { return uiPath; }
+
+	std::shared_ptr<MTUIHandle> getPointHandle()
+	{ return toHandle; }
+
+	std::shared_ptr<MTUIHandle> getCP1Handle()
+	{ return cp1Handle; }
+
+	std::shared_ptr<MTUIHandle> getCP2Handle()
+	{ return cp2Handle; }
+
+	std::shared_ptr<ofPath> getPath()
+	{ return uiPath->getPath(); }
+
+	ofPath::Command* getCommand()
+	{ return command; }
+
+	MTUIPath* getUIPath()
+	{ return uiPath; }
 
 	///
 	/// \brief Updates the coordinates of the command to match that
@@ -303,41 +326,48 @@ public:
 
 	MTUIHandle(std::string _name);
 
+	void setup() override;
 	void draw() override;
-    void mouseDragged(int x, int y, int button) override;
-    void mousePressed(int x, int y, int button) override;
-    void mouseReleased(int x, int y, int button) override;
-    void mouseEntered(int x, int y) override;
-    void mouseExited(int x, int y) override;
-    void superviewContentChanged() override;
+	void mouseDragged(int x, int y, int button) override;
+	void mousePressed(int x, int y, int button) override;
+	void mouseReleased(int x, int y, int button) override;
+	void mouseEntered(int x, int y) override;
+	void mouseExited(int x, int y) override;
+	void superviewContentChanged() override;
 
-    enum HandleState
-    {
-        NORMAL = 0,
-        SELECTED,
-        PRESSED,
-        INACTIVE
-    };
+	enum HandleState
+	{
+		NORMAL = 0,
+		SELECTED,
+		PRESSED,
+		INACTIVE
+	};
 
-    struct HandleStyle
-    {
-        float size;
-        ofColor strokeColor;
-        float strokeWeight;
-        ofColor fillColor;
-        bool useFill;
-        bool useStroke;
-    };
+	struct HandleStyle
+	{
+		float size;
+		ofColor strokeColor;
+		float strokeWeight;
+		ofColor fillColor;
+		bool useFill;
+		bool useStroke;
+	};
 
-    void setHandleStyleForState(HandleStyle style, HandleState state);
-    HandleState getState();
-    void setState(HandleState newState);
+	void setHandleStyleForState(HandleStyle style, HandleState state);
+	HandleState getState();
+	void setState(HandleState newState);
 
 protected:
 	HandleState state;
-    std::unordered_map<int, HandleStyle> stylesMap;
-    float originalWidth;
-    float originalHeight;
+	std::unordered_map<int, HandleStyle> stylesMap;
+	float originalWidth;
+	float originalHeight;
+
+	/**
+	 * @brief Resizes the handle so that its size appears consistent regardless of the
+	 * scale (zoom) of its superview(s)
+	 */
+	void scaleToScreen();
 
 };
 
@@ -350,4 +380,5 @@ public:
 	void* userData;
 //    glm::vec2* pointData;
 };
+
 #endif /* ofxUIPath_hpp */
