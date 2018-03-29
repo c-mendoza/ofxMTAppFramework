@@ -165,7 +165,7 @@ void MTWindow::mouseMoved(ofMouseEventArgs& mouse)
 	{
 		if ((v != mo) && mo)
 		{
-			mo->mouseReleased(mouse);
+//			mo->mouseReleased(mouse);  // Why was this here??
 			mo->mouseExited(mouse);
 			mouseOverView = v;
 			v->mouseEntered(mouse);
