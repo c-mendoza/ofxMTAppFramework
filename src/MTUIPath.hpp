@@ -16,7 +16,7 @@
 
 class MTUIPathEventArgs;
 
-class MTUIPathVertex;
+class MTUIPathVertexHandle;
 
 class MTUIPathHandle;
 /**
@@ -37,7 +37,7 @@ class MTUIPathHandle;
 class MTUIPath :
 		public std::enable_shared_from_this<MTUIPath>
 {
-	friend class MTUIPathVertex;
+	friend class MTUIPathVertexHandle;
 
 public:
 	~MTUIPath();
@@ -45,8 +45,6 @@ public:
 	/**
 	* @brief Sets up the UIPath
 	* @param path is a shared_ptr pointer to the ofPath to be manipulated.
-	* It is possible to modify the path outside and still have
-	* MTUIPath work as expected, but it is not thread-safe.
 	* @param view The MTView that the MTUIPath will be drawn on.
 	* The MTView is retained, so it won't be destroyed
 	* until the MTUIPath is destroyed.
@@ -106,16 +104,27 @@ public:
 	/////////////////////////////////
 
 	///Returns true if the handle is found and deleted
-	bool deleteHandle(std::shared_ptr<MTUIPathVertex> handle);
+	bool deleteHandle(std::shared_ptr<MTUIPathVertexHandle> handle);
 
 	///Deletes all selected handles
 	void deleteSelected();
 
-	///Adds a command and its corresponding handle after the last command in the path.
-	void addCommand(ofPath::Command& command);
 
-	///Inserts a command in the path at the specified index.
-	void insertCommand(ofPath::Command& command, int index);
+	void addHandle(glm::vec3 point);
+
+	/**
+	 * @brief Adds a path handle at the end of the path.
+	 * @param handle
+	 */
+	void addHandle(std::shared_ptr<MTUIPathVertexHandle> handle);
+
+	/**
+	 * @brief Inserts a path handle at the specified index.
+	 * @param handle
+	 * @param index
+	 */
+	void insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsigned int index);
+	void insertHandle(glm::vec3 point, unsigned int index);
 
 	/// Adds a user data pointer, which gets returned via the MTUIPath events.
 	/// Useful to attach data to the UIPath that needs to be referenced when the UIPath changes.
@@ -128,13 +137,13 @@ public:
 	/////////////////////////////////
 
 	///Adds a handle to the selection
-	void addToSelection(std::shared_ptr<MTUIPathVertex> handle);
+	void addToSelection(std::shared_ptr<MTUIPathVertexHandle> handle);
 
 	///Removes a handle from the selection
-	void removeFromSelection(std::shared_ptr<MTUIPathVertex> handle);
+	void removeFromSelection(std::shared_ptr<MTUIPathVertexHandle> handle);
 
 	///Sets the selection to the specified handle, removing all others from the selection
-	void setSelection(std::shared_ptr<MTUIPathVertex> handle);
+	void setSelection(std::shared_ptr<MTUIPathVertexHandle> handle);
 
 	///Removes all from selection
 	void deselectAll();
@@ -206,13 +215,17 @@ public:
 	{ return path; }
 
 protected:
+	/**
+	 * @brief The path seen on the UI. It should be an analog of the path being modified.
+	 */
+	ofPath outputPath;
 	typedef ofPath::Command ofPathCommand;
 	std::shared_ptr<ofPath> path = NULL;
 	bool isClosed = false;
-	std::vector<std::shared_ptr<MTUIPathVertex>> pathVertices;
-	std::vector<std::shared_ptr<MTUIPathVertex>> selectedVertices;
-	void handlePressed(MTUIPathVertex* vertex, ofMouseEventArgs& args);
-	void handleReleased(MTUIPathVertex* vertex, ofMouseEventArgs& args);
+	std::vector<std::shared_ptr<MTUIPathVertexHandle>> pathHandles;
+	std::vector<std::shared_ptr<MTUIPathVertexHandle>> selectedHandles;
+	void handlePressed(MTUIPathVertexHandle* vertex, ofMouseEventArgs& args);
+	void handleReleased(MTUIPathVertexHandle* vertex, ofMouseEventArgs& args);
 //    ofEventListener* drawListener;
 //    void drawEvent(ofEventArgs& args);
 
@@ -223,8 +236,6 @@ protected:
 
 	void updatePath();
 
-	void arrangeClosedPath();
-	void arrangeOpenPath();
 	void addEventListeners();
 	void removeEventListeners();
 
@@ -239,23 +250,71 @@ protected:
 
 	std::vector<Midpoint> midpoints;
 	Midpoint closestMidpoint;
-	Midpoint& getClosestMidpoint(const glm::vec3& point);
+	Midpoint& getClosestMidpoint(glm::vec3& point);
 
 	ofRectangle region;
 
 };
 
-class MTUIHandle; // Forward declaration
 
-/// \brief The MTUIPathVertex class wraps a set of handles that control
-/// a vertex in a path.
-class MTUIPathVertex : public MTEventListenerStore
+
+class MTUIHandle : public MTView
 {
-	ofPath::Command* command;
-	MTUIPath* uiPath;
+public:
+
+	MTUIHandle(std::string _name);
+
+	void setup() override;
+	void draw() override;
+	void mouseDragged(int x, int y, int button) override;
+	void superviewContentChanged() override;
+
+	enum class HandleState : int
+	{
+		NORMAL = 0,
+		SELECTED,
+		PRESSED,
+		INACTIVE
+	};
+
+	struct HandleStyle
+	{
+		float size;
+		ofColor strokeColor;
+		float strokeWeight;
+		ofColor fillColor;
+		bool useFill;
+		bool useStroke;
+	};
+
+	void setHandleStyleForState(HandleStyle style, HandleState state);
+	HandleState getState();
+	void setState(HandleState newState);
+
+protected:
+	HandleState state;
+	// Can't use enums as keys (or values):
+	std::unordered_map<int, HandleStyle> stylesMap;
+	float originalWidth;
+	float originalHeight;
+
+	/**
+	 * @brief Resizes the handle so that its size appears consistent regardless of the
+	 * scale (zoom) of its superview(s)
+	 */
+	void scaleToScreen();
+
+};
+
+/// \brief The MTUIPathVertexHandle class wraps a set of handles that control
+/// a vertex in a path.
+class MTUIPathVertexHandle : public MTEventListenerStore
+{
+	ofPath::Command command = ofPath::Command(ofPath::Command::close);
+	std::weak_ptr<MTUIPath> uiPath;
 	unsigned int index;
-	std::weak_ptr<MTUIPathVertex> nextVertex;
-	std::weak_ptr<MTUIPathVertex> prevVertex;
+	std::weak_ptr<MTUIPathVertexHandle> nextVertex;
+	std::weak_ptr<MTUIPathVertexHandle> prevVertex;
 	std::shared_ptr<MTUIHandle> toHandle;
 	std::shared_ptr<MTUIHandle> cp1Handle;
 	std::shared_ptr<MTUIHandle> cp2Handle;
@@ -265,10 +324,11 @@ class MTUIPathVertex : public MTEventListenerStore
 	bool useAutoEventListeners = true;
 
 public:
-	~MTUIPathVertex();
-	void setup(MTUIPath* uiPath, ofPath::Command* com);
+	~MTUIPathVertexHandle();
+	void setup(std::weak_ptr<MTUIPath> uiPath, ofPath::Command com);
 	void setControlPoints();
 	void setStyle(ofStyle newStyle);
+	void setState(MTUIHandle::HandleState state);
 
 	///Sets whether the underlying ofMSAInteractiveObjects listen to events on their own. Defaults
 	///to true. If false, you are in charge of feeding event information to the MTView for
@@ -300,12 +360,15 @@ public:
 	{ return cp2Handle; }
 
 	std::shared_ptr<ofPath> getPath()
-	{ return uiPath->getPath(); }
+	{ return uiPath.lock()->getPath(); }  // Probably bad form, but meh
 
-	ofPath::Command* getCommand()
+	ofPath::Command getCommand()
 	{ return command; }
 
-	MTUIPath* getUIPath()
+	void setCommand(ofPath::Command com)
+	{ command = com; }
+
+	std::weak_ptr<MTUIPath> getUIPath()
 	{ return uiPath; }
 
 	///
@@ -316,67 +379,15 @@ public:
 
 	///Tests whether the point is inside the point handle or any of the control point handles
 //    bool hitTest(glm::vec2& point); //?
-
 };
 
-
-class MTUIHandle : public MTView
-{
-public:
-
-	MTUIHandle(std::string _name);
-
-	void setup() override;
-	void draw() override;
-	void mouseDragged(int x, int y, int button) override;
-	void mousePressed(int x, int y, int button) override;
-	void mouseReleased(int x, int y, int button) override;
-	void mouseEntered(int x, int y) override;
-	void mouseExited(int x, int y) override;
-	void superviewContentChanged() override;
-
-	enum HandleState
-	{
-		NORMAL = 0,
-		SELECTED,
-		PRESSED,
-		INACTIVE
-	};
-
-	struct HandleStyle
-	{
-		float size;
-		ofColor strokeColor;
-		float strokeWeight;
-		ofColor fillColor;
-		bool useFill;
-		bool useStroke;
-	};
-
-	void setHandleStyleForState(HandleStyle style, HandleState state);
-	HandleState getState();
-	void setState(HandleState newState);
-
-protected:
-	HandleState state;
-	std::unordered_map<int, HandleStyle> stylesMap;
-	float originalWidth;
-	float originalHeight;
-
-	/**
-	 * @brief Resizes the handle so that its size appears consistent regardless of the
-	 * scale (zoom) of its superview(s)
-	 */
-	void scaleToScreen();
-
-};
 
 
 class MTUIPathEventArgs : public ofEventArgs
 {
 public:
 	std::shared_ptr<ofPath> path;
-	MTUIPathVertex* pathHandle;
+	MTUIPathVertexHandle* pathHandle;
 	void* userData;
 //    glm::vec2* pointData;
 };
