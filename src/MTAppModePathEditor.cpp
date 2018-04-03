@@ -121,10 +121,6 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 	{
 		uiPathOptions.set(MTUIPath::CanConvertPoints);
 	}
-	if (settings.options.test(PathEditorSettings::PathsAreClosed))
-	{
-		uiPath->setClosed(true);
-	}
 	if (settings.options.test(PathEditorSettings::NotifyOnHandleDragged))
 	{
 		uiPathOptions.set(MTUIPath::NotifyOnHandleDragged);
@@ -132,6 +128,10 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 
 	uiPath->setup(p, view, (unsigned int) uiPathOptions.to_ulong());
 
+	if (settings.options.test(PathEditorSettings::PathsAreClosed))
+	{
+		uiPath->setClosed(true);
+	}
 	uiPath->getPath()->setColor(settings.pathColor);
 	uiPath->getPath()->setFilled(false);
 	uiPath->getPath()->setStrokeWidth(settings.pathStrokeWidth);
@@ -152,16 +152,18 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 			[this](const void* handle, ofMouseEventArgs& args)
 			{
 				//                                  handleWasPressed = true;
-				auto h = (MTUIPathVertex*) handle;
-				activeUIPath = h->getUIPath()->shared_from_this();
+				auto h = (MTUIPathVertexHandle*) handle;
+				auto uiPathPtr = h->getUIPath().lock();
+				activeUIPath = uiPathPtr;
 			},
 			OF_EVENT_ORDER_AFTER_APP));
 
 	addEventListener(uiPath->pathHandleMovedEvent.newListener(
 			[this](const void* handle, ofMouseEventArgs& args)
 			{
-				auto h = (MTUIPathVertex*) handle;
-				pEventArgs.path = h->getUIPath()->getPath();
+				auto h = (MTUIPathVertexHandle*) handle;
+				auto uiPathPtr = h->getUIPath().lock();
+				pEventArgs.path = uiPathPtr->getPath();
 				pathModifiedEvent.notify(pEventArgs);
 				onPathModified(pEventArgs);
 			},
@@ -234,20 +236,17 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 			if (activeUIPath != nullptr &&
 				settings.options.test(PathEditorSettings::CanAddPoints))
 			{
-				auto command =
-						ofPath::Command(ofPath::Command::lineTo, glm::vec3(x, y, 0));
-				activeUIPath->addCommand(command);
+				activeUIPath->addHandle(glm::vec3(x, y, 0));
 			}
 			else
 			{
 				if (settings.options.test(PathEditorSettings::AllowsMultiplePaths))
 				{
 					auto pathPtr = std::make_shared<ofPath>();
+					pathPtr->moveTo(glm::vec3(x, y, 0));
 					activeUIPath = createUIPath(pathPtr);
-					auto command =
-							ofPath::Command(ofPath::Command::moveTo, glm::vec3(x, y, 0));
-					activeUIPath->addCommand(command);
-//					settings.paths->push_back(pathPtr);
+//					activeUIPath->addHandle(glm::vec3(x, y, 0));
+					settings.paths->push_back(pathPtr);
 					pEventArgs.path = pathPtr;
 					pathCreatedEvent.notify(pEventArgs);
 					ofLogVerbose() << "Active UI Path: " << activeUIPath;

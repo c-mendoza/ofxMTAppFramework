@@ -56,7 +56,7 @@ public:
     std::string appModeName = "";
 
 	ofColor pathColor = ofColor::yellow;
-	float pathStrokeWidth = 3;
+	float pathStrokeWidth = 2;
 
     /**
      * @brief A rectantgular region that denotes the maximum and minimum values for the

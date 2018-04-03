@@ -22,13 +22,13 @@ MTUIPath::~MTUIPath()
 {
 	ofLogVerbose("MTUIPath") << "Destructor";
 	removeEventListeners();
-	for (auto handle : pathVertices)
+	for (auto handle : pathHandles)
 	{
 		handle->getPointHandle()->removeFromSuperview();
 		handle->getCP1Handle()->removeFromSuperview();
 		handle->getCP2Handle()->removeFromSuperview();
 	}
-	pathVertices.clear();
+	pathHandles.clear();
 }
 
 void MTUIPath::setup(std::shared_ptr<ofPath> p,
@@ -42,27 +42,25 @@ void MTUIPath::setup(std::shared_ptr<ofPath> p,
 					 unsigned int options)
 {
 	path = p;
-	pathVertices.clear();
-	selectedVertices.clear();
+	pathHandles.clear();
+	selectedHandles.clear();
 	this->view = view;
 	pathOptionFlags = std::bitset<5>(options);
-	if (isClosed) arrangeClosedPath();
 	addEventListeners();
 
 	//Create handles for verts
-	for (int i = 0; i < p->getCommands().size(); i++)
+	auto commands = p->getCommands();
+	for (auto command : commands)
 	{
-		auto command = &p->getCommands()[i];
-
 		// Do not add handles for close commands:
-		if (command->type == ofPath::Command::close)
+		if (command.type == ofPath::Command::close)
 		{
 			continue;
 		}
 
-		auto vertex = std::shared_ptr<MTUIPathVertex>(new MTUIPathVertex());
-		vertex->setup(this, command);
-		pathVertices.push_back(vertex);
+		auto handle = std::shared_ptr<MTUIPathVertexHandle>(new MTUIPathVertexHandle());
+		handle->setup(shared_from_this(), command);
+		pathHandles.push_back(handle);
 	}
 
 	updatePath();
@@ -70,9 +68,23 @@ void MTUIPath::setup(std::shared_ptr<ofPath> p,
 
 void MTUIPath::updatePath()
 {
-	auto commands = path->getCommands();
-	midpoints.clear();
 
+	outputPath.clear();
+	path->clear();
+//	auto commands = outputPath.getCommands();
+//	path->getCommands().assign(commands.begin(), commands.end());
+	std::vector<ofPath::Command> commands;
+	for (auto& handle : pathHandles)
+	{
+		commands.push_back(handle->getCommand());
+	}
+	outputPath.getCommands().assign(commands.begin(), commands.end());
+
+	if (isClosed) outputPath.close();
+
+	path->append(outputPath);
+	midpoints.clear();
+	commands = outputPath.getCommands();
 	if (commands.size() > 1)
 	{
 		int max;
@@ -97,49 +109,6 @@ void MTUIPath::updatePath()
 	}
 }
 
-void MTUIPath::arrangeClosedPath()
-{
-	auto commands = path->getCommands();
-
-	// If the path is not empty, and the last command is not close, and the first command isn't close
-	// either, take the coords of the first command.
-	// Otherwise, position is 0,0
-	if (commands.size() > 0)
-	{
-		if (commands.back().type == ofPath::Command::close)
-		{
-			return;
-		}
-		else
-		{
-			auto frontCommand = path->getCommands().front();
-			if (frontCommand.type != ofPath::Command::close)
-			{
-//                ofPoint pos = ofPoint(path->getCommands().front().to);
-//                auto command = ofPath::Command(ofPath::Command::close, pos);
-//                path->getCommands().push_back(std::move(command));
-				path->close();
-			}
-		}
-	}
-	else
-	{
-//        ofPoint pos = ofPoint(0, 0);
-//        auto command = ofPath::Command(ofPath::Command::close, pos);
-//        path->getCommands().push_back(std::move(command));
-		path->close();
-	}
-}
-
-void MTUIPath::arrangeOpenPath()
-{
-	if (path->getCommands().back().type == ofPath::Command::close)
-	{
-		path->getCommands().pop_back();
-//		path->getCommands();
-	}
-}
-
 void MTUIPath::setClosed(bool closed)
 {
 	// No change in state? Do nothing and return
@@ -152,17 +121,24 @@ void MTUIPath::setClosed(bool closed)
 
 	if (closed)
 	{
-		arrangeClosedPath();
+		path->close();
 
 	}
 	else
 	{
-		arrangeOpenPath();
+		auto commands = path->getCommands();
+		auto com = commands.back();
+		if (com.type == ofPath::Command::close)
+		{
+			commands.pop_back();
+		}
+		path->getCommands();
 	}
 
 	//I think that this updates the path:
 	path->getCommands();
-	setup(path, view, (unsigned int) pathOptionFlags.to_ulong()); // Necessary??? TODO: Check
+	updatePath();
+//	setup(path, view, (unsigned int) pathOptionFlags.to_ulong()); // Necessary??? TODO: Check
 }
 
 ///The actual drawing method
@@ -172,12 +148,12 @@ void MTUIPath::draw()
 	{
 		path->draw(0, 0);
 
-		auto previous = pathVertices.back();
+		auto previous = pathHandles.back();
 
-		for (int i = 0; i < pathVertices.size(); i++)
+		for (int i = 0; i < pathHandles.size(); i++)
 		{
-			auto handle = pathVertices[i];
-			if (handle->getCommand()->type == ofPathCommand::bezierTo)
+			auto handle = pathHandles[i];
+			if (handle->getCommand().type == ofPathCommand::bezierTo)
 			{
 				ofDrawLine(handle->getCP2Handle()->getFrameCenter(),
 						   handle->getPointHandle()->getFrameCenter());
@@ -199,13 +175,13 @@ void MTUIPath::draw()
 	}
 }
 
-void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs& args)
+void MTUIPath::handlePressed(MTUIPathVertexHandle* handle, ofMouseEventArgs& args)
 {
 	if (args.button == 0)
 	{
-		auto it = std::find_if(pathVertices.begin(),
-							   pathVertices.end(),
-							   [&](std::shared_ptr<MTUIPathVertex> const& current)
+		auto it = std::find_if(pathHandles.begin(),
+							   pathHandles.end(),
+							   [&](std::shared_ptr<MTUIPathVertexHandle> const& current)
 							   {
 								   return current.get() == handle;
 							   });
@@ -216,14 +192,14 @@ void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs& args)
 			pathOptionFlags.test(CanConvertPoints))
 		{
 			// Don't transform the first vertex, it has to be moveTo
-			if (it != pathVertices.begin())
+			if (it != pathHandles.begin())
 			{
-				ofPath::Command* command = (*it)->getCommand();
-				if (command->type == ofPath::Command::lineTo)
+				auto command = (*it)->getCommand();
+				if (command.type == ofPath::Command::lineTo)
 				{
 					auto polyline = path->getOutline()[0];
 					unsigned int polyIndex;
-					auto tangent = polyline.getClosestPoint(command->to, &polyIndex);
+					auto tangent = polyline.getClosestPoint(command.to, &polyIndex);
 
 					auto toHandle = (*it)->getPointHandle();
 					auto cp1 = (*it)->getCP1Handle();
@@ -232,16 +208,18 @@ void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs& args)
 
 					auto cp2 = (*it)->getCP2Handle();
 					cp2->setFrameOrigin(toHandle->getFrameOrigin() + (tNorm * 50.0f));
-					command->type = ofPath::Command::bezierTo;
+					command.type = ofPath::Command::bezierTo;
+					(*it)->setCommand(command);
 //                    (*it)->getCP1Handle()->setFrameOrigin(command->to.x, command->to.y);
 //                    (*it)->getCP2Handle()->setFrameOrigin(command->to.x, command->to.y);
 					view->addSubview(cp1);
 					view->addSubview(cp2);
 					this->pathChangedEvent.notify(this);
 				}
-				else if ((*it)->getCommand()->type == ofPath::Command::bezierTo)
+				else if (command.type == ofPath::Command::bezierTo)
 				{
-					(*it)->getCommand()->type = ofPath::Command::lineTo;
+					command.type = ofPath::Command::lineTo;
+					(*it)->setCommand(command);
 					(*it)->getCP1Handle()->removeFromSuperview();
 					(*it)->getCP2Handle()->removeFromSuperview();
 					this->pathChangedEvent.notify(this);
@@ -270,7 +248,7 @@ void MTUIPath::handlePressed(MTUIPathVertex* handle, ofMouseEventArgs& args)
 	}
 }
 
-void MTUIPath::handleReleased(MTUIPathVertex* handle, ofMouseEventArgs& args)
+void MTUIPath::handleReleased(MTUIPathVertexHandle* handle, ofMouseEventArgs& args)
 {
 
 }
@@ -309,7 +287,8 @@ void MTUIPath::mouseMoved(ofMouseEventArgs& args)
 {
 	if (path->getCommands().size() > 2)
 	{
-		closestMidpoint = getClosestMidpoint(args.xyy());
+		auto pt = glm::vec3(args, 0);
+//		closestMidpoint = getClosestMidpoint(pt);
 	}
 }
 
@@ -328,59 +307,16 @@ void MTUIPath::keyReleased(ofKeyEventArgs& args)
 //DATA HANDLING
 /////////////////////////////////
 
-bool MTUIPath::deleteHandle(std::shared_ptr<MTUIPathVertex> handle)
+bool MTUIPath::deleteHandle(std::shared_ptr<MTUIPathVertexHandle> handle)
 {
 
-	bool success = false;
+	auto iter = std::find(pathHandles.begin(), pathHandles.end(), handle);
 
-	// First we deal with the ofPath:
-	auto commands = handle->getPath()->getCommands();
+	bool success = true;
 
-	int index = 0;
-	for (; index < commands.size(); index++)
-	{
-		ofPath::Command* com = &commands[index];
-		if (com == handle->getCommand())
-		{
-			success = true;
-			break;
-		}
-	}
+	if (iter == pathHandles.end()) return false;
 
-	if (success)
-	{
-		// If we are deleting the first command
-		// there are some things to check before we decide
-		// what to do:
-		if (index == 0)
-		{
-			// If the path has more than 1 command...
-			if (commands.size() > 1)
-			{
-				// And if the next command is "close"... then it is a closed path and we should delete both commands
-				if (commands.at(index + 1).type == ofPath::Command::close)
-				{
-					commands.clear();
-				}
-				else // If it isn't "close"... then set the next command's type to moveTo and erase the current command.
-					// This is necessary because ofPaths need to start with a moveTo command.
-				{
-					commands.at(index + 1).type = ofPath::Command::moveTo;
-					commands.erase(commands.begin());
-				}
-
-			}
-			else // If the path has just one command, delete it:
-			{
-				commands.clear();
-			}
-		}
-		else // When index is greater than 0 it is simpler:
-		{
-			commands.erase(commands.begin() + index);
-		}
-	}
-
+	pathHandles.erase(iter);
 	// This might be overkill, but for extra-checking it is here...
 	//	vertexHandles.erase(std::find_if(vertexHandles.begin(), vertexHandles.end(), [&](shared_ptr<MTUIPathHandle> const& current)
 	//	{
@@ -392,33 +328,31 @@ bool MTUIPath::deleteHandle(std::shared_ptr<MTUIPathVertex> handle)
 	//        return false;
 	//	}));
 
-	if (success)
-	{
-		auto commands = path->getCommands();
 
-		// Check to see if the last command has been deleted:
-		if ((commands.size() == 0) || (commands.size() == 1 && commands.back().type == ofPath::Command::close))
+	// Check to see if the last command has been deleted:
+	if (pathHandles.size() == 0)
+	{
+		// If so, notify listeners.
+		lastHandleDeletedEvent.notify(this);
+	}
+	else
+	{
+//		setup(path, view, (unsigned int) pathOptionFlags.to_ulong());
+		updatePath();
+		pathChangedEvent.notify(this);
+		if (selectsLastInsertion)
 		{
-			// If so, notify listeners.
-			lastHandleDeletedEvent.notify(this);
-		}
-		else
-		{
-			setup(path, view, (unsigned int) pathOptionFlags.to_ulong());
-			pathChangedEvent.notify(this);
-			if (selectsLastInsertion)
-			{
-				setSelection(pathVertices.back());
-			}
+			setSelection(pathHandles.back());
 		}
 	}
+
 
 	return success;
 }
 
 void MTUIPath::deleteSelected()
 {
-	for (auto handle : selectedVertices)
+	for (auto handle : selectedHandles)
 	{
 		deleteHandle(handle);
 	}
@@ -426,7 +360,7 @@ void MTUIPath::deleteSelected()
 	deselectAll();
 }
 
-MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(const glm::vec3& point)
+MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(glm::vec3& point)
 {
 	float minDistance = 5000;
 	Midpoint closest;
@@ -449,92 +383,95 @@ MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(const glm::vec3& point)
 	return midpoints[closestIndex];
 }
 
-void MTUIPath::addCommand(ofPath::Command& command)
+void MTUIPath::addHandle(std::shared_ptr<MTUIPathVertexHandle> handle)
 {
 	if (!pathOptionFlags.test(CanAddPoints)) return;
-
-	if (path->getCommands().size() < 3)
-	{
-		insertCommand(command, path->getCommands().size());
-	}
-	else
-	{
-		// Check to see if we are in the last midpoint.
-		// index2 should be 0 in the last one:
-		if (closestMidpoint.index2 == 0)
-		{
-			insertCommand(command, closestMidpoint.index1 + 1);
-		}
-		else
-		{
-			insertCommand(command, closestMidpoint.index2);
-		}
-	}
-}
-
-void MTUIPath::insertCommand(ofPath::Command& command, int index)
-{
-	if (!pathOptionFlags.test(CanAddPoints)) return;
-
-	if (index >= path->getCommands().size())
-	{
-		// if the path is closed we need to add the point second-to-last
-		if (isClosed)
-		{
-			auto pos = path->getCommands().end() - 1;
-			path->getCommands().insert(pos, std::move(command));
-		}
-		else
-		{
-			path->getCommands().push_back(std::move(command));
-		}
-	}
-	else
-	{
-		path->getCommands().insert(path->getCommands().begin() + index,
-								   std::move(command));
-	}
-
-	//	auto vertexHandle = shared_ptr<MTUIPathHandle> (new MTUIPathHandle());
-	//	vertexHandle->setup(this, &path->getCommands()[index]);
-	//	vertexHandles.insert(vertexHandles.begin() + index, vertexHandle);
-	path->getCommands();
-	setup(path, view, (unsigned int) pathOptionFlags.to_ulong());
+	pathHandles.push_back(handle);
+	updatePath();
 	pathChangedEvent.notify(this);
 
 	if (selectsLastInsertion)
 	{
-		setSelection(pathVertices.back());
+		setSelection(pathHandles.back());
+	}
+}
+
+void MTUIPath::addHandle(glm::vec3 point)
+{
+	auto handle = std::make_shared<MTUIPathVertexHandle>();
+	ofPath::Command com = ofPath::Command(ofPath::Command::lineTo, point);
+	if (pathHandles.size() > 0)
+	{
+		com = ofPath::Command(ofPath::Command::lineTo, point);
+	}
+	else
+	{
+		com = ofPath::Command(ofPath::Command::moveTo, point);
+
+	}
+
+	handle->setup(shared_from_this(), com);
+	addHandle(handle);
+}
+
+void MTUIPath::insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsigned int index)
+{
+	if (!pathOptionFlags.test(CanAddPoints)) return;
+	if (index >= pathHandles.size())
+	{
+		pathHandles.push_back(handle);
+	}
+	else
+	{
+		pathHandles.insert(pathHandles.begin() + index, handle);
+	}
+	updatePath();
+	pathChangedEvent.notify(this);
+
+	if (selectsLastInsertion)
+	{
+		setSelection(pathHandles.back());
+	}
+}
+
+void MTUIPath::insertHandle(glm::vec3 point, unsigned int index)
+{
+	auto handle = std::make_shared<MTUIPathVertexHandle>();
+	if (pathHandles.size() > 0)
+	{
+		auto com = ofPath::Command(ofPath::Command::lineTo, point);
+		handle->setup(shared_from_this(), com);
+		insertHandle(handle, index);
 	}
 }
 
 //SELECTION
 /////////////////////////////////
 
-void MTUIPath::addToSelection(std::shared_ptr<MTUIPathVertex> vertex)
+void MTUIPath::addToSelection(std::shared_ptr<MTUIPathVertexHandle> vertex)
 {
-	selectedVertices.push_back(vertex);
+	selectedHandles.push_back(vertex);
 	vertex->setStyle(selectedVextexHandleStyle);
 }
 
-void MTUIPath::removeFromSelection(std::shared_ptr<MTUIPathVertex> vertex)
+void MTUIPath::removeFromSelection(std::shared_ptr<MTUIPathVertexHandle> vertex)
 {
-	selectedVertices.erase(std::remove_if(selectedVertices.begin(),
-										  selectedVertices.end(),
-										  [&](std::shared_ptr<MTUIPathVertex> const& current)
-										  {
-											  if (current.get() == vertex.get())
-											  {
-												  return true;
-											  }
-											  return false;
-										  }));
+	selectedHandles.erase(std::remove_if(selectedHandles.begin(),
+										 selectedHandles.end(),
+										 [&](std::shared_ptr<MTUIPathVertexHandle> const& current)
+										 {
+											 if (current.get() == vertex.get())
+											 {
+												 return true;
+											 }
+											 return false;
+										 }));
 
 	vertex->setStyle(vertexHandleStyle);
 
 }
 
-void MTUIPath::setSelection(std::shared_ptr<MTUIPathVertex> vertex)
+void MTUIPath::setSelection(std::shared_ptr<MTUIPathVertexHandle> vertex)
 {
 	deselectAll();
 	addToSelection(vertex);
@@ -542,21 +479,23 @@ void MTUIPath::setSelection(std::shared_ptr<MTUIPathVertex> vertex)
 
 void MTUIPath::deselectAll()
 {
-	for (auto handle : selectedVertices)
+	for (auto handle : selectedHandles)
 	{
 		handle->setStyle(vertexHandleStyle);
 	}
 
-	selectedVertices.clear();
+	selectedHandles.clear();
 }
 
 void MTUIPath::selectAll()
 {
-	for (auto handle : selectedVertices)
+	for (auto handle : selectedHandles)
 	{
 		addToSelection(handle);
 	}
 }
+
+
 
 #pragma mark MTUIPathHandle
 
@@ -564,7 +503,7 @@ void MTUIPath::selectAll()
 //MTUIPathHandle
 //////////////////////////
 
-MTUIPathVertex::~MTUIPathVertex()
+MTUIPathVertexHandle::~MTUIPathVertexHandle()
 {
 	ofLogVerbose("MTUIPathHandle") << "Destroyed";
 	toHandle->removeFromSuperview();
@@ -572,36 +511,36 @@ MTUIPathVertex::~MTUIPathVertex()
 	cp2Handle->removeFromSuperview();
 }
 
-void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
+void MTUIPathVertexHandle::setup(std::weak_ptr<MTUIPath> uiPath, ofPath::Command com)
 {
 	this->uiPath = uiPath;
 	command = com;
 	clearEventListeners();
 
 	toHandle = std::make_shared<MTUIHandle>("To Handle");
-	toHandle->setFrameFromCenter(command->to,
+	toHandle->setFrameFromCenter(command.to,
 								 glm::vec2(MTUIPath::vertexHandleSize,
 										   MTUIPath::vertexHandleSize));
 
 	cp1Handle = std::make_shared<MTUIHandle>("CP 1");
-	cp1Handle->setFrameFromCenter(command->cp1,
+	cp1Handle->setFrameFromCenter(command.cp1,
 								  glm::vec2(MTUIPath::vertexHandleSize,
 											MTUIPath::vertexHandleSize));
 	//    cp1Handle->handleType = ofxMTHandle<ofPoint>::ControlPointHandleType;
 
 	cp2Handle = std::make_shared<MTUIHandle>("CP 2");
-	cp2Handle->setFrameFromCenter(command->cp2,
+	cp2Handle->setFrameFromCenter(command.cp2,
 								  glm::vec2(MTUIPath::vertexHandleSize,
 											MTUIPath::vertexHandleSize));
 	//    cp2Handle->handleType = MTUIHandle::HandleType::SQUARE;
+	auto uiPathPtr = uiPath.lock();
+	uiPathPtr->view->addSubview(toHandle);
 
-	uiPath->view->addSubview(toHandle);
-
-	if (command->type == ofPath::Command::bezierTo ||
-		command->type == ofPath::Command::quadBezierTo)
+	if (command.type == ofPath::Command::bezierTo ||
+		command.type == ofPath::Command::quadBezierTo)
 	{
-		uiPath->view->addSubview(cp1Handle);
-		uiPath->view->addSubview(cp2Handle);
+		uiPathPtr->view->addSubview(cp1Handle);
+		uiPathPtr->view->addSubview(cp2Handle);
 	}
 
 	addEventListener(toHandle->mouseDraggedEvent.newListener
@@ -610,8 +549,8 @@ void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
 
 				 auto h = (MTUIHandle*) handle;
 
-				 if (command->type == ofPath::Command::bezierTo ||
-					 command->type == ofPath::Command::quadBezierTo)
+				 if (command.type == ofPath::Command::bezierTo ||
+					 command.type == ofPath::Command::quadBezierTo)
 				 {
 					 // Mouse coordinate in the handle's frame coordinate system:
 					 /* disabled for the moment:
@@ -622,46 +561,51 @@ void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
 					 cp2Handle->shiftFrameOrigin(diff);
 					  */
 				 }
-				 if (this->uiPath->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
+				 auto uiPathPtr = this->getUIPath().lock();
+				 if (uiPathPtr->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
 				 {
-					 this->uiPath->pathHandleMovedEvent.notify(this, args);
+					 uiPathPtr->pathHandleMovedEvent.notify(this, args);
 				 }
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(toHandle->mouseDraggedEndEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-//		this->uiPath->pathChangedEvent.notify(this->uiPath);
-				 this->uiPath->pathHandleMovedEvent.notify(this, args);
+//		uiPathPtr->pathChangedEvent.notify(this->uiPath);
+				 auto uiPathPtr = this->getUIPath().lock();
+				 uiPathPtr->pathHandleMovedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(toHandle->mousePressedEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->handlePressed(this, args);
-				 this->uiPath->pathHandlePressedEvent.notify(this, args);
+				 auto uiPathPtr = this->getUIPath().lock();
+				 uiPathPtr->handlePressed(this, args);
+				 uiPathPtr->pathHandlePressedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(toHandle->mouseReleasedEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->handleReleased(this, args);
-				 this->uiPath->pathHandleReleasedEvent.notify(this, args);
+				 auto uiPathPtr = this->getUIPath().lock();
+				 uiPathPtr->handleReleased(this, args);
+				 uiPathPtr->pathHandleReleasedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(toHandle->mouseDraggedEvent.newListener
 			([this](const void* sender, ofMouseEventArgs& args)
 			 {
-				 if (command->type == ofPath::Command::bezierTo ||
-					 command->type == ofPath::Command::quadBezierTo)
+				 if (command.type == ofPath::Command::bezierTo ||
+					 command.type == ofPath::Command::quadBezierTo)
 				 {
-					 MTView* view = (MTView*)sender;
+					 auto uiPathPtr = this->getUIPath().lock();
+					 MTView* view = (MTView*) sender;
 					 auto parent = view->getSuperview();
-					 if (this->uiPath->pathOptionFlags.test(MTUIPath::LimitToRegion))
+					 if (uiPathPtr->pathOptionFlags.test(MTUIPath::LimitToRegion))
 					 {
 						 auto pos = toHandle->getFrameCenter();
 
-						 if (this->uiPath->region.inside(args))
+						 if (uiPathPtr->region.inside(args))
 						 {
 							 auto delta = view->getContentMouse() - view->getContentMouseDown();
 							 cp1Handle->setFrameOrigin(cp1Handle->getFrameOrigin() + delta);
@@ -699,9 +643,9 @@ void MTUIPathVertex::setup(MTUIPath* uiPath, ofPath::Command* com)
 
 }
 
-void MTUIPathVertex::setControlPoints()
+void MTUIPathVertexHandle::setControlPoints()
 {
-	cp1Handle->setFrameFromCenter(command->cp1,
+	cp1Handle->setFrameFromCenter(command.cp1,
 								  glm::vec2(MTUIPath::cpHandleSize,
 											MTUIPath::cpHandleSize));
 
@@ -709,35 +653,39 @@ void MTUIPathVertex::setControlPoints()
 			[this](const void* handle, ofMouseEventArgs& args)
 			{
 				auto h = (MTUIHandle*) handle;
-				command->cp1 = args.xyx();
+				command.cp1 = args.xyx();
 				this->updateCommand();
-				if (this->uiPath->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
+				auto uiPathPtr = uiPath.lock();
+				if (uiPathPtr->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
 				{
-					this->uiPath->pathHandleMovedEvent.notify(this, args);
+					uiPathPtr->pathHandleMovedEvent.notify(this, args);
 				}
 			}, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(cp1Handle->mousePressedEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->handlePressed(this, args);
-				 this->uiPath->pathHandlePressedEvent.notify(this, args);
+				 auto uiPathPtr = uiPath.lock();
+				 uiPathPtr->handlePressed(this, args);
+				 uiPathPtr->pathHandlePressedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(cp1Handle->mouseReleasedEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->handleReleased(this, args);
-				 this->uiPath->pathHandleReleasedEvent.notify(this, args);
+				 auto uiPathPtr = uiPath.lock();
+				 uiPathPtr->handleReleased(this, args);
+				 uiPathPtr->pathHandleReleasedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(cp1Handle->mouseDraggedEndEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->pathHandleMovedEvent.notify(this, args);
+				 auto uiPathPtr = uiPath.lock();
+				 uiPathPtr->pathHandleMovedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
-	cp2Handle->setFrameFromCenter(command->cp2,
+	cp2Handle->setFrameFromCenter(command.cp2,
 								  glm::vec2(MTUIPath::cpHandleSize,
 											MTUIPath::cpHandleSize));
 
@@ -745,86 +693,73 @@ void MTUIPathVertex::setControlPoints()
 			[this](const void* handle, ofMouseEventArgs& args)
 			{
 				auto h = (MTUIHandle*) handle;
-				command->cp2 = args.xyx();
+				command.cp2 = args.xyx();
 				this->updateCommand();
-				if (this->uiPath->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
+				auto uiPathPtr = uiPath.lock();
+				if (uiPathPtr->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
 				{
-					this->uiPath->pathHandleMovedEvent.notify(this, args);
+					uiPathPtr->pathHandleMovedEvent.notify(this, args);
 				}
 			}, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(cp2Handle->mousePressedEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->handlePressed(this, args);
-				 this->uiPath->pathHandlePressedEvent.notify(this, args);
+				 auto uiPathPtr = uiPath.lock();
+				 uiPathPtr->handlePressed(this, args);
+				 uiPathPtr->pathHandlePressedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(cp2Handle->mouseReleasedEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->handleReleased(this, args);
-				 this->uiPath->pathHandleReleasedEvent.notify(this, args);
+				 auto uiPathPtr = uiPath.lock();
+				 uiPathPtr->handleReleased(this, args);
+				 uiPathPtr->pathHandleReleasedEvent.notify(this, args);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 
 	addEventListener(cp2Handle->mouseDraggedEndEvent.newListener
 			([this](const void* handle, ofMouseEventArgs& args)
 			 {
-				 this->uiPath->pathHandleMovedEvent.notify(this, args);
-//                 this->uiPath->pathChangedEvent.notify(this->uiPath);
+				 auto uiPathPtr = uiPath.lock();
+				 uiPathPtr->pathHandleMovedEvent.notify(this, args);
+//                 uiPathPtr->pathChangedEvent.notify(this->uiPath);
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 }
 
-void MTUIPathVertex::updateCommand()
+void MTUIPathVertexHandle::updateCommand()
 {
-	if (command->type == ofPath::Command::bezierTo ||
-		command->type == ofPath::Command::quadBezierTo)
+	if (command.type == ofPath::Command::bezierTo ||
+		command.type == ofPath::Command::quadBezierTo)
 	{
-		command->cp1 = cp1Handle->getFrameCenter();
-		command->cp2 = cp2Handle->getFrameCenter();
+		command.cp1 = cp1Handle->getFrameCenter();
+		command.cp2 = cp2Handle->getFrameCenter();
 	}
+	auto uiPathPtr = uiPath.lock();
 
-	if (uiPath->pathOptionFlags.test(MTUIPath::LimitToRegion))
+	if (uiPathPtr->pathOptionFlags.test(MTUIPath::LimitToRegion))
 	{
 		auto pos = toHandle->getFrameCenter();
 		toHandle->setFrameCenter(glm::vec2(ofClamp(pos.x,
-												   uiPath->region.getMinX(),
-												   uiPath->region.getMaxX()),
+												   uiPathPtr->region.getMinX(),
+												   uiPathPtr->region.getMaxX()),
 										   ofClamp(pos.y,
-												   uiPath->region.getMinY(),
-												   uiPath->region.getMaxY())));
+												   uiPathPtr->region.getMinY(),
+												   uiPathPtr->region.getMaxY())));
 	}
 
 
-	command->to = toHandle->getFrameCenter();
-	uiPath->updatePath();
+	command.to = toHandle->getFrameCenter();
+	uiPathPtr->updatePath();
 }
 
-void MTUIPathVertex::setStyle(ofStyle newStyle)
+void MTUIPathVertexHandle::setStyle(ofStyle newStyle)
 {
 	currentStyle = newStyle;
 }
 
-//bool MTUIPathHandle::hitTest(glm::vec2& point)
-//{
-//    bool success = toHandle->inside(point);
-//    if (command->type == ofPath::Command::bezierTo || command->type == ofPath::Command::quadBezierTo)
-//    {
-//        if (cp1Handle != nullptr)
-//        {
-//            success = success || cp1Handle->hitTest(point);
-//        }
 
-//        if (cp2Handle != nullptr)
-//        {
-//            success = success || cp2Handle->hitTest(point);
-//        }
-//    }
-
-//    return success;
-//}
-
-void MTUIPathVertex::draw()
+void MTUIPathVertexHandle::draw()
 {
 //    ofPushStyle();
 ////    ofSetStyle(currentStyle);
@@ -872,26 +807,6 @@ void MTUIHandle::mouseDragged(int x, int y, int button)
 	}
 }
 
-void MTUIHandle::mousePressed(int x, int y, int button)
-{
-	MTView::mousePressed(x, y, button);
-}
-
-void MTUIHandle::mouseReleased(int x, int y, int button)
-{
-	MTView::mouseReleased(x, y, button);
-}
-
-void MTUIHandle::mouseEntered(int x, int y)
-{
-	MTView::mouseEntered(x, y);
-}
-
-void MTUIHandle::mouseExited(int x, int y)
-{
-	MTView::mouseExited(x, y);
-}
-
 void MTUIHandle::superviewContentChanged()
 {
 	scaleToScreen();
@@ -903,8 +818,6 @@ void MTUIHandle::superviewContentChanged()
  */
 void MTUIHandle::scaleToScreen()
 {
-
-
 	auto su = superview.lock();
 	auto invMatrix = getInvFrameMatrix();
 	/*
