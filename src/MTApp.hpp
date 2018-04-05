@@ -31,6 +31,8 @@ struct MTDisplay
     int id;
 };
 
+class MTOffScreenWindow;
+
 class MTApp : public ofBaseApp, public MTEventListenerStore {
 
   public:
@@ -109,6 +111,9 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 */
 	std::shared_ptr<MTWindow> createWindow(std::string windowName,
 										 ofWindowSettings& settings);
+
+	std::shared_ptr<MTOffScreenWindow> createOffscreenWindow(std::string windowName,
+															 ofGLFWWindowSettings& settings);
 
 	/**
 	 * @brief Convenience method that creates a window and adds the passed view

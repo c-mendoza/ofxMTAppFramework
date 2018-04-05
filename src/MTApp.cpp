@@ -225,6 +225,35 @@ std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> vie
 	return win;
 }
 
+std::shared_ptr<MTOffScreenWindow> MTApp::createOffscreenWindow(std::string windowName,
+														 ofGLFWWindowSettings& settings)
+{
+	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName);
+	ofGetMainLoop()->addWindow(offscreenWindow);
+	windows.push_back(offscreenWindow);
+	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
+	offscreenWindow->setup(*glfwWS);
+	addAllEvents(offscreenWindow.get());
+	glfwHideWindow(offscreenWindow->getGLFWWindow());
+
+	// The ofApp system only notifies setup for the first window it creates,
+	// the rest are on their own apparently. So we check if we have initialized
+	// the ofApp system, and if we have, then
+	// that means that we need to notify setup for the window we are creating
+
+	if (!ofAppInitialized)
+	{
+		ofAppInitialized = true;
+	}
+	else
+	{
+		// Note that MTView::setup is not called from this event, only the
+		// MTWindow's setup
+		offscreenWindow->events().notifySetup();
+	}
+
+	return offscreenWindow;
+}
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 										 ofWindowSettings& settings)
 {

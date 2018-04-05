@@ -54,10 +54,10 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 #else
 	virtual void setup(const ofGLESWindowSettings& settings);
 #endif
-	void setupInternal(ofEventArgs& args);
-	void update(ofEventArgs& args);
-	void draw(ofEventArgs& args);
-	void exit(ofEventArgs& args);
+	virtual void setupInternal(ofEventArgs& args);
+	virtual void update(ofEventArgs& args);
+	virtual void draw(ofEventArgs& args);
+	virtual void exit(ofEventArgs& args);
 
 	void windowResized(ofResizeEventArgs& resize);
 	void keyPressed(ofKeyEventArgs& key);
@@ -163,7 +163,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 */
 	void setImGuiEnabled(bool doGui);
 	ofxImGui::Gui & getGui();
-private:
+protected:
 	/**
 	 * @brief Recursively calls drawGui() on this view and all of its subviews
 	 * @param view

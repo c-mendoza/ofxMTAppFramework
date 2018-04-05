@@ -664,21 +664,4 @@ private:
 
 };
 
-class ofTexture;
-
-// SHOULD BE AN OFFSCREEN WINDOW, not an OFFSCREEN VIEW
-class MTOffscreenView : public MTView
-{
-
-private:
-	ofFbo viewFbo;
-public:
-	MTOffscreenView(std::string name);
-	void setup() override;
-	void drawOffscreen();
-	void frameChanged() override;
-	ofTexture& getViewTexture();
-};
-
-
 #endif /* MTView_hpp */
