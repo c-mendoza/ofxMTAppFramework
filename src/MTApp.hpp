@@ -3,6 +3,7 @@
 
 #include <utils/ofXml.h>
 #include <unordered_map>
+#include <ofMain.h>
 #include "GLFW/glfw3.h"
 #include "ofxMTAppFramework.h"
 #include "MTModel.hpp"
@@ -13,15 +14,15 @@
 class MTWindow;
 class MTView;
 class MTModel;
-class MTAppMode;
+class MTViewMode;
 class ofAppBaseWindow;
 class ofWindowSettings;
 class Gui;
 
-typedef std::string MTAppModeName;
+typedef std::string MTAppStateName;
 
 
-class MTAppModeChangeArgs;
+class MTAppStateChangeArgs;
 
 struct MTDisplay
 {
@@ -80,19 +81,19 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	}
 
 	//------ APP MODES
-	const MTAppModeName defaultMode = "MTAppModeDefault";
-	void setAppMode(MTAppModeName mode);
-	MTAppModeName getCurrentMode();
-	void registerMode(MTAppModeName mode) { appModes.push_back(mode); }
+	const MTAppStateName defaultState = "MTAppStateDefault";
+	void setAppState(MTAppStateName stateName);
+	MTAppStateName getCurrentState();
+	void registerState(MTAppStateName state) { appStates.push_back(state); }
 
 	/**
-	 * @brief Called whenever the App Mode changes. This function will get called
+	 * @brief Called whenever the App State changes. This function will get called
 	 * before any other listener of the @code appModeChanged event.
 	 * The default implementation does nothing.
 	 */
-	virtual void appModeChanged(MTAppModeChangeArgs& changeArgs){}
+	virtual void appStateChanged(MTAppStateChangeArgs& changeArgs){}
 
-	static ofEvent<MTAppModeChangeArgs> appChangeModeEvent;
+	static ofEvent<MTAppStateChangeArgs> appStateChangedEvent;
 	static ofEvent<ofEventArgs> modelLoadedEvent;
 
 	virtual void exit();
@@ -159,12 +160,12 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 **/
 	void setAutoAppModeBehavior(bool autoDraw, bool autoUpdate)
 	{
-		autoDrawAppModes = autoDraw;
+		autoDrawViewModes = autoDraw;
 		autoUpdateAppModes = autoUpdate;
 	}
 
 	bool autoUpdateAppModes = true;
-	bool autoDrawAppModes = true;
+	bool autoDrawViewModes = true;
 
 #pragma mark EVENTS
     /**
@@ -213,8 +214,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	virtual void modelLoaded(){}
 
 	// APP MODES
-	MTAppModeName currentMode;
-    std::vector<MTAppModeName> appModes;
+	MTAppStateName currentMode;
+    std::vector<MTAppStateName> appStates;
 
 	//////////////////////////////
 	//	CONVENIENCE
@@ -277,11 +278,11 @@ protected:
 
 };
 
-class MTAppModeChangeArgs : public ofEventArgs {
+class MTAppStateChangeArgs : public ofEventArgs {
   public:
-	MTAppModeName newMode;
-	MTAppModeName oldMode;
-	MTAppModeChangeArgs() {}
+	MTAppStateName newStateName;
+	MTAppStateName oldStateName;
+	MTAppStateChangeArgs() {}
 };
 
 int mtGetLocalMouseX();

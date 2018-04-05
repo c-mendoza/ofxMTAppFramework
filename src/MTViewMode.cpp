@@ -6,14 +6,14 @@
 //
 //
 
-#include "MTAppMode.hpp"
+#include "MTViewMode.hpp"
 
-MTAppMode::~MTAppMode()
+MTViewMode::~MTViewMode()
 {
     eventListeners.clear();
 }
 
-void MTAppMode::addAllEventListeners()
+void MTViewMode::addAllEventListeners()
 {
     addEventListener(view->keyPressedEvent.newListener(
         [this](ofKeyEventArgs& args) { keyPressed(args.key); }));

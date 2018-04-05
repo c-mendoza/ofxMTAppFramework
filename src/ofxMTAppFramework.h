@@ -23,7 +23,7 @@
 
 //#include "ofMain.h"
 #include "MTAppFrameworkUtils.hpp"
-#include "MTAppMode.hpp"
+#include "MTViewMode.hpp"
 #include "MTApp.hpp"
 #include "MTModel.hpp"
 #include "MTView.hpp"

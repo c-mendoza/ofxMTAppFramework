@@ -53,7 +53,7 @@ public:
 	 */
 
 	int maxPaths = INT_MAX;
-    std::string appModeName = "";
+    std::string appStateName = "";
 
 	ofColor pathColor = ofColor::yellow;
 	float pathStrokeWidth = 2;
@@ -86,9 +86,9 @@ public:
 };
 
 
-class MTAppModePathEditor : public MTAppMode {
+class MTViewModePathEditor : public MTViewMode {
   public:
-	MTAppModePathEditor(PathEditorSettings& settings);
+	MTViewModePathEditor(PathEditorSettings& settings);
 	virtual void setup();
 	virtual void exit();
 	virtual void draw();

@@ -1,17 +1,17 @@
 
 //
-//  MTAppModePathEditor.cpp
+//  MTViewModePathEditor.cpp
 //  NervousStructureOF
 //
 //  Created by Cristobal Mendoza on 09/14/2017.
 //
 //
 
-#include "MTAppModePathEditor.hpp"
+#include "MTViewModePathEditor.hpp"
 #include "MTUIPath.hpp"
 
-MTAppModePathEditor::MTAppModePathEditor(PathEditorSettings& settings)
-		: MTAppMode(settings.appModeName, settings.view)
+MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
+		: MTViewMode(settings.appStateName, settings.view)
 {
 	addAllEventListeners();
 	this->settings = settings;
@@ -32,7 +32,7 @@ MTAppModePathEditor::MTAppModePathEditor(PathEditorSettings& settings)
 		{
 			if (settings.validRegion.getWidth() == 0)
 			{
-				ofLogError("MTAppModePathEditor") << "Settings specify LimitToRegion, but no region was passed. "
+				ofLogError("MTViewModePathEditor") << "Settings specify LimitToRegion, but no region was passed. "
 												  << "Using view as region";
 				settings.options.set(PathEditorSettings::LimitToView);
 			}
@@ -41,7 +41,7 @@ MTAppModePathEditor::MTAppModePathEditor(PathEditorSettings& settings)
 		{
 //			if (settings.validRegions->size() != settings.paths->size())
 //			{
-//				ofLogError("MTAppModePathEditor")
+//				ofLogError("MTViewModePathEditor")
 //						<< "Settings specify LimitToRegion using a vector of paths "
 //						<< "but no equivalent vector of regions was passed.\n "
 //						<< "We should probably kill this here...";
@@ -55,10 +55,10 @@ MTAppModePathEditor::MTAppModePathEditor(PathEditorSettings& settings)
 	}
 }
 
-void MTAppModePathEditor::setup()
+void MTViewModePathEditor::setup()
 {
 
-	ofLogVerbose("MTAppModePathEditor::setup") << settings.appModeName;
+	ofLogVerbose("MTViewModePathEditor::setup") << settings.appStateName;
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
@@ -79,7 +79,7 @@ void MTAppModePathEditor::setup()
 	view->enqueueUpdateOperation([this]() { ofShowCursor(); });
 }
 
-std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
+std::shared_ptr<MTUIPath> MTViewModePathEditor::createUIPath(
 		std::shared_ptr<ofPath> p, ofRectangle validRegion)
 {
 	// There has to be a less stupid way of doing this...
@@ -184,7 +184,7 @@ std::shared_ptr<MTUIPath> MTAppModePathEditor::createUIPath(
 	return uiPath;
 }
 
-bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
+bool MTViewModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 {
 	auto iter = std::find(uiPaths.begin(), uiPaths.end(), p);
 	if (iter != uiPaths.end())
@@ -225,7 +225,7 @@ bool MTAppModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 	return false;
 }
 
-void MTAppModePathEditor::mouseReleased(int x, int y, int button)
+void MTViewModePathEditor::mouseReleased(int x, int y, int button)
 {
 	if (button == 0)
 	{
@@ -256,7 +256,7 @@ void MTAppModePathEditor::mouseReleased(int x, int y, int button)
 	}
 }
 
-void MTAppModePathEditor::keyReleased(int key)
+void MTViewModePathEditor::keyReleased(int key)
 {
 	if (key == OF_KEY_RETURN)
 	{
@@ -264,7 +264,7 @@ void MTAppModePathEditor::keyReleased(int key)
 	}
 }
 
-void MTAppModePathEditor::draw()
+void MTViewModePathEditor::draw()
 {
 	for (auto uiPath : uiPaths)
 	{
@@ -273,9 +273,9 @@ void MTAppModePathEditor::draw()
 }
 
 
-void MTAppModePathEditor::exit()
+void MTViewModePathEditor::exit()
 {
-	ofLogVerbose("MTAppModePathEditor::exit()") << settings.appModeName;
+	ofLogVerbose("MTViewModePathEditor::exit()") << settings.appStateName;
 	activeUIPath = nullptr;
 	uiPaths.clear();
 	onExit();

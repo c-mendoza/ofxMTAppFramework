@@ -37,8 +37,8 @@ enum MTViewResizePolicy
 
 class MTModel;
 class MTWindow;
-class MTAppModeChangeArgs;
-class MTAppMode;
+class MTAppStateChangeArgs;
+class MTViewMode;
 
 class MTView : public MTEventListenerStore,
 			   public std::enable_shared_from_this<MTView>
@@ -418,7 +418,7 @@ public:
 	// APP MODES                                            //
 	//------------------------------------------------------//
 
-	virtual void appModeChanged(MTAppModeChangeArgs& modeChange) {}
+	virtual void appStateChanged(MTAppStateChangeArgs& stateChange) {}
 
 
 #pragma mark INTERNAL EVENT LISTENERS
@@ -525,20 +525,20 @@ public:
 	 * the app mode that is managed by MTApp.
 	 * @param mode
 	 */
-	void setViewAppMode(std::shared_ptr<MTAppMode> mode)
-	{ currentAppMode = mode; }
+	void setViewMode(std::shared_ptr<MTViewMode> mode)
+	{ currentViewMode = mode; }
 
 	/**
-	 * @brief Gets the current app mode assigned to this view. This may or may not
-	 * be the same as the app's MTAppMode, depending on whether you've assigned this
+	 * @brief Gets the current view mode assigned to this view. This may or may not
+	 * correspond to the app's state, depending on whether you've assigned this
 	 * directly.
-	 * @return  The current MTAppMode assigned to this view.
+	 * @return  The current MTViewMode assigned to this view.
 	 */
-	std::shared_ptr<MTAppMode> getViewAppMode()
-	{ return currentAppMode; }
+	std::shared_ptr<MTViewMode> getViewMode()
+	{ return currentViewMode; }
 
 protected:
-	std::shared_ptr<MTAppMode> currentAppMode;
+	std::shared_ptr<MTViewMode> currentViewMode;
 
 	/**
 	 * @brief The rectangle that specifies the size and position of
@@ -666,6 +666,7 @@ private:
 
 class ofTexture;
 
+// SHOULD BE AN OFFSCREEN WINDOW, not an OFFSCREEN VIEW
 class MTOffscreenView : public MTView
 {
 

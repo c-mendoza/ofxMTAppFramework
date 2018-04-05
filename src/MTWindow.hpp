@@ -20,7 +20,7 @@
 #include "ofxImGui.h"
 
 class MTModel;
-class MTAppModeChangeArgs;
+class MTAppStateChangeArgs;
 class MTView;
 class MTWindowEventArgs;
 
@@ -97,7 +97,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	/// \brief Called when the app mode has been changed.
 	/// Default implementation does nothing. Override this
 	/// method if you want to respond to mode changes.
-	virtual void appModeChanged(MTAppModeChangeArgs& modeChange) {}
+	virtual void appModeChanged(MTAppStateChangeArgs& modeChange) {}
 
 	void setFocusedView(std::shared_ptr<MTView> view);
 

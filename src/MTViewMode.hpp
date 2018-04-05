@@ -6,22 +6,22 @@
 //
 //
 
-#ifndef ofxMTAppMode_hpp
-#define ofxMTAppMode_hpp
+#ifndef MTViewMode_hpp
+#define MTViewMode_hpp
 
 #include "ofxMTAppFramework.h"
 
 class MTView;
 
-class MTAppMode : public MTEventListenerStore {
+class MTViewMode : public MTEventListenerStore {
 public:
-    MTAppMode(std::string name, std::shared_ptr<MTView> view)
+    MTViewMode(std::string name, std::shared_ptr<MTView> view)
     {
         this->name = name;
         this->view = view;
 //        addAllEventListeners();
     }
-    ~MTAppMode();
+    ~MTViewMode();
     void addAllEventListeners();
     //    void removeAllEventListeners();
     std::string getName() { return name; }
@@ -49,14 +49,14 @@ protected:
     std::string name;
 };
 
-class MTAppModeVoid : public MTAppMode {
+class MTViewModeVoid : public MTViewMode {
 public:
-    MTAppModeVoid(std::shared_ptr<MTView> view)
-        : MTAppMode("App Mode Void", view)
+    MTViewModeVoid(std::shared_ptr<MTView> view)
+        : MTViewMode("View Mode Void", view)
     {
     }
     virtual void setup(){}
     virtual void exit() {}
 };
 
-#endif /* ofxMTAppMode_hpp */
+#endif /* MTViewMode_hpp */

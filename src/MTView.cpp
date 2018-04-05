@@ -17,18 +17,18 @@ MTView::MTView(std::string _name)
 
 	backgroundColor.set("Background Color",
 						ofFloatColor(1.0, 1.0, 1.0, 1.0));
-	ofAddListener(MTApp::appChangeModeEvent,
+	ofAddListener(MTApp::appStateChangedEvent,
 				  this,
-				  &MTView::appModeChanged,
+				  &MTView::appStateChanged,
 				  OF_EVENT_ORDER_AFTER_APP);
-	currentAppMode = std::make_shared<MTAppModeVoid>(nullptr);
+	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
 }
 
 MTView::~MTView()
 {
-	ofRemoveListener(MTApp::appChangeModeEvent,
+	ofRemoveListener(MTApp::appStateChangedEvent,
 					 this,
-					 &MTView::appModeChanged,
+					 &MTView::appStateChanged,
 					 OF_EVENT_ORDER_AFTER_APP);
 	subviews.clear();
 	ofLogVerbose("View Destruct: ") << name;
@@ -451,7 +451,7 @@ int MTView::getWindowHeight()
 
 void MTView::setup(ofEventArgs& args)
 {
-	currentAppMode = std::make_shared<MTAppModeVoid>(shared_from_this());
+	currentViewMode = std::make_shared<MTViewModeVoid>(shared_from_this());
 	setup();
 	isSetUp = true;
 	for (auto sv : subviews)
@@ -473,7 +473,7 @@ void MTView::update(ofEventArgs& args)
 	update();
 	onUpdate();
 
-	if (MTApp::sharedApp->autoUpdateAppModes) currentAppMode->update();
+	if (MTApp::sharedApp->autoUpdateAppModes) currentViewMode->update();
 
 	for (auto sv : subviews)
 	{
@@ -530,11 +530,11 @@ void MTView::draw(ofEventArgs& args)
 	onDraw();
 
 	// Should I fire a drawEvent here instead? It would make sense...
-	if (MTApp::sharedApp->autoDrawAppModes)
+	if (MTApp::sharedApp->autoDrawViewModes)
 	{
-		if (currentAppMode != nullptr)
+		if (currentViewMode != nullptr)
 		{
-			currentAppMode->draw();
+			currentViewMode->draw();
 		}
 
 	}

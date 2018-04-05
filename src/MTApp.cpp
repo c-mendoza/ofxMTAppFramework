@@ -7,13 +7,14 @@
 #include "ofSystemUtils.h"
 #include "ofPath.h"
 #include "MTApp.hpp"
+#include "MTOffscreenWindow.hpp"
 
 const std::string MTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
 const std::string MTApp::MTPrefsWindowsGroupName = "//app_preferences/windows";
 const std::string MTApp::MTPrefsWindowPositionName = "Position";
 const std::string MTApp::MTPrefsWindowSizeName = "Size";
 
-ofEvent<MTAppModeChangeArgs> MTApp::appChangeModeEvent;
+ofEvent<MTAppStateChangeArgs> MTApp::appStateChangedEvent;
 ofEvent<ofEventArgs> MTApp::modelLoadedEvent;
 MTApp* MTApp::sharedApp = 0;
 //ofxImGui::Gui MTApp::gui;
@@ -34,8 +35,8 @@ MTApp::MTApp()
 		  NSPrefLaunchInFullScreen, MTPrefLastFile, NSPrefAutoloadLastFile);
 
 		MTApp::sharedApp = this;
-		currentMode = defaultMode;
-		registerMode(defaultMode);
+		currentMode = defaultState;
+		registerState(defaultState);
 
 		fileExtension = "";
 
@@ -188,9 +189,9 @@ void MTApp::runApp()
 
 /// APP MODES
 
-void MTApp::setAppMode(MTAppModeName mode)
+void MTApp::setAppState(MTAppStateName mode)
 {
-	//	if(!ofContains(appModes, mode)) return;
+	//	if(!ofContains(appStates, mode)) return;
 
 	if (mode == currentMode)
 	{
@@ -198,16 +199,16 @@ void MTApp::setAppMode(MTAppModeName mode)
 	}
 	else
 	{
-		static MTAppModeChangeArgs changeArgs;
-		changeArgs.newMode = mode;
-		changeArgs.oldMode = currentMode;
+		static MTAppStateChangeArgs changeArgs;
+		changeArgs.newStateName = mode;
+		changeArgs.oldStateName = currentMode;
 		currentMode = mode;
-		appModeChanged(changeArgs);
-		ofNotifyEvent(MTApp::appChangeModeEvent, changeArgs, this);
+		appStateChanged(changeArgs);
+		ofNotifyEvent(MTApp::appStateChangedEvent, changeArgs, this);
 	}
 }
 
-MTAppModeName MTApp::getCurrentMode()
+MTAppStateName MTApp::getCurrentState()
 {
 	return currentMode;
 }
@@ -334,7 +335,7 @@ void MTApp::addAllEvents(MTWindow* w)
 	ofAddListener(w->events().touchDown,w, &MTWindow::touchDown,OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().touchMoved,w, &MTWindow::touchMoved,OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().touchUp,w, &MTWindow::touchUp,OF_EVENT_ORDER_APP);
-	ofAddListener(MTApp::appChangeModeEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+	ofAddListener(MTApp::appStateChangedEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
 	ofAddListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
 
 	// clang-format on
@@ -364,7 +365,7 @@ void MTApp::removeAllEvents(MTWindow* w)
 	ofRemoveListener(w->events().touchDown,w, &MTWindow::touchDown,OF_EVENT_ORDER_APP);
 	ofRemoveListener(w->events().touchMoved,w, &MTWindow::touchMoved,OF_EVENT_ORDER_APP);
 	ofRemoveListener(w->events().touchUp,w, &MTWindow::touchUp,OF_EVENT_ORDER_APP);
-	ofRemoveListener(MTApp::appChangeModeEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
+	ofRemoveListener(MTApp::appStateChangedEvent, w, &MTWindow::appModeChanged,OF_EVENT_ORDER_AFTER_APP + 1000);
 	ofRemoveListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
 	// clang-format on
 }
@@ -506,7 +507,7 @@ void MTApp::newFile()
 	isInitialized = true;
 //	mainWindow->setWindowTitle(fileName);
 
-	setAppMode(defaultMode);
+	setAppState(defaultState);
 
 	auto args = ofEventArgs();
 	modelLoadedEvent.notify(args);
