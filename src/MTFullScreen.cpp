@@ -223,15 +223,15 @@ void MTFullScreenView::update()
 
 void MTFullScreenView::draw()
 {
-	ofClear(255, 0, 0);
+	ofClear(0, 0, 0);
 	ofSetColor(ofColor::white);
 	ofFill();
-//
-//	if (outputQuad->hasChanged())
-//	{
-//		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
-//																	outputQuad->getOutline()[0].getVertices());
-//	}
+
+	if (outputQuad->hasChanged())
+	{
+		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
+																	outputQuad->getOutline()[0].getVertices());
+	}
 	ofPushMatrix();
 	ofMultMatrix(perspectiveMatrix);
 	outputTexture.bind();
