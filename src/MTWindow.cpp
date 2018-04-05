@@ -20,17 +20,15 @@ MTWindow::MTWindow(std::string name)
 	contentView->backgroundColor = ofColor(0);
 	focusedView = contentView;
 	mouseOverView = contentView;
-//	contentView->setWindow(shared_from_this());
 	this->name.set("Window Name", name);
 	imCtx = NULL;
-
 }
 
 MTWindow::~MTWindow()
 {
 	if(isImGuiEnabled)
 	{
-		ImGui::SetCurrentContext(imCtx);
+		if (imCtx) ImGui::DestroyContext(imCtx);
 	}
 }
 
