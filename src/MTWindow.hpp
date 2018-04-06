@@ -50,7 +50,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	// You should not need to call these methods
 	//------------------------------------------------------//
 #ifndef TARGET_RASPBERRY_PI
-	virtual void setup(const ofGLFWWindowSettings& settings);
+	virtual void setup(ofGLFWWindowSettings& settings);
 #else
 	virtual void setup(const ofGLESWindowSettings& settings);
 #endif

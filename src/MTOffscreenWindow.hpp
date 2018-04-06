@@ -7,16 +7,16 @@
 
 #include "MTWindow.hpp"
 
-class MTOffscreenWindow : public MTWindow,
+class MTOffscreenWindow : public MTWindow
 {
 public:
 	MTOffscreenWindow(const std::string& name);
 	~MTOffscreenWindow() override;
-	void setup(const ofGLFWWindowSettings& settings) override;
+	void setup(ofGLFWWindowSettings& settings) override;
 	virtual void setupInternal(ofEventArgs& args);
 	virtual void draw(ofEventArgs& args);
 	virtual void exit(ofEventArgs& args);
-	ofFbo & getWindowOutput() const;
+	ofFbo & getWindowOutput();
 protected:
 	ofFbo windowOutput;
 	int aaSamples;

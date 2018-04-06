@@ -13,7 +13,7 @@ MTOffscreenWindow::MTOffscreenWindow(const std::string& name) : MTWindow(name)
 void MTOffscreenWindow::setupInternal(ofEventArgs& args)
 {
 	MTWindow::setupInternal(args);
-	windowOutput.allocate(getWidth(), getHeight(), GL_RGBA, aaSamples);
+//	windowOutput.allocate(getWidth(), getHeight(), GL_RGBA, aaSamples);
 }
 
 void MTOffscreenWindow::draw(ofEventArgs& args)
@@ -36,16 +36,18 @@ void MTOffscreenWindow::exit(ofEventArgs& args)
 	MTApp::sharedApp->removeWindow(shared_from_this());
 }
 
-ofFbo& MTOffscreenWindow::getWindowOutput() const
+ofFbo& MTOffscreenWindow::getWindowOutput()
 {
 	return windowOutput;
 }
 
-void MTOffscreenWindow::setup(const ofGLFWWindowSettings& settings)
+void MTOffscreenWindow::setup(ofGLFWWindowSettings& settings)
 {
-	int aaSamples = settings.numSamples;
+	aaSamples = settings.numSamples;
+	settings.visible = false;
+	settings.decorated = false;
 	MTWindow::setup(settings);
-//	windowOutput.allocate(getWidth(), getHeight(), GL_RGBA, settings.numSamples);
+	windowOutput.allocate(getWidth(), getHeight(), GL_RGBA, settings.numSamples);
 }
 
 MTOffscreenWindow::~MTOffscreenWindow()
