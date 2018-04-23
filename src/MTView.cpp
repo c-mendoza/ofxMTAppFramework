@@ -453,6 +453,7 @@ void MTView::setup(ofEventArgs& args)
 {
 	currentViewMode = std::make_shared<MTViewModeVoid>(shared_from_this());
 	setup();
+	onSetup();
 	isSetUp = true;
 	for (auto sv : subviews)
 	{

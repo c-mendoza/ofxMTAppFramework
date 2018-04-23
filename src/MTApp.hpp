@@ -18,6 +18,7 @@ class MTViewMode;
 class ofAppBaseWindow;
 class ofWindowSettings;
 class Gui;
+class MTOffscreenWindow;
 
 typedef std::string MTAppStateName;
 
@@ -30,8 +31,6 @@ struct MTDisplay
     ofRectangle frame;
     int id;
 };
-
-class MTOffScreenWindow;
 
 class MTApp : public ofBaseApp, public MTEventListenerStore {
 
@@ -112,7 +111,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	std::shared_ptr<MTWindow> createWindow(std::string windowName,
 										 ofWindowSettings& settings);
 
-	std::shared_ptr<MTOffScreenWindow> createOffscreenWindow(std::string windowName,
+	std::shared_ptr<MTOffscreenWindow> createOffscreenWindow(std::string windowName,
 															 ofGLFWWindowSettings& settings);
 
 	/**

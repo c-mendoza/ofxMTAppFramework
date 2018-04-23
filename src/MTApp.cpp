@@ -225,15 +225,16 @@ std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> vie
 	return win;
 }
 
-std::shared_ptr<MTOffScreenWindow> MTApp::createOffscreenWindow(std::string windowName,
+std::shared_ptr<MTOffscreenWindow> MTApp::createOffscreenWindow(std::string windowName,
 														 ofGLFWWindowSettings& settings)
 {
 	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName);
+//	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
+	offscreenWindow->setup(settings);
+	addAllEvents(offscreenWindow.get());
 	ofGetMainLoop()->addWindow(offscreenWindow);
 	windows.push_back(offscreenWindow);
-	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
-	offscreenWindow->setup(*glfwWS);
-	addAllEvents(offscreenWindow.get());
+
 	glfwHideWindow(offscreenWindow->getGLFWWindow());
 
 	// The ofApp system only notifies setup for the first window it creates,
@@ -336,7 +337,7 @@ void MTApp::removeWindow(std::shared_ptr<MTWindow> window)
                   this,
                   &MTApp::keyReleased,
                   OF_EVENT_ORDER_BEFORE_APP);
-    wpMap.erase(window->name);
+//    wpMap.erase(window->name);
 }
 
 void MTApp::addAllEvents(MTWindow* w)

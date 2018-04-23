@@ -28,7 +28,7 @@ MTWindow::~MTWindow()
 {
 	if(isImGuiEnabled)
 	{
-		if (imCtx) ImGui::DestroyContext(imCtx);
+//		if (imCtx) ImGui::DestroyContext(imCtx);
 	}
 }
 
@@ -39,7 +39,7 @@ MTWindow::~MTWindow()
 
 #ifndef TARGET_RASPBERRY_PI
 
-void MTWindow::setup(const ofGLFWWindowSettings& settings)
+void MTWindow::setup(ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
 	contentView->setWindow(shared_from_this());
@@ -91,7 +91,7 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
-	ofBackground(0);
+	ofBackground(0,0);
 	contentView->draw(args);
 
 	if (isImGuiEnabled)
