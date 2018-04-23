@@ -16,6 +16,7 @@ public:
 	virtual void setupInternal(ofEventArgs& args);
 	virtual void draw(ofEventArgs& args);
 	virtual void exit(ofEventArgs& args);
+	void close() override;
 	ofFbo & getWindowOutput();
 protected:
 	ofFbo windowOutput;

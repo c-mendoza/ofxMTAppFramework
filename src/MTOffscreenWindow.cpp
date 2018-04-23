@@ -26,14 +26,18 @@ void MTOffscreenWindow::draw(ofEventArgs& args)
 void MTOffscreenWindow::exit(ofEventArgs& args)
 {
 //	MTWindow::exit(args);
-	contentView->exit(args);
-	contentView = nullptr;
-	if (isImGuiEnabled)
+	ofLogVerbose("MTOffscreenWindow") << this->name << " closing";
+	if (contentView != nullptr) // Bit of a klugde
 	{
-		gui.close();
-		if (imCtx) ImGui::DestroyContext(imCtx);
+		contentView->exit(args);
+		contentView = nullptr;
+		if (isImGuiEnabled)
+		{
+			gui.close();
+			if (imCtx) ImGui::DestroyContext(imCtx);
+		}
+		MTApp::sharedApp->removeWindow(shared_from_this());
 	}
-	MTApp::sharedApp->removeWindow(shared_from_this());
 }
 
 ofFbo& MTOffscreenWindow::getWindowOutput()
@@ -52,6 +56,11 @@ void MTOffscreenWindow::setup(ofGLFWWindowSettings& settings)
 
 MTOffscreenWindow::~MTOffscreenWindow()
 {
+}
+
+void MTOffscreenWindow::close()
+{
 	ofEventArgs args;
 	exit(args);
+	ofAppGLFWWindow::close();
 }
