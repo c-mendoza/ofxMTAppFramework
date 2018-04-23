@@ -337,7 +337,7 @@ void MTApp::removeWindow(std::shared_ptr<MTWindow> window)
                   this,
                   &MTApp::keyReleased,
                   OF_EVENT_ORDER_BEFORE_APP);
-    wpMap.erase(window->name);
+//    wpMap.erase(window->name);
 }
 
 void MTApp::addAllEvents(MTWindow* w)
