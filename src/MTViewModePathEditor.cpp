@@ -15,16 +15,6 @@ MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
 {
 	addAllEventListeners();
 	this->settings = settings;
-//    onFirstPathCreated = [](PathEditorEventArgs args)
-//    {};
-//    onPathCreated = [](PathEditorEventArgs args)
-//    {};
-//    onPathModified = [](PathEditorEventArgs args)
-//    {};
-//    onPathDeleted = [](PathEditorEventArgs args)
-//    {};
-//    onLastPathDeleted = []()
-//    {};
 
 	if (settings.options.test(PathEditorSettings::LimitToRegion))
 	{
@@ -249,6 +239,7 @@ void MTViewModePathEditor::mouseReleased(int x, int y, int button)
 					settings.paths->push_back(pathPtr);
 					pEventArgs.path = pathPtr;
 					pathCreatedEvent.notify(pEventArgs);
+					onPathCreated(pEventArgs);
 					ofLogVerbose() << "Active UI Path: " << activeUIPath;
 				}
 			}
