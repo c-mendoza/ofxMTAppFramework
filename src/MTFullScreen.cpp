@@ -145,6 +145,7 @@ void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo>
 	{
 		auto quad = std::make_shared<ofPath>();
 		quad->rectangle(*fsDisplay->outputArea.get());
+		fsDisplay->outputQuad = quad;
 	}
 	if (fsDisplay->outputQuad->getCommands().size() != 4)
 	{
@@ -160,6 +161,19 @@ void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo>
 void MTFullScreen::addFullScreenDisplay()
 {
 	auto fsDisplay = std::make_shared<MTFullScreenDisplayInfo>();
+	fsDisplay->display = MTApp::getDisplays().front();
+
+	float xStart = 0;
+	for (auto& fsd : displayOutputs)
+	{
+		xStart += fsd->outputArea->getMaxX();
+	}
+
+	fsDisplay->outputArea = std::make_shared<ofRectangle>(xStart, 0,
+														  fsDisplay->display.frame.getWidth(),
+														  fsDisplay->display.frame.getHeight());
+	fsDisplay->outputQuad = std::make_shared<ofPath>();
+	fsDisplay->outputQuad->rectangle(*fsDisplay->outputArea.get());
 	addFullScreenDisplay(fsDisplay);
 }
 
