@@ -9,6 +9,7 @@
 #ifndef MTView_hpp
 #define MTView_hpp
 
+#define GLM_FORCE_SWIZZLE
 #include "ofxMTAppFramework.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -204,16 +205,16 @@ public:
     float getHeight() { return frame.height; }
 
 	void setFrameOrigin(float x, float y);
-	void setFrameOrigin(glm::vec2 pos);
-	void shiftFrameOrigin(glm::vec2 shiftAmount);
+	void setFrameOrigin(const glm::vec2 &pos);
+	void shiftFrameOrigin(const glm::vec2 &shiftAmount);
 	const glm::vec3& getFrameOrigin();
 
-	void setFrameSize(glm::vec2 size);
+	void setFrameSize(const glm::vec2& size);
 	void setFrameSize(float width, float height);
 	glm::vec2 getFrameSize();
 
-	void setFrameFromCenter(glm::vec2 pos, glm::vec2 size);
-	void setFrameCenter(glm::vec2 pos);
+	void setFrameFromCenter(const glm::vec2& pos, const glm::vec2& size);
+	void setFrameCenter(const glm::vec2& pos);
 	glm::vec3 getFrameCenter();
 
 	bool clipToFrame = false;
@@ -226,10 +227,10 @@ public:
 	ofRectangle getContent()
 	{ return content; }
 
-	void setContentOrigin(glm::vec2 pos);
+	void setContentOrigin(const glm::vec2& pos);
 	const glm::vec3& getContentOrigin();
-	void shiftContentOrigin(glm::vec2 shiftAmount);
-	void setContentSize(glm::vec2 size);
+	void shiftContentOrigin(const glm::vec2& shiftAmount);
+	void setContentSize(const glm::vec2& size);
 	void setContentSize(float width, float height);
 	glm::vec2 getContentSize();
 
@@ -249,7 +250,7 @@ public:
 	{ return screenFrame; }
 
 	/// \brief Sets the size of both the frame and the content
-	void setSize(glm::vec2 size);
+	void setSize(const glm::vec2 &size);
 
 	/// \brief Sets the size of both the frame and the content
 	void setSize(float width, float height);

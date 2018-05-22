@@ -653,7 +653,7 @@ void MTUIPathVertexHandle::setControlPoints()
 			[this](const void* handle, ofMouseEventArgs& args)
 			{
 				auto h = (MTUIHandle*) handle;
-				command.cp1 = args.xyx();
+				command.cp1 = glm::vec3(args, 0);
 				this->updateCommand();
 				auto uiPathPtr = uiPath.lock();
 				if (uiPathPtr->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
@@ -693,7 +693,7 @@ void MTUIPathVertexHandle::setControlPoints()
 			[this](const void* handle, ofMouseEventArgs& args)
 			{
 				auto h = (MTUIHandle*) handle;
-				command.cp2 = args.xyx();
+				command.cp2 = glm::vec3(args, 0);
 				this->updateCommand();
 				auto uiPathPtr = uiPath.lock();
 				if (uiPathPtr->pathOptionFlags.test(MTUIPath::NotifyOnHandleDragged))
@@ -834,7 +834,8 @@ void MTUIHandle::scaleToScreen()
 	auto sy = MTUIPath::vertexHandleSize * (invMatrix[1].y);
 
 	// We need to recenter the frame, since scaling occurs from corner:
-	setFrameFromCenter(getFrameCenter().xy, glm::vec2(sx, sy));
+	auto center = getFrameCenter();
+	setFrameFromCenter(glm::vec2(center.x, center.y), glm::vec2(sx, sy));
 }
 
 MTUIHandle::HandleState MTUIHandle::getState()

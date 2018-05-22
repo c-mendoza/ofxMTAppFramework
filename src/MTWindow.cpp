@@ -183,7 +183,7 @@ void MTWindow::mouseDragged(ofMouseEventArgs& mouse)
 	{
 		isMouseDragging = true;
 		mouseButtonInUse = mouse.button;
-		mouseDragStart = mouse.xy();
+		mouseDragStart = glm::vec2(mouse.x, mouse.y);
 	}
 
 	if (auto mo = mouseOverView.lock())
@@ -196,7 +196,7 @@ void MTWindow::mousePressed(ofMouseEventArgs& mouse)
 {
 	isMouseDown = true;
 	mouseButtonInUse = mouse.button;
-	mouseDownPos = mouse.xy();
+	mouseDownPos = glm::vec2(mouse.x, mouse.y);
 
 	if (auto mo = mouseOverView.lock())
 	{
@@ -209,7 +209,7 @@ void MTWindow::mouseReleased(ofMouseEventArgs& mouse)
 {
 	isMouseDown = false;
 	isMouseDragging = false;
-	mouseUpPos = mouse.xy();
+	mouseUpPos = glm::vec2(mouse.x, mouse.y);
 	mouseButtonInUse = mouse.button;
 	if (auto mo = mouseOverView.lock())
 	{

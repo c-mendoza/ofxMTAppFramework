@@ -18,7 +18,7 @@ void MTOffscreenWindow::setupInternal(ofEventArgs& args)
 
 void MTOffscreenWindow::draw(ofEventArgs& args)
 {
-	ofGetGLRenderer()->begin(windowOutput, ofFboBeginMode::Perspective | ofFboBeginMode::MatrixFlip);
+	ofGetGLRenderer()->begin(windowOutput, ofFboMode::OF_FBOMODE_PERSPECTIVE | ofFboMode::OF_FBOMODE_MATRIXFLIP);
 	MTWindow::draw(args);
 	ofGetGLRenderer()->end(windowOutput);
 }

@@ -82,26 +82,22 @@ private:
 class MTEventListenerStore
 {
 public:
-    //    MTEventListenerStore(){}
-    //    ~MTEventListenerStore()
-    //    {
-    //        eventListeners.clear(); //Check to see if this is necessary
-    //    }
-
     /// \brief Adds event listeners that should be destroyed when this
     /// object is destroyed.
-    void addEventListener(ofEventListener &&e)
+    void addEventListener(std::unique_ptr<of::priv::AbstractEventToken> listener)
     {
-        eventListeners.push_back(std::move(e));
+    	eventListeners.push(std::move(listener));
+//        eventListeners.push_back(std::move(e));
     }
 
     void clearEventListeners()
     {
-        eventListeners.clear();
+        eventListeners.unsubscribeAll();
     }
 
 protected:
-    std::vector<ofEventListener> eventListeners;
+//    std::vector<ofEventListener> eventListeners;
+    ofEventListeners eventListeners;
 };
 
 /*

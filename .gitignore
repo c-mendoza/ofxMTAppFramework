@@ -110,3 +110,7 @@ Desktop.ini
 #########################
 
 .mailmap
+
+\.idea/
+
+cmake-build-debug/

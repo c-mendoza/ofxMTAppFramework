@@ -10,7 +10,7 @@
 
 MTViewMode::~MTViewMode()
 {
-    eventListeners.clear();
+    eventListeners.unsubscribeAll();
 }
 
 void MTViewMode::addAllEventListeners()
