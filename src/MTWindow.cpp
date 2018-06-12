@@ -11,6 +11,8 @@
 #include "GLFW/glfw3.h"
 #include "ofGraphics.h"
 #include "ofAppRunner.h"
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
 
 static ofEventArgs voidEventArgs;
 
@@ -50,10 +52,10 @@ void MTWindow::setup(ofGLFWWindowSettings& settings)
 }
 
 #else
-void MTWindow::setup(const ofGLESWindowSettings& settings)
+void MTWindow::setup(ofGLESWindowSettings& settings)
 {
 	ofAppEGLWindow::setup(settings);
-	gui.setup();
+	contentView->setWindow(shared_from_this());
 }
 #endif
 
@@ -63,18 +65,19 @@ void MTWindow::setup(const ofGLESWindowSettings& settings)
 
 void MTWindow::setupInternal(ofEventArgs& args)
 {
+
 #ifndef TARGET_RASPBERRY_PI
 	contentView->setSize(ofAppGLFWWindow::getWidth(),
 						 ofAppGLFWWindow::getHeight());
 #else
 	contentView->setSize(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
-	ofLogVerbose("MTWindow::setupInternal") << "contentView size: " <<  contentView->getContentSize();
 #endif
-
 
 	contentView->setFrameOrigin(glm::vec3(0, 0, 0));
 	contentView->setup(args);
+	auto size = contentView->getFrameSize();
+	ofLogVerbose("MTWindow") <<  "setupInternal() contentView size:" <<  size.x << " " << size.y;
 }
 
 void MTWindow::update(ofEventArgs& args)
@@ -88,10 +91,13 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(),
 							 ofAppGLFWWindow::getHeight());
 #else
+	ofLogVerbose("MTWindow") << "ofSetupScreenPerspective";
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
+
+	ofLogVerbose("MTWindow") << "ofSetupScreenPerspective done!";
 #endif
-	ofBackground(0,0);
+	ofClear(0,0,0,1);
 	contentView->draw(args);
 
 	if (isImGuiEnabled)

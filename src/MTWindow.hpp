@@ -10,6 +10,7 @@
 #define MTWindow_hpp
 
 #include "ofxMTAppFramework.h"
+#include "glm/fwd.hpp"
 
 #ifndef TARGET_RASPBERRY_PI
 #include "ofAppGLFWWindow.h"
@@ -52,7 +53,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 #ifndef TARGET_RASPBERRY_PI
 	virtual void setup(ofGLFWWindowSettings& settings);
 #else
-	virtual void setup(const ofGLESWindowSettings& settings);
+	virtual void setup(ofGLESWindowSettings& settings);
 #endif
 	virtual void setupInternal(ofEventArgs& args);
 	virtual void update(ofEventArgs& args);

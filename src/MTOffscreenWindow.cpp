@@ -1,7 +1,7 @@
 //
 // Created by Cristobal Mendoza on 4/4/18.
 //
-
+#ifndef TARGET_RASPBERRY_PI
 #include <ofMain.h>
 #include "MTOffscreenWindow.hpp"
 
@@ -64,3 +64,5 @@ void MTOffscreenWindow::close()
 	exit(args);
 	ofAppGLFWWindow::close();
 }
+
+#endif

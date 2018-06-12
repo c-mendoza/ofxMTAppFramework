@@ -7,7 +7,10 @@
 #include "ofSystemUtils.h"
 #include "ofPath.h"
 #include "MTApp.hpp"
+
+#ifndef TARGET_RASPBERRY_PI
 #include "MTOffscreenWindow.hpp"
+#endif
 
 const std::string MTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
 const std::string MTApp::MTPrefsWindowsGroupName = "//app_preferences/windows";
@@ -169,6 +172,7 @@ void MTApp::runApp()
 		{
             std::string msg = "Tried to open " + MTPrefLastFile.get() +
 						 " but could not find it";
+            ofLogNotice("MTApp") << msg;
 			ofSystemAlertDialog(msg);
 			isInitialized = true;
 			newFile();
@@ -180,8 +184,11 @@ void MTApp::runApp()
 		newFile();
 	}
 
+#ifndef TARGET_RASPBERRY_PI
     glfwSetMonitorCallback(&setMonitorCb);
+#endif
 	appWillRun();
+	ofLogVerbose("MTApp") << "Running Main Loop";
 	ofRunMainLoop();
 
 //	ImGui::Shutdown();
@@ -215,16 +222,17 @@ MTAppStateName MTApp::getCurrentState()
 
 // TODO: Revisit MTApp::mainWindow. Think about either removing it or making it a weak_ptr
 
-std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> view,
-												   std::string windowName,
-												   ofWindowSettings& settings)
-{
-	auto win = createWindow(windowName, settings);
-	view->setSize(win->getWidth(), win->getHeight());
-	win->contentView->addSubview(view);
-	return win;
-}
+//std::shared_ptr<MTWindow> MTApp::createWindowForView(std::shared_ptr<MTView> view,
+//												   std::string windowName,
+//												   ofWindowSettings& settings)
+//{
+//	auto win = createWindow(windowName, settings);
+//	view->setSize(win->getWidth(), win->getHeight());
+//	win->contentView->addSubview(view);
+//	return win;
+//}
 
+#ifndef TARGET_RASPBERRY_PI
 std::shared_ptr<MTOffscreenWindow> MTApp::createOffscreenWindow(std::string windowName,
 														 ofGLFWWindowSettings& settings)
 {
@@ -255,20 +263,61 @@ std::shared_ptr<MTOffscreenWindow> MTApp::createOffscreenWindow(std::string wind
 
 	return offscreenWindow;
 }
+#endif
+
+#ifdef TARGET_OPENGLES
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
-										 ofWindowSettings& settings)
+											  ofGLESWindowSettings& settings)
+{
+	auto window = std::make_shared<MTWindow>(windowName);
+	ofGetMainLoop()->addWindow(window);
+	windows.push_back(window);
+	window->setup(settings);
+
+	addAllEvents(window.get());
+
+	// Add the "global" keyboard event listener:
+	ofAddListener(window->events().keyPressed,
+				  this,
+				  &MTApp::keyPressed,
+				  OF_EVENT_ORDER_BEFORE_APP);
+	ofAddListener(window->events().keyReleased,
+				  this,
+				  &MTApp::keyReleased,
+				  OF_EVENT_ORDER_BEFORE_APP);
+
+	// The ofApp system only notifies setup for the first window it creates,
+	// the rest are on their own apparently. So we check if we have initialized
+	// the ofApp system, and if we have, then
+	// that means that we need to notify setup for the window we are creating
+
+	if (!ofAppInitialized)
+	{
+		ofAppInitialized = true;
+	}
+	else
+	{
+		// Note that MTView::setup is not called from this event, only the
+		// MTWindow's setup
+		window->events().notifySetup();
+	}
+
+//	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
+//	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased);
+
+	return window;
+}
+
+#else
+
+std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
+											  ofGLFWWindowSettings& settings)
 {
 
 	auto window = std::make_shared<MTWindow>(windowName);
 	ofGetMainLoop()->addWindow(window);
 	windows.push_back(window);
-#ifndef TARGET_RASPBERRY_PI
-	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
-	window->setup(*glfwWS);
-#else
-	ofGLESWindowSettings esWS = (ofGLESWindowSettings)settings;
-	window->setup(esWS);
-#endif
+	window->setup(settings);
 
 	addAllEvents(window.get());
 
@@ -283,7 +332,6 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 				  OF_EVENT_ORDER_BEFORE_APP);
 	//    window->events().
 
-#ifndef TARGET_RASPBERRY_PI
 	// Restore the window position and shape:
 	auto wp = wpMap.find(windowName);
 	if (wp != wpMap.end())
@@ -300,7 +348,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 		wp.size = window->getWindowSize();
 		wpMap[wp.name] = wp;
 	}
-#endif
+
 	// The ofApp system only notifies setup for the first window it creates,
 	// the rest are on their own apparently. So we check if we have initialized
 	// the ofApp system, and if we have, then
@@ -322,6 +370,8 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 
 	return window;
 }
+
+#endif
 
 void MTApp::removeWindow(std::shared_ptr<MTWindow> window)
 {

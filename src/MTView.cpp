@@ -103,7 +103,8 @@ const glm::vec3 &MTView::getFrameOrigin()
 
 glm::vec2 MTView::getFrameSize()
 {
-	return glm::vec2(frame.getWidth(), frame.getHeight());
+	auto size = glm::vec2(frame.getWidth(), frame.getHeight());
+	return size;
 }
 
 glm::vec3 MTView::getFrameCenter()
@@ -263,8 +264,8 @@ void MTView::updateScreenFrame()
 	if (auto super = superview.lock())
 	{
 		glm::vec4 screenFramePosition = super->contentMatrix*glm::vec4(frame.getPosition(), 1);
-		screenFrame.setPosition(screenFramePosition.xyz());
-		auto size = getFrameSize().xyyy()*super->contentMatrix; //TODO: check if this is correct
+		screenFrame.setPosition(screenFramePosition);
+		auto size = glm::vec4(getFrameSize(), 0, 0) * super->contentMatrix; //TODO: check if this is correct
 		screenFrame.setSize(size.x, size.y);
 	}
 	else
@@ -278,7 +279,7 @@ glm::vec2 MTView::transformPoint(glm::vec2 &coords,
 								 const MTView *toView)
 {
 	auto windowCoords = frameMatrix*glm::vec4(coords.x, coords.y, 1, 1);
-	return (toView->invFrameMatrix*windowCoords).xy();
+	return toView->invFrameMatrix*windowCoords;
 }
 
 glm::vec2 MTView::transformPoint(glm::vec2 &coords,
@@ -291,7 +292,8 @@ glm::vec2 MTView::transformFramePointToContent(glm::vec2 &coords)
 {
 
 	auto windowCoords = frameMatrix*glm::vec4(coords.x, coords.y, 1, 1);
-	return (invContentMatrix*windowCoords).xy();
+	auto result = invContentMatrix*windowCoords;
+	return glm::vec2(result.x, result.y);
 }
 
 /// \brief Transforms the passed point from frame
@@ -299,7 +301,7 @@ glm::vec2 MTView::transformFramePointToContent(glm::vec2 &coords)
 glm::vec2 MTView::transformFramePointToScreen(glm::vec2 &coords)
 {
 	auto windowCoords = frameMatrix*glm::vec4(coords.x, coords.y, 1, 1);
-	return windowCoords.xy();
+	return glm::vec2(windowCoords);
 }
 
 
@@ -599,7 +601,7 @@ void MTView::keyReleased(ofKeyEventArgs &key)
 void MTView::updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord)
 {
 	prevContentMouse = contentMouse;
-	contentMouse = (invContentMatrix*glm::vec4(windowCoord.x, windowCoord.y, 1, 1)).xy();
+	contentMouse = glm::vec2(invContentMatrix*glm::vec4(windowCoord.x, windowCoord.y, 1, 1));
 	prevWindowMouse = windowMouse;
 	windowMouse = windowCoord;
 }

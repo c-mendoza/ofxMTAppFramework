@@ -1,12 +1,12 @@
 #ifndef ofxMTApp_hpp
 #define ofxMTApp_hpp
-
+#include <ofMain.h>
 #include <utils/ofXml.h>
 #include <unordered_map>
-#include <ofMain.h>
 #include "GLFW/glfw3.h"
-#include "ofxMTAppFramework.h"
-#include "MTModel.hpp"
+//#include "ofxMTAppFramework.h"
+//#include "MTModel.hpp"
+#include "MTAppFrameworkUtils.hpp"
 #include "ofxImGui.h"
 #include "ofBaseApp.h"
 
@@ -102,18 +102,12 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	//// UI
 	std::weak_ptr<ofAppBaseWindow> getMainWindow();
 
-	/**
-	 * @brief Creates a window.
-	 * @param windowName
-	 * @param settings
-	 * @return A shared_ptr to the MTWindow
-	 */
-	std::shared_ptr<MTWindow> createWindow(std::string windowName,
-										 ofWindowSettings& settings);
-
+#ifndef TARGET_RASPBERRY_PI
 	std::shared_ptr<MTOffscreenWindow> createOffscreenWindow(std::string windowName,
 															 ofGLFWWindowSettings& settings);
+#endif
 
+#ifdef TARGET_OPENGLES
 	/**
 	 * @brief Convenience method that creates a window and adds the passed view
 	 * to the contentView of the created window.
@@ -122,10 +116,31 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 	 * @param settings The ofWindowSettings for the window.
 	 * @return A shared_ptr to the MTWindow
 	 */
-	std::shared_ptr<MTWindow> createWindowForView(std::shared_ptr<MTView> view,
-												std::string windowName,
-												ofWindowSettings& settings);
+std::shared_ptr<MTWindow> createWindow(std::string windowName,
+									   ofGLESWindowSettings& settings);
+#else
 
+	/**
+	 * @brief Creates a window.
+	 * @param windowName
+	 * @param settings
+	 * @return A shared_ptr to the MTWindow
+	 */
+	std::shared_ptr<MTWindow> createWindow(std::string windowName,
+										   ofGLFWWindowSettings& settings);
+	#endif
+
+//	/**
+//	 * @brief Convenience method that creates a window and adds the passed view
+//	 * to the contentView of the created window.
+//	 * @param view
+//	 * @param windowName
+//	 * @param settings The ofWindowSettings for the window.
+//	 * @return A shared_ptr to the MTWindow
+//	 */
+//	std::shared_ptr<MTWindow> createWindowForView(std::shared_ptr<MTView> view,
+//												std::string windowName,
+//												ofWindowSettings& settings);
     void removeWindow(std::shared_ptr<MTWindow> window);
 	/// Returns the mouse x-position in local coordinates of the current window
 	int getLocalMouseX();

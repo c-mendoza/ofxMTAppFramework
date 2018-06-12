@@ -5,7 +5,8 @@
 #ifndef NERVOUSSTRUCTUREOF_MTFULLSCREEN_HPP
 #define NERVOUSSTRUCTUREOF_MTFULLSCREEN_HPP
 
-#include "ofxMTAppFramework.h"
+#include "ofMain.h"
+#include "MTWindow.hpp"
 
 struct MTFullScreenDisplayInfo
 {

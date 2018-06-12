@@ -1,10 +1,11 @@
 //
 // Created by Cristobal Mendoza on 2/15/18.
 //
+#ifndef TARGET_RASPBERRY_PI
 
 #include "MTFullScreen.hpp"
-#include "ofGraphics.h"
-#include "ofPath.h"
+//#include "ofGraphics.h"
+//#include "ofPath.h"
 
 using namespace MTFullScreen;
 
@@ -253,3 +254,4 @@ void MTFullScreenView::draw()
 	ofPopMatrix();
 }
 
+#endif
