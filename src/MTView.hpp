@@ -388,7 +388,7 @@ public:
 	  */
 	std::function<void()> onLayout = [](){};
 
-	MTViewResizePolicy resizePolicy = ResizePolicyNone;
+	MTViewResizePolicy resizePolicy = ResizePolicySuperview;
 
 	//This should be private:
 	void performResizePolicy();
