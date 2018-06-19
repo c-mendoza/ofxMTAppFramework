@@ -122,7 +122,7 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 
 	appKeyReleased(key);
 }
-/// Method is called in the MTApp contructor, right before the app is run.
+/// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
 /// well as the main
 /// window size and settings.

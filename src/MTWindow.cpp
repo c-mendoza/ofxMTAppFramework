@@ -91,11 +91,8 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(),
 							 ofAppGLFWWindow::getHeight());
 #else
-	ofLogVerbose("MTWindow") << "ofSetupScreenPerspective";
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
-
-	ofLogVerbose("MTWindow") << "ofSetupScreenPerspective done!";
 #endif
 	ofClear(0,0,0,1);
 	contentView->draw(args);
@@ -460,7 +457,7 @@ void MTWindow::mt_focus_callback(GLFWwindow* glfWwindow, int isFocused)
 
 	MTWindow* mtWindow = static_cast<MTWindow*>(instance);
 
-	if (isFocused == GLFW_TRUE)
+	if (isFocused == true)
 	{
 		MTWindowEventArgs focusArgs;
 		focusArgs.window = mtWindow->shared_from_this();

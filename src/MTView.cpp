@@ -247,14 +247,16 @@ void MTView::performResizePolicy()
 		case ResizePolicySuperview:
 			setFrameSize(super->getFrameSize());
 			break;
-
 		case ResizePolicyNone:
 			break;
 		case ResizePolicyKeepExact:
+			ofLogNotice("MTView") << "ResizePolicyKeepExact not yet implemented";
 			break;
 		case ResizePolicyKeepProportional:
+			ofLogNotice("MTView") << "ResizePolicyKeepProportional not yet implemented";
 			break;
 		case ResizePolicyAspectRatio:
+			ofLogNotice("MTView") << "ResizePolicyAspectRatio not yet implemented";
 			break;
 	}
 }
