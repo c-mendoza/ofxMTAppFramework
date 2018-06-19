@@ -7,6 +7,7 @@
 #include "ofSystemUtils.h"
 #include "ofPath.h"
 #include "MTApp.hpp"
+#include "MTWindow.hpp"
 
 #ifndef TARGET_RASPBERRY_PI
 #include "MTOffscreenWindow.hpp"
