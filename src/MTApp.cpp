@@ -100,7 +100,7 @@ void MTApp::keyPressed(ofKeyEventArgs& key)
 
 void MTApp::keyReleased(ofKeyEventArgs& key)
 {
-	if (ofGetKeyPressed(OF_KEY_COMMAND))
+	if (ofGetKeyPressed(OF_KEY_COMMAND) || ofGetKeyPressed(OF_KEY_CONTROL))
 	{
 		auto k = key.key;
 		int bla = 'o';
@@ -482,6 +482,9 @@ void MTApp::save()
 
 void MTApp::saveAs()
 {
+#ifdef TARGET_RASPBERRY_PI
+	saveAsImpl("settings." + fileExtension);
+#else
 	ofFileDialogResult result =
 	  ofSystemSaveDialog(MTPrefLastFile, "Save As...");
 	if (!result.bSuccess)
@@ -500,6 +503,7 @@ void MTApp::saveAs()
 			saveAsImpl(result.filePath);
 		}
 	}
+#endif
 }
 
 bool MTApp::saveAsImpl(std::string filePath)
