@@ -518,17 +518,20 @@ void MTUIPathVertexHandle::setup(std::weak_ptr<MTUIPath> uiPath, ofPath::Command
 	clearEventListeners();
 
 	toHandle = std::make_shared<MTUIHandle>("To Handle");
+	toHandle->resizePolicy = MTViewResizePolicy::ResizePolicyNone;
 	toHandle->setFrameFromCenter(command.to,
 								 glm::vec2(MTUIPath::vertexHandleSize,
 										   MTUIPath::vertexHandleSize));
 
 	cp1Handle = std::make_shared<MTUIHandle>("CP 1");
+	cp1Handle->resizePolicy = MTViewResizePolicy::ResizePolicyNone;
 	cp1Handle->setFrameFromCenter(command.cp1,
 								  glm::vec2(MTUIPath::vertexHandleSize,
 											MTUIPath::vertexHandleSize));
 	//    cp1Handle->handleType = ofxMTHandle<ofPoint>::ControlPointHandleType;
 
 	cp2Handle = std::make_shared<MTUIHandle>("CP 2");
+	cp2Handle->resizePolicy = MTViewResizePolicy::ResizePolicyNone;
 	cp2Handle->setFrameFromCenter(command.cp2,
 								  glm::vec2(MTUIPath::vertexHandleSize,
 											MTUIPath::vertexHandleSize));
