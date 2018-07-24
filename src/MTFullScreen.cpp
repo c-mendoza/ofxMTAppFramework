@@ -51,10 +51,10 @@ void MTFullScreen::updateFullscreenDisplays()
 		}
 		fsDisplay->outputArea->setSize(oneWidth,
 									   outputHeight);
-		if (fsDisplay->outputQuad == nullptr)
+		if (fsDisplay->perspectiveQuad == nullptr)
 		{
-			fsDisplay->outputQuad = std::make_shared<ofPath>();
-			fsDisplay->outputQuad->rectangle(*fsDisplay->outputArea);
+			fsDisplay->perspectiveQuad = std::make_shared<ofPath>();
+			fsDisplay->perspectiveQuad->rectangle(*fsDisplay->outputArea);
 		}
 
 		count++;
@@ -138,20 +138,27 @@ void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo>
 {
 	if (fsDisplay->outputArea == nullptr)
 	{
-		auto outputArea = std::make_shared<ofRectangle>();
-		fsDisplay->outputArea = outputArea;
+		float xStart = 0;
+		for (auto& fsd : displayOutputs)
+		{
+			xStart += fsd->outputArea->getMaxX();
+		}
+
+		fsDisplay->outputArea = std::make_shared<ofRectangle>(xStart, 0,
+															  fsDisplay->display.frame.getWidth(),
+															  fsDisplay->display.frame.getHeight());
 	}
 
-	if (fsDisplay->outputQuad == nullptr)
+	if (fsDisplay->perspectiveQuad == nullptr)
 	{
 		auto quad = std::make_shared<ofPath>();
 		quad->rectangle(*fsDisplay->outputArea.get());
-		fsDisplay->outputQuad = quad;
+		fsDisplay->perspectiveQuad = quad;
 	}
-	if (fsDisplay->outputQuad->getCommands().size() != 4)
+	if (fsDisplay->perspectiveQuad->getCommands().size() != 5)
 	{
-		fsDisplay->outputQuad->clear();
-		fsDisplay->outputQuad->rectangle(*fsDisplay->outputArea.get());
+		fsDisplay->perspectiveQuad->clear();
+		fsDisplay->perspectiveQuad->rectangle(*fsDisplay->outputArea.get());
 	}
 
 	displayOutputs.push_back(fsDisplay);
@@ -173,8 +180,8 @@ void MTFullScreen::addFullScreenDisplay()
 	fsDisplay->outputArea = std::make_shared<ofRectangle>(xStart, 0,
 														  fsDisplay->display.frame.getWidth(),
 														  fsDisplay->display.frame.getHeight());
-	fsDisplay->outputQuad = std::make_shared<ofPath>();
-	fsDisplay->outputQuad->rectangle(*fsDisplay->outputArea.get());
+	fsDisplay->perspectiveQuad = std::make_shared<ofPath>();
+	fsDisplay->perspectiveQuad->rectangle(*fsDisplay->outputArea.get());
 	addFullScreenDisplay(fsDisplay);
 }
 
@@ -212,7 +219,7 @@ MTFullScreenView::MTFullScreenView(std::string name,
 {
 	this->fullScreenDisplay = fullScreenDisplay;
 	this->outputTexture = outputTexture;
-	this->outputQuad = fullScreenDisplay->outputQuad;
+	this->perspectiveQuad = fullScreenDisplay->perspectiveQuad;
 	bool wasHackEnabled = ofIsTextureEdgeHackEnabled();
 	ofEnableTextureEdgeHack();
 	outputMesh = outputTexture.getMeshForSubsection(0, 0, 0,
@@ -242,10 +249,10 @@ void MTFullScreenView::draw()
 	ofSetColor(ofColor::white);
 	ofFill();
 
-	if (outputQuad->hasChanged())
+	if (perspectiveQuad->hasChanged())
 	{
 		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
-																	outputQuad->getOutline()[0].getVertices());
+																	perspectiveQuad->getOutline()[0].getVertices());
 	}
 	ofPushMatrix();
 	ofMultMatrix(perspectiveMatrix);

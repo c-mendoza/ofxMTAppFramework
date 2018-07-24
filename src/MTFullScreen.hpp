@@ -21,7 +21,7 @@ struct MTFullScreenDisplayInfo
 	/**
 	 * @brief The perspective transformation points for this display.
 	 */
-	std::shared_ptr<ofPath> outputQuad;
+	std::shared_ptr<ofPath> perspectiveQuad;
 };
 
 
@@ -51,7 +51,7 @@ protected:
 	ofFbo outputFbo;
 	ofTexture outputTexture;
 	ofTexture testTexture;
-	std::shared_ptr<ofPath> outputQuad;
+	std::shared_ptr<ofPath> perspectiveQuad;
 	ofMesh outputMesh;
 	glm::mat4 perspectiveMatrix;
 	std::weak_ptr<MTFullScreenDisplayInfo> fullScreenDisplay;
