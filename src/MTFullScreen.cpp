@@ -92,6 +92,8 @@ void priv::enterFullScreen()
 		glfwWindowSettings.monitor = fsDisplay->display.id;
 		glfwWindowSettings.windowMode = OF_FULLSCREEN;
 		glfwWindowSettings.visible = true;
+		auto frame = fsDisplay->display.frame;
+		glfwWindowSettings.setSize(frame.width, frame.height);
 		ofRectangle displayArea;
 
 		if (count == 0)
@@ -249,13 +251,13 @@ void MTFullScreenView::draw()
 	ofSetColor(ofColor::white);
 	ofFill();
 
-	if (perspectiveQuad->hasChanged())
-	{
-		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
-																	perspectiveQuad->getOutline()[0].getVertices());
-	}
-	ofPushMatrix();
-	ofMultMatrix(perspectiveMatrix);
+//	if (perspectiveQuad->hasChanged())
+//	{
+//		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
+//																	perspectiveQuad->getOutline()[0].getVertices());
+//	}
+//	ofPushMatrix();
+//	ofMultMatrix(perspectiveMatrix);
 	outputTexture.bind();
 	outputMesh.draw();
 	ofPopMatrix();
