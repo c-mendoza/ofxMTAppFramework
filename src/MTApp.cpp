@@ -122,6 +122,28 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 	}
 
 	appKeyReleased(key);
+
+//// Future:
+//	if (key.hasModifier(OF_KEY_COMMAND))
+//	{
+//		if (key.codepoint == 'o')
+//		{
+//			open();
+//		}
+//		else if (key.key == 's')
+//		{
+//			if (key.hasModifier(OF_KEY_SHIFT))
+//			{
+//				saveAs();
+//			}
+//			else
+//			{
+//				save();
+//			}
+//
+//		}
+//	}
+//	appKeyReleased(key);
 }
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
