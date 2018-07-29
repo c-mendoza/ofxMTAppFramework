@@ -126,6 +126,7 @@ public:
 	void insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsigned int index);
 	void insertHandle(glm::vec3 point, unsigned int index);
 
+	unsigned int getIndexForHandle(std::shared_ptr<MTUIPathVertexHandle> handle);
 	/// Adds a user data pointer, which gets returned via the MTUIPath events.
 	/// Useful to attach data to the UIPath that needs to be referenced when the UIPath changes.
 	void* userData = NULL;
@@ -152,7 +153,7 @@ public:
 	void selectAll();
 
 	///Gets the selected handles. It is not safe to modify this vector nor to change the Path commands directly.
-	const std::vector<std::shared_ptr<MTView>> getSelection();
+	const std::vector<std::shared_ptr<MTUIPathVertexHandle>> getSelection();
 
 //    ///
 //    /// \brief addEventListeners adds mouse and keyboard

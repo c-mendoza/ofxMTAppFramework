@@ -226,7 +226,15 @@ void MTViewModePathEditor::mouseReleased(int x, int y, int button)
 			if (activeUIPath != nullptr &&
 				settings.options.test(PathEditorSettings::CanAddPoints))
 			{
-				activeUIPath->addHandle(glm::vec3(x, y, 0));
+				if (activeUIPath->getSelection().size() > 0)
+				{
+					auto dex = activeUIPath->getIndexForHandle(activeUIPath->getSelection().back());
+					activeUIPath->insertHandle(glm::vec3(x, y, 0), dex);
+				}
+				else
+				{
+					activeUIPath->addHandle(glm::vec3(x, y, 0));
+				}
 			}
 			else
 			{

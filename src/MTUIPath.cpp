@@ -275,7 +275,10 @@ void MTUIPath::mousePressed(ofMouseEventArgs& args)
 
 	if (!handleWasPressed)
 	{
-		deselectAll();
+		if (!ofGetKeyPressed(OF_KEY_SHIFT))
+		{
+			deselectAll();
+		}
 	}
 	else
 	{
@@ -430,7 +433,7 @@ void MTUIPath::insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsign
 
 	if (selectsLastInsertion)
 	{
-		setSelection(pathHandles.back());
+		setSelection(pathHandles.at(index));
 	}
 }
 
@@ -495,6 +498,23 @@ void MTUIPath::selectAll()
 	}
 }
 
+unsigned int MTUIPath::getIndexForHandle(std::shared_ptr<MTUIPathVertexHandle> handle)
+{
+	for (int j = 0; j < pathHandles.size(); ++j)
+	{
+		if (handle == pathHandles.at(j))
+		{
+			return j;
+		}
+
+	}
+	return pathHandles.size()-1;
+}
+
+const std::vector<std::shared_ptr<MTUIPathVertexHandle>> MTUIPath::getSelection()
+{
+	return selectedHandles;
+}
 
 
 #pragma mark MTUIPathHandle
