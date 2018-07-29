@@ -82,6 +82,13 @@ void MTWindow::setupInternal(ofEventArgs& args)
 
 void MTWindow::update(ofEventArgs& args)
 {
+	while (!updateOpQueue.empty())
+	{
+		auto op = updateOpQueue.front();
+		op();
+		updateOpQueue.pop();
+	}
+
 	contentView->update(args);
 }
 
@@ -95,6 +102,14 @@ void MTWindow::draw(ofEventArgs& args)
 						 ofAppEGLWindow::getHeight());
 #endif
 	ofClear(0,0,0,1);
+
+	while (!drawOpQueue.empty())
+	{
+		auto op = drawOpQueue.front();
+		op();
+		drawOpQueue.pop();
+	}
+
 	contentView->draw(args);
 
 	if (isImGuiEnabled)
