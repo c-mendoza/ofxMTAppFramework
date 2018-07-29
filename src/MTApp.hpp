@@ -4,8 +4,6 @@
 #include <utils/ofXml.h>
 #include <unordered_map>
 #include "GLFW/glfw3.h"
-//#include "ofxMTAppFramework.h"
-//#include "MTModel.hpp"
 #include "MTAppFrameworkUtils.hpp"
 #include "ofxImGui.h"
 #include "ofBaseApp.h"
@@ -17,7 +15,6 @@ class MTModel;
 class MTViewMode;
 class ofAppBaseWindow;
 class ofWindowSettings;
-class Gui;
 class MTOffscreenWindow;
 
 typedef std::string MTAppStateName;
