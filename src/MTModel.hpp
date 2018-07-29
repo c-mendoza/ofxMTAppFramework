@@ -32,8 +32,6 @@ public:
      * via ImGui
      */
     virtual void drawGui(ofxImGui::Settings& settings){}
-//	virtual void loadFromSerializer(ofXml& serializer) = 0;
-//	virtual void saveWithSerializer(ofXml& serializer) = 0;
 
 protected:
 	ofParameterGroup parameters;
