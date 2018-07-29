@@ -370,20 +370,25 @@ void MTWindow::setImGuiEnabled(bool doGui)
 {
 	if (isImGuiEnabled == doGui) return;
 
-	isImGuiEnabled = doGui;
+
 
 	if (doGui)
 	{
-
-		imCtx = ImGui::CreateContext();
-		ImGui::SetCurrentContext(imCtx);
-		if (getGui().engine == NULL)
-			getGui().setup();
-
+		enqueueUpdateOperation([this, doGui]()
+							   {
+								   isImGuiEnabled = doGui;
+								   imCtx = ImGui::CreateContext();
+								   ImGui::SetCurrentContext(imCtx);
+								   if (getGui().engine == NULL) getGui().setup();
+							   });
 	}
 	else
 	{
-		ImGui::DestroyContext(imCtx);
+		enqueueUpdateOperation([this, doGui]()
+							   {
+								   isImGuiEnabled = doGui;
+								   ImGui::DestroyContext(imCtx);
+							   });
 	}
 }
 
