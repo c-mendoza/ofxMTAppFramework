@@ -125,9 +125,9 @@ void priv::enterFullScreen()
 
 void priv::exitFullScreen()
 {
-	fullScreenWindows.at(0)->setFullscreen(false);
-	for (auto window : fullScreenWindows)
+	for (const auto &window : fullScreenWindows)
 	{
+		window->setFullscreen(false);
 		MTApp::sharedApp->windowClosing(window);
 		window->setWindowShouldClose();
 	}
