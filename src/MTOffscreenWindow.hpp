@@ -10,7 +10,7 @@
 class MTOffscreenWindow : public MTWindow
 {
 public:
-	MTOffscreenWindow(const std::string& name);
+	MTOffscreenWindow(const std::string& name, bool useTextureRectangle = true);
 	~MTOffscreenWindow() override;
 	void setup(ofGLFWWindowSettings& settings) override;
 	virtual void setupInternal(ofEventArgs& args);
@@ -20,6 +20,7 @@ public:
 	ofFbo & getWindowOutput();
 protected:
 	ofFbo windowOutput;
+	bool useTextureRectangle;
 	int aaSamples;
 };
 

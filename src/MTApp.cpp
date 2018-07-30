@@ -257,9 +257,10 @@ MTAppStateName MTApp::getCurrentState()
 
 #ifndef TARGET_RASPBERRY_PI
 std::shared_ptr<MTOffscreenWindow> MTApp::createOffscreenWindow(std::string windowName,
-														 ofGLFWWindowSettings& settings)
+														 ofGLFWWindowSettings& settings,
+																bool useTextureRectangle)
 {
-	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName);
+	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName, useTextureRectangle);
 //	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
 	offscreenWindow->setup(settings);
 	addAllEvents(offscreenWindow.get());

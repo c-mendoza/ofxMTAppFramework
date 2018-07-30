@@ -5,10 +5,10 @@
 #include <ofMain.h>
 #include "MTOffscreenWindow.hpp"
 
-MTOffscreenWindow::MTOffscreenWindow(const std::string& name) : MTWindow(name)
-{}
-
-
+MTOffscreenWindow::MTOffscreenWindow(const std::string& name, bool useTextureRectangle) : MTWindow(name)
+{
+	this->useTextureRectangle = useTextureRectangle;
+}
 
 void MTOffscreenWindow::setupInternal(ofEventArgs& args)
 {
@@ -45,13 +45,36 @@ ofFbo& MTOffscreenWindow::getWindowOutput()
 	return windowOutput;
 }
 
-void MTOffscreenWindow::setup(ofGLFWWindowSettings& settings)
-{
+	void MTOffscreenWindow::setup(ofGLFWWindowSettings& settings)
+	{
 	aaSamples = settings.numSamples;
 	settings.visible = false;
 	settings.decorated = false;
 	MTWindow::setup(settings);
-	windowOutput.allocate(getWidth(), getHeight(), GL_RGBA, settings.numSamples);
+	ofFboSettings fboSettings;
+	fboSettings.width = settings.getWidth();
+	fboSettings.height = settings.getHeight();
+	fboSettings.internalformat = GL_RGBA;
+	fboSettings.numSamples = settings.numSamples;
+
+#ifdef TARGET_OPENGLES
+	fboSettings.useDepth		= false;
+	fboSettings.useStencil		= false;
+	//we do this as the fbo and the settings object it contains could be created before the user had the chance to disable or enable arb rect.
+	settings.textureTarget	= GL_TEXTURE_2D;
+#else
+	fboSettings.useDepth = true;
+	fboSettings.useStencil = true;
+	if (useTextureRectangle)
+	{
+		fboSettings.textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+	}
+	else
+	{
+		fboSettings.textureTarget = GL_TEXTURE_2D;
+	}
+#endif
+	windowOutput.allocate(fboSettings);
 }
 
 MTOffscreenWindow::~MTOffscreenWindow()

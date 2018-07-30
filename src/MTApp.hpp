@@ -101,7 +101,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore {
 
 #ifndef TARGET_RASPBERRY_PI
 	std::shared_ptr<MTOffscreenWindow> createOffscreenWindow(std::string windowName,
-															 ofGLFWWindowSettings& settings);
+															 ofGLFWWindowSettings& settings,
+															 bool useTextureRectangle = true);
 #endif
 
 #ifdef TARGET_OPENGLES
