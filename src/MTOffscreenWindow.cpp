@@ -81,11 +81,4 @@ MTOffscreenWindow::~MTOffscreenWindow()
 {
 }
 
-void MTOffscreenWindow::close()
-{
-	ofEventArgs args;
-	exit(args);
-	ofAppGLFWWindow::close();
-}
-
 #endif
