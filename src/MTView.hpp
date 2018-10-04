@@ -11,9 +11,6 @@
 
 
 #include "ofxMTAppFramework.h"
-//#include <glm/vec2.hpp>
-//#include <glm/vec3.hpp>
-//#include <glm/mat4x4.hpp>
 #include <gl/ofFbo.h>
 #include "ofxImGui.h"
 
@@ -97,6 +94,7 @@ private:
 	 * @brief 	Called once the model is successfully loaded from file.
 	 * Default implementation does nothing.
 	 */
+public:
 	virtual void modelLoaded() {}
 	virtual void setup() {}
 	virtual void update() {}
@@ -541,34 +539,10 @@ public:
 	void enqueueUpdateOperation(std::function<void()> f)
 	{ updateOpQueue.push(f); }
 
-	friend class MTWindow;
+
+	#pragma mark VIEW AND MATRICES
 
 protected:
-	std::weak_ptr<MTWindow> window;
-	std::weak_ptr<MTView> superview;
-	std::vector<std::shared_ptr<MTView>> subviews;
-
-public:
-	/**
-	 * @brief Directly sets this view's app mode. This does not change
-	 * the app mode that is managed by MTApp.
-	 * @param mode
-	 */
-	void setViewMode(std::shared_ptr<MTViewMode> mode)
-	{ currentViewMode = mode; }
-
-	/**
-	 * @brief Gets the current view mode assigned to this view. This may or may not
-	 * correspond to the app's state, depending on whether you've assigned this
-	 * directly.
-	 * @return  The current MTViewMode assigned to this view.
-	 */
-	std::shared_ptr<MTViewMode> getViewMode()
-	{ return currentViewMode; }
-
-protected:
-	std::shared_ptr<MTViewMode> currentViewMode;
-
 	/**
 	 * @brief The rectangle that specifies the size and position of
 	 * the actual content of the view.
@@ -599,7 +573,7 @@ protected:
 	ofFpsCounter counter;
 
 
-#pragma mark VIEW AND MATRICES
+
 private:
 	//------------------------------------------------------//
 	// VIEW and MATRICES
