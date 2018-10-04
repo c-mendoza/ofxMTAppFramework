@@ -60,6 +60,34 @@ public:
 	 */
 	ofParameter<std::string> name;
 
+	friend class MTWindow;
+
+protected:
+	std::weak_ptr<MTWindow> window;
+	std::weak_ptr<MTView> superview;
+	std::vector<std::shared_ptr<MTView>> subviews;
+
+public:
+	/**
+	 * @brief Sets the current view mode for this view. This method will call MTViewMode::exit() on
+	 * currentViewMode, assign 'mode' as the currentViewMode, and call MTViewMode::setup() on the now
+	 * currentViewMode.
+	 * @param mode
+	 */
+	void setViewMode(std::shared_ptr<MTViewMode> mode);
+
+	/**
+	 * @brief Gets the current view mode assigned to this view. This may or may not
+	 * correspond to the app's state, depending on whether you've assigned this
+	 * directly.
+	 * @return  The current MTViewMode assigned to this view.
+	 */
+	const std::shared_ptr<MTViewMode> getViewMode()
+	{ return currentViewMode; }
+
+private:
+	std::shared_ptr<MTViewMode> currentViewMode;
+
 #pragma mark EVENT METHODS TO OVERRIDE
 	//-----------------------------//
 	// EVENTS: METHODS TO OVERRIDE //

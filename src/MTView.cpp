@@ -820,3 +820,10 @@ const glm::mat4 &MTView::getFrameMatrix() const
 {
 	return frameMatrix;
 }
+
+void MTView::setViewMode(std::shared_ptr<MTViewMode> mode)
+{
+	currentViewMode->exit();
+	currentViewMode = mode;
+	currentViewMode->setup();
+}
