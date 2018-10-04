@@ -240,15 +240,18 @@ void MTViewModePathEditor::mouseReleased(int x, int y, int button)
 			{
 				if (settings.options.test(PathEditorSettings::AllowsMultiplePaths))
 				{
-					auto pathPtr = std::make_shared<ofPath>();
-					pathPtr->moveTo(glm::vec3(x, y, 0));
-					activeUIPath = createUIPath(pathPtr);
+					if (settings.paths->size() < settings.maxPaths)
+					{
+						auto pathPtr = std::make_shared<ofPath>();
+						pathPtr->moveTo(glm::vec3(x, y, 0));
+						activeUIPath = createUIPath(pathPtr);
 //					activeUIPath->addHandle(glm::vec3(x, y, 0));
-					settings.paths->push_back(pathPtr);
-					pEventArgs.path = pathPtr;
-					pathCreatedEvent.notify(pEventArgs);
-					onPathCreated(pEventArgs);
-					ofLogVerbose() << "Active UI Path: " << activeUIPath;
+						settings.paths->push_back(pathPtr);
+						pEventArgs.path = pathPtr;
+						pathCreatedEvent.notify(pEventArgs);
+						onPathCreated(pEventArgs);
+						ofLogVerbose() << "Active UI Path: " << activeUIPath;
+					}
 				}
 			}
 		}
