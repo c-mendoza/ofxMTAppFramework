@@ -45,7 +45,7 @@ public:
 	 */
 	std::shared_ptr<ofPath> path;
 	/**
-	 * @brief If true, a pathModifiedEvent will be continuosly fired while a
+	 * @brief If true, a pathModifiedEvent will be continuously fired while a
 	 * handle is being dragged.
 	 * When it is false, pathModifiedEvents will fire only when the drag is
 	 * complete (in other words, when the mouse is released).
