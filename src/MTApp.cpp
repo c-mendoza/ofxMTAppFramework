@@ -549,7 +549,7 @@ bool MTApp::saveAsImpl(std::string filePath)
 
 bool MTApp::saveImpl()
 {
-
+	serializer = ofXml();
 	model->serialize(serializer);
 
 	if (!serializer.save(MTPrefLastFile.get()))
