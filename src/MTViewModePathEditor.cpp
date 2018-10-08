@@ -11,7 +11,7 @@
 #include "MTUIPath.hpp"
 
 MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
-		: MTViewMode(settings.appStateName, settings.view)
+		: MTViewMode(settings.appModeName, settings.view)
 {
 	addAllEventListeners();
 	this->settings = settings;
@@ -48,7 +48,7 @@ MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
 void MTViewModePathEditor::setup()
 {
 
-	ofLogVerbose("MTViewModePathEditor::setup") << settings.appStateName;
+	ofLogVerbose("MTViewModePathEditor::setup") << settings.appModeName;
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
@@ -277,7 +277,7 @@ void MTViewModePathEditor::draw()
 
 void MTViewModePathEditor::exit()
 {
-	ofLogVerbose("MTViewModePathEditor::exit()") << settings.appStateName;
+	ofLogVerbose("MTViewModePathEditor::exit()") << settings.appModeName;
 	activeUIPath = nullptr;
 	uiPaths.clear();
 	onExit();

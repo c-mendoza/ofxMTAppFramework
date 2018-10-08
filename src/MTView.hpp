@@ -35,7 +35,7 @@ enum MTViewResizePolicy
 
 class MTModel;
 class MTWindow;
-class MTAppStateChangeArgs;
+class MTAppModeChangeArgs;
 class MTViewMode;
 
 class MTView : public MTEventListenerStore,
@@ -75,7 +75,7 @@ public:
 
 	/**
 	 * @brief Gets the current view mode assigned to this view. This may or may not
-	 * correspond to the app's state, depending on whether you've assigned this
+	 * correspond to the app's mode, depending on whether you've assigned this
 	 * directly.
 	 * @return  The current MTViewMode assigned to this view.
 	 */
@@ -90,11 +90,12 @@ private:
 	// EVENTS: METHODS TO OVERRIDE //
 	//-----------------------------//
 
-	/**
-	 * @brief 	Called once the model is successfully loaded from file.
-	 * Default implementation does nothing.
-	 */
+
 public:
+	/**
+ 	 * @brief Called once the model is successfully loaded from file.
+ 	 * Default implementation does nothing.
+ 	*/
 	virtual void modelLoaded() {}
 	virtual void setup() {}
 	virtual void update() {}
@@ -445,7 +446,7 @@ public:
 	// APP MODES                                            //
 	//------------------------------------------------------//
 
-	virtual void appStateChanged(MTAppStateChangeArgs& stateChange) {}
+	virtual void appModeChanged(MTAppModeChangeArgs &modeChange) {}
 
 
 #pragma mark INTERNAL EVENT LISTENERS

@@ -17,18 +17,16 @@ MTView::MTView(std::string _name)
 
 	backgroundColor.set("Background Color",
 						ofFloatColor(1.0, 1.0, 1.0, 1.0));
-	ofAddListener(MTApp::appStateChangedEvent,
-				  this,
-				  &MTView::appStateChanged,
+	ofAddListener(MTApp::appModeChangedEvent,
+				  this, &MTView::appModeChanged,
 				  OF_EVENT_ORDER_AFTER_APP);
 	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
 }
 
 MTView::~MTView()
 {
-	ofRemoveListener(MTApp::appStateChangedEvent,
-					 this,
-					 &MTView::appStateChanged,
+	ofRemoveListener(MTApp::appModeChangedEvent,
+					 this, &MTView::appModeChanged,
 					 OF_EVENT_ORDER_AFTER_APP);
 	subviews.clear();
 	ofLogVerbose("View Destruct: ") << name;

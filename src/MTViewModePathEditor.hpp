@@ -53,7 +53,7 @@ public:
 	 */
 
 	int maxPaths = INT_MAX;
-    std::string appStateName = "";
+    std::string appModeName = "";
 
 	ofColor pathColor = ofColor::yellow;
 	float pathStrokeWidth = 2;
