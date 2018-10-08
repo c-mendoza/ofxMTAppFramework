@@ -107,7 +107,10 @@ public:
 	virtual void contentChanged() {}
 	virtual void superviewContentChanged() {}
 	virtual void keyPressed(int key) {}
+	virtual void keyPressed(ofKeyEventArgs &keyArgs){}
 	virtual void keyReleased(int key) {}
+	virtual void keyReleased(ofKeyEventArgs &keyArgs){}
+
 
 	/**
 	 * @brief Called when this view's window property is set.
@@ -462,8 +465,8 @@ public:
 
 	void windowResized(ofResizeEventArgs& resize);
 
-	void keyPressed(ofKeyEventArgs& key);
-	void keyReleased(ofKeyEventArgs& key);
+	void keyPressedInternal(ofKeyEventArgs &key);
+	void keyReleasedInternal(ofKeyEventArgs &key);
 	void mouseMoved(ofMouseEventArgs& mouse);
 	void mouseDragged(ofMouseEventArgs& mouse);
 	void mousePressed(ofMouseEventArgs& mouse);

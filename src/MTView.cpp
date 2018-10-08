@@ -580,18 +580,20 @@ void MTView::windowResized(ofResizeEventArgs &resize)
 }
 //#pragma mark KEYBOARD EVENTS
 
-void MTView::keyPressed(ofKeyEventArgs &key)
+void MTView::keyPressedInternal(ofKeyEventArgs &key)
 {
 	ofLogVerbose("MTView") << "keyPressed: " << name.get()+" " << (char) key.key;
 	keyPressed(key.key);
+	keyPressed(key);
 	onKeyPressed(key.key);
 	keyPressedEvent.notify(this, key);
 }
 
-void MTView::keyReleased(ofKeyEventArgs &key)
+void MTView::keyReleasedInternal(ofKeyEventArgs &key)
 {
-	ofLogVerbose("MTView") << "keyReleased: " << name.get()+" " << (char) key.key;
+	ofLogVerbose("MTView") << "keyReleasedInternal: " << name.get()+" " << (char) key.key;
 	keyReleased(key.key);
+	keyReleased(key);
 	onKeyReleased(key.key);
 	keyReleasedEvent.notify(this, key);
 }

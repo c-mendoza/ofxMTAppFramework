@@ -159,7 +159,7 @@ void MTWindow::keyPressed(ofKeyEventArgs& key)
 	auto fv = focusedView.lock();
 	if (fv)
 	{
-		fv->keyPressed(key);
+		fv->keyPressedInternal(key);
 	}
 	this->keyPressed(key.key);
 }
@@ -169,7 +169,7 @@ void MTWindow::keyReleased(ofKeyEventArgs& key)
 	auto fv = focusedView.lock();
 	if (fv)
 	{
-		fv->keyReleased(key);
+		fv->keyReleasedInternal(key);
 	}
 	this->keyReleased(key.key);
 }
