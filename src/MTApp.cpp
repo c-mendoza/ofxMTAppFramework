@@ -14,9 +14,9 @@
 #endif
 
 const std::string MTApp::APP_PREFERENCES_FILE = "app_preferences.xml";
-const std::string MTApp::MTPrefsWindowsGroupName = "//app_preferences/windows";
-const std::string MTApp::MTPrefsWindowPositionName = "Position";
-const std::string MTApp::MTPrefsWindowSizeName = "Size";
+//const std::string MTApp::MTPrefsWindowsGroupName = "//app_preferences/windows";
+//const std::string MTApp::MTPrefsWindowPositionName = "Position";
+//const std::string MTApp::MTPrefsWindowSizeName = "Size";
 
 ofEvent<MTAppModeChangeArgs> MTApp::appModeChangedEvent;
 ofEvent<ofEventArgs> MTApp::modelLoadedEvent;
@@ -100,39 +100,17 @@ void MTApp::keyPressed(ofKeyEventArgs& key)
 
 void MTApp::keyReleased(ofKeyEventArgs& key)
 {
-	if (ofGetKeyPressed(OF_KEY_COMMAND) || ofGetKeyPressed(OF_KEY_CONTROL))
-	{
-		auto k = key.key;
-		int bla = 'o';
-		if (k == 15)
-		{
-			open();
-		}
-		else if (k == 19)
-		{
-			if (ofGetKeyPressed(OF_KEY_SHIFT))
-			{
-				saveAs();
-			}
-			else
-			{
-				save();
-			}
-		}
-	}
-
-	appKeyReleased(key);
-
-//// Future:
-//	if (key.hasModifier(OF_KEY_COMMAND))
+//	if (ofGetKeyPressed(OF_KEY_COMMAND) || ofGetKeyPressed(OF_KEY_CONTROL))
 //	{
-//		if (key.codepoint == 'o')
+//		auto k = key.key;
+//		int bla = 'o';
+//		if (k == 15)
 //		{
 //			open();
 //		}
-//		else if (key.key == 's')
+//		else if (k == 19)
 //		{
-//			if (key.hasModifier(OF_KEY_SHIFT))
+//			if (ofGetKeyPressed(OF_KEY_SHIFT))
 //			{
 //				saveAs();
 //			}
@@ -140,10 +118,31 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 //			{
 //				save();
 //			}
-//
 //		}
 //	}
+//
 //	appKeyReleased(key);
+
+	if (key.hasModifier(OF_KEY_COMMAND))
+	{
+		if (key.codepoint == 'o')
+		{
+			open();
+		}
+		else if (key.key == 's')
+		{
+			if (key.hasModifier(OF_KEY_SHIFT))
+			{
+				saveAs();
+			}
+			else
+			{
+				save();
+			}
+
+		}
+	}
+	appKeyReleased(key);
 }
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
@@ -219,9 +218,9 @@ void MTApp::runApp()
 
 /// APP MODES
 
-void MTApp::setAppState(MTAppStateName mode)
+void MTApp::setAppMode(MTAppModeName mode)
 {
-	//	if(!ofContains(appStates, mode)) return;
+	//	if(!ofContains(appModes, mode)) return;
 
 	if (mode == currentMode)
 	{
@@ -327,7 +326,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 	}
 
 //	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
-//	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased);
+//	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleasedInternal);
 
 	return window;
 }
@@ -345,15 +344,18 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 
 	addAllEvents(window.get());
 
+	// Who is adding these listeners?? It doesn't seem to be necessary
+	// to add them here for some reason...
+
 	// Add the "global" keyboard event listener:
-	ofAddListener(window->events().keyPressed,
-				  this,
-				  &MTApp::keyPressed,
-				  OF_EVENT_ORDER_BEFORE_APP);
-	ofAddListener(window->events().keyReleased,
-				  this,
-				  &MTApp::keyReleased,
-				  OF_EVENT_ORDER_BEFORE_APP);
+//	ofAddListener(window->events().keyPressed,
+//				  this,
+//				  &MTApp::keyPressed,
+//				  OF_EVENT_ORDER_BEFORE_APP);
+//	ofAddListener(window->events().keyReleased,
+//				  this,
+//				  &MTApp::keyReleased,
+//				  OF_EVENT_ORDER_BEFORE_APP);
 	//    window->events().
 
 	// Restore the window position and shape:
@@ -390,7 +392,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 	}
 	
 //	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
-//	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased);
+//	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleasedInternal);
 
 	return window;
 }
@@ -403,14 +405,14 @@ void MTApp::removeWindow(std::shared_ptr<MTWindow> window)
     windows.erase(wIter);
     window->setWindowShouldClose(); // Likely redundant, but probably harmless
     removeAllEvents(window.get());
-    ofRemoveListener(window->events().keyPressed,
-                  this,
-                  &MTApp::keyPressed,
-                  OF_EVENT_ORDER_BEFORE_APP);
-    ofRemoveListener(window->events().keyReleased,
-                  this,
-                  &MTApp::keyReleased,
-                  OF_EVENT_ORDER_BEFORE_APP);
+//    ofRemoveListener(window->events().keyPressed,
+//                  this,
+//                  &MTApp::keyPressed,
+//                  OF_EVENT_ORDER_BEFORE_APP);
+//    ofRemoveListener(window->events().keyReleased,
+//                  this,
+//                  &MTApp::keyReleased,
+//                  OF_EVENT_ORDER_BEFORE_APP);
 //    wpMap.erase(window->name);
 }
 
@@ -509,10 +511,10 @@ void MTApp::saveAs()
 	saveAsImpl("settings." + fileExtension);
 #else
 	ofFileDialogResult result =
-	  ofSystemSaveDialog(MTPrefLastFile, "Save As...");
+	  ofSystemSaveDialog(ofFilePath::getFileName(MTPrefLastFile.get()), "Save As...");
 	if (!result.bSuccess)
 	{
-		ofSystemAlertDialog("Could not save file!");
+//		ofSystemAlertDialog("Could not save file!");
 		return;
 	}
 	else
@@ -665,9 +667,9 @@ void MTApp::windowClosing(std::shared_ptr<MTWindow> window)
 //					 this,
 //					 &MTApp::keyPressed,
 //					 OF_EVENT_ORDER_BEFORE_APP);
-//	ofRemoveListener(window->events().keyReleased,
+//	ofRemoveListener(window->events().keyReleasedInternal,
 //					 this,
-//					 &MTApp::keyReleased,
+//					 &MTApp::keyReleasedInternal,
 //					 OF_EVENT_ORDER_BEFORE_APP);
 //	//    ofRemoveListener(modelLoadedEvent, view,
 //	//    &MTWindow::modelLoadedInternal, OF_EVENT_ORDER_AFTER_APP);
@@ -704,50 +706,52 @@ void MTApp::exit()
 	saveAppPreferences();
 }
 
-int MTApp::getLocalMouseX()
-{
-	/// TODO: Get local mouse
-	ofLogNotice() << "Not implemented yet!!";
-	return 0;
-	//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
-	//    if (mtView != nullptr)
-	//    {
-	//        return mtView->getContentMouse().x;
-	//    }
-	//    else
-	//    {
-	//        ofLogNotice("MTApp") << "getLocalMouseX: Could not find MTView for
-	//        window";
-	//        return -1;
-	//    }
-}
-
-int MTApp::getLocalMouseY()
-{
-	/// TODO: Get local mouse
-	ofLogNotice() << "Not implemented yet!!";
-	return 0;
-	//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
-	//    if (mtView != nullptr)
-	//    {
-	//        return mtView->getContentMouse().y;
-	//    }
-	//    else
-	//    {
-	//        ofLogNotice("MTApp") << "getLocalMouseY: Could not find MTView for
-	//        window";
-	//        return -1;
-	//    }
-}
+//int MTApp::getLocalMouseX()
+//{
+//	/// TODO: Get local mouse
+//	ofLogNotice() << "Not implemented yet!!";
+//	return 0;
+//	//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+//	//    if (mtView != nullptr)
+//	//    {
+//	//        return mtView->getContentMouse().x;
+//	//    }
+//	//    else
+//	//    {
+//	//        ofLogNotice("MTApp") << "getLocalMouseX: Could not find MTView for
+//	//        window";
+//	//        return -1;
+//	//    }
+//}
+//
+//int MTApp::getLocalMouseY()
+//{
+//	/// TODO: Get local mouse
+//	ofLogNotice() << "Not implemented yet!!";
+//	return 0;
+//	//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+//	//    if (mtView != nullptr)
+//	//    {
+//	//        return mtView->getContentMouse().y;
+//	//    }
+//	//    else
+//	//    {
+//	//        ofLogNotice("MTApp") << "getLocalMouseY: Could not find MTView for
+//	//        window";
+//	//        return -1;
+//	//    }
+//}
 
 int mtGetLocalMouseX()
 {
-	return MTApp::sharedApp->getLocalMouseX();
+//	return MTApp::sharedApp->getLocalMouseX();
+	return -1;
 }
 
 int mtGetLocalMouseY()
 {
-	return MTApp::sharedApp->getLocalMouseY();
+//	return MTApp::sharedApp->getLocalMouseY();
+	return -1;
 }
 
 ofPath MTApp::pathFromString(std::string s)
