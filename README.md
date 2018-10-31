@@ -14,15 +14,19 @@ The goal of the framework is to provide useful app behavior needed in any non-tr
 * Main classes:
   - **MTApp**: Represents the application itself. Manages the current app state, keeps track of Windows, loads files (deserializes data), saves files (serializes data), manages preferences.
   - **MTWindow**: A class derived from ofBaseAppWindow. Manages views (represented by the MTView class) and administers events to the views. Each MTWindow has a root MTView.
-  - **MTView**: An MTView represents a space in which you can draw. It is also a container that holds additional MTViews (*subviews*), which have a single "parent" (a *superview*). Each MTView has a position and bounds (the *frame*), which is always expressed in the coordinate system of the superview. Each MTView also has a *content* space, which has its own position and coordinate system, and which may differ from the *frame's*. MTViews can receive mouse events, which are automatically transformed into local (frame) coordinates. They can also receive keyboard input, with the MTWindow handling which MTView has keyboard focus. They behave a bit like Cocoa's NSView/UIView, or like Flash's MovieClips objects (but without a timeline).
-  - **MTModel**: The data store of the app. It relies significantly on ofParameter.
-
+  - **MTView**: An MTView represents a space in which you can draw. It is also a container that holds additional MTViews (*subviews*), which have a single "parent" (a *superview*). Each MTView has a position and bounds (the *frame*), which is always expressed in the coordinate system of the superview. Each MTView also has a *content* space, which has its own position and coordinate system, and which may differ from the *frame's*. MTViews can receive mouse events, which are automatically transformed into local (frame) coordinates. They can also receive keyboard input, with the MTWindow handling which MTView has keyboard focus. They behave a bit like Cocoa's NSView/UIView, or like Flash's Sprite objects.
+  - **MTModel**: The data store of the app. Most of the smarts in this class is provided by your subclasses.
+  
 ## Design
 The framework is inspired by the Cocoa approach to windows, views, and documents. Unlike Cocoa, which uses a Model-View-Controller paradigm, ofxMTAppFramework uses a "Model-View" (no Controller) design pattern, where the logic for controlling the view is in the view class itself.
 This is more amenable to the type of applications made with OpenFrameworks, which typically have a single view for the app data, and reduces the number of classes where the application is distributed to.
 
 
 The workflow in ofxMTAppFramework is a bit different than in the traditional OF app, where a single class represents the app, the data (model), and the output (view).
-Given that most OF applications are output-oriented, most of the programming is done on Views.
+Given that most OF applications are output-oriented, most of the programming is done on the Views.
 
-is to transform the OF workflow from a single-app-class
+
+
+
+
+
