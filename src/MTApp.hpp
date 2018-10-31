@@ -9,23 +9,15 @@
 #include "ofxImGui.h"
 #include "ofBaseApp.h"
 
-
 class MTWindow;
-
 class MTView;
-
 class MTModel;
-
 class MTViewMode;
-
 class ofAppBaseWindow;
-
 class ofWindowSettings;
-
 class MTOffscreenWindow;
 
 typedef std::string MTAppModeName;
-
 
 class MTAppModeChangeArgs;
 
@@ -35,6 +27,22 @@ struct MTDisplay
 	ofRectangle frame;
 	int id;
 };
+
+//template<typename T>
+//class MTModelStore
+//{
+//	std::shared_ptr<T> model;
+//
+//	void setModel(std::shared_ptr<T> _model)
+//	{
+//		model = _model;
+//	}
+//
+//	std::shared_ptr<T> getModel()
+//	{
+//		return model;
+//	}
+//};
 
 class MTApp : public ofBaseApp, public MTEventListenerStore
 {
@@ -47,17 +55,18 @@ public:
 	static MTApp *sharedApp;
 
 	/**
-	 * @brief initialize Extra "constructor" for the user. It is the last thing
-	 * that is called in the default ofxMTApp constructor, and before the app's
-	 * setup() function. This is where you want to instantiate your Model and
-	 * your View. Default implementation creates a placeholder model and view.
+	 * @brief initialize  Override this method to instantiate your model,
+	 * register custom preferences and other general app setup. Called before
+	 * createAppViews, so unless you create a Window in this method there will
+	 * be no available GPU Contexts. Default implementation does nothing.
 	 */
 	virtual void initialize();
 
 	/**
-	 * @brief createAppViews creates the app's views at initialization. This
-	 * will set up your windows when the program launches or when a new MTModel
-	 * (a document) is loaded. Override this to create your views.
+	 * @brief createAppViews Override this method to create your app's windows
+	 * and views. Called before the app's run loop begins, so it is
+	 * called only once for the life of the app. Default implementation creates
+	 * a window.
 	 */
 	virtual void createAppViews();
 
@@ -71,8 +80,13 @@ public:
 	virtual void appWillRun()
 	{}
 
-	virtual void runApp();
+	/**
+	 * @brief Starts the app's run loop. You shouldn't have to call this
+	 * method yourself.
+	 */
+	void runApp();
 
+	// I'm sure that there is a better way than this, but right now...
 	template<class T>
 	static std::shared_ptr<T> Model()
 	{
@@ -80,6 +94,7 @@ public:
 		return outModel;
 	}
 
+	// I'm sure that there is a better way than this, but right now...
 	template<class T>
 	static T *App()
 	{
@@ -88,22 +103,33 @@ public:
 
 	//------ APP MODES
 	const MTAppModeName defaultMode = "MTAppModeDefault";
-	void setAppMode(MTAppModeName stateName);
+
+	/**
+	 * @brief Changes the current App Mode, which triggers an
+	 * appModeChangedEvent.
+	 * @param modeName The new App Mode name.
+	 */
+	void setAppMode(MTAppModeName modeName);
 	MTAppModeName getAppMode();
 
+	/**
+	 * @brief Usage of this method is currently not required, and has no real
+	 * effect on the app.
+	 * In the future, this method will register App Modes
+	 * and give setAppMode a bit of input validation.
+	 * @param modeName
+	 */
 	void registerAppMode(MTAppModeName modeName)
 	{ appModes.push_back(modeName); }
 
 	/**
-	 * @brief Called whenever the App State changes. This function will get called
-	 * before any other listener of the @code appModeChanged event.
+	 * @brief Called whenever the App Mode changes. This conveninece methdd
+	 * will be called before any other listener of the @code appModeChanged
+	 * event.
 	 * The default implementation does nothing.
 	 */
 	virtual void appModeChanged(MTAppModeChangeArgs &changeArgs)
 	{}
-
-	static ofEvent<MTAppModeChangeArgs> appModeChangedEvent;
-	static ofEvent<ofEventArgs> modelLoadedEvent;
 
 	virtual void exit();
 
@@ -154,6 +180,11 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 //	/// Returns the mouse y-position in local coordinates of the current window
 //	int getLocalMouseY();
 
+	/**
+	 * @brief You should not have to call this method.
+	 * Event handler for the windowClosing event.
+	 * @param window
+	 */
 	void windowClosing(std::shared_ptr<MTWindow> window);
 
 	/////// FILE HANDLING
@@ -164,28 +195,46 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	bool saveAppPreferences();
 	void newFile();
 
-	/// Override this if you need to prep your app to create a new document.
+	/**
+	 * @brief Override this if you need to do anything when creating a new, empty
+	 * document.
+	 */
 	virtual void newFileSetup()
 	{}
 
+	/**
+	 * @brief Registers a new app preference. App preferences are saved
+	 * automatically prior to the app closing.
+	 * @param preference An ofParameter
+	 */
 	void registerAppPreference(ofAbstractParameter &preference);
 
 	/////// UTILITY
-	/// Stringifies a path.
+	/**
+	 * @brief Stringifies an ofPath.
+	 */
 	static std::string pathToString(ofPath &path);
 
-	/// Makes an ofPath from a stringified representation.
+	/**
+	 * @brief Makes an ofPath from a stringified representation.
+	 * @param s The string to parse
+	 * @return an ofPath. If the string parsing fails the path will
+	 * be empty. TODO: Catching parsing errors.
+	 */
 	static ofPath pathFromString(std::string s);
 
 	ofParameter<std::string> MTPrefLastFile;
-	ofParameter<bool> NSPrefAutoloadLastFile;
-	ofParameter<bool> NSPrefLaunchInFullScreen;
+	ofParameter<bool> MTPrefAutoloadLastFile;
+	ofParameter<bool> MTPrefLaunchInFullScreen;
 
-	/** Sets the behavior for automatically updating and drawing
-	 *  the App Modes. The default is set to true for both.
+	/**
+	 * @brief Sets the behavior for automatically updating and drawing
+	 * the App Modes. The default is set to true for both.
 	 * Auto draw and auto update are called AFTER the user's
 	 * update() and draw() calls.
-	 **/
+	 * @param autoDraw
+	 * @param autoUpdate
+	 */
 	void setAutoAppModeBehavior(bool autoDraw, bool autoUpdate)
 	{
 		autoDrawViewModes = autoDraw;
@@ -204,6 +253,16 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	 */
 	ofEvent<ofEventArgs> displaysChangedEvent;
 
+	/**
+	 * Fires after MTApp::setAppMode is called
+	 */
+	ofEvent<MTAppModeChangeArgs> appModeChangedEvent;
+
+	/**
+	 * Fires after a model is loaded from the file system.
+	 */
+	ofEvent<ofEventArgs> modelLoadedEvent;
+
 protected:
 	ofXml serializer;
 	ofXml appPrefsXml;
@@ -220,26 +279,55 @@ protected:
 
 	std::shared_ptr<MTWindow> mainWindow;
 	std::shared_ptr<MTModel> model;
-	const static std::string APP_PREFERENCES_FILE;
+
+	/**
+	 * The app preferences file name. It can be anything you want, but to avoid
+	 * naming conflicts it is recommended that you use reverse DNS notation.
+	 * Make sure to change the value of this field in your subclass, ideally
+	 * in the @code initialize() method.
+	 * Where this file is written to depends on the target OS.
+	 */
+	std::string appPreferencesFilename = "com.yourGroup.yourApp.prefs";
 	bool isInitialized;
+
+	/**
+	 * @brief ofParameterGroup for the App Preferences. You shouldn't have to
+	 * mess with this directly. This should probably be private in the future.
+	 */
 	ofParameterGroup appPreferences;
 
 	std::vector<std::shared_ptr<MTWindow>> windows;
 
+	/**
+	 * @brief Event handler. You should not have to call this method.
+	 */
 	virtual void keyPressed(ofKeyEventArgs &key);
+	/**
+	 * @brief Event handler. You should not have to call this method.
+ 	 */
 	virtual void keyReleased(ofKeyEventArgs &key);
 
-	/// Called whenever there is a key pressed anywhere in the app. Default
-	/// implementation does nothing.
+	/**
+	 * @brief Called whenever there is a key pressed anywhere in the app.
+	 * Override this to detect key presses globally.
+	 * Default implementation does nothing.
+	 */
 	virtual void appKeyPressed(ofKeyEventArgs &key)
 	{}
 
-	/// Called whenever there is a key released anywhere in the app. Default
-	/// implementation does nothing.
+	/**
+	 * @brief Called whenever there is a key released anywhere in the app.
+	 * Override this to detect key presses globally.
+	 * Default implementation does nothing.
+	 */
 	virtual void appKeyReleased(ofKeyEventArgs &key)
 	{}
 
-	/// Called once the model is loaded
+	/**
+	 * @brief Called once the model is loaded from disk. This is mostly a
+	 * convenience method so that you don't have to listen for the
+	 * modelLoadedEvent yourself. Default implementation does nothing.
+	 */
 	virtual void modelLoaded()
 	{}
 
@@ -252,12 +340,14 @@ protected:
 	//////////////////////////////
 
 	/**
-	 * 	Adds the standard event listeners to a window. You probably won't need to call this method.
+	 * 	Adds the standard event listeners to a window. You probably won't
+	 * 	need to call this method.
 	 */
 	void addAllEvents(MTWindow *w);
 
 	/**
- 	 * 	Removes the standard event listeners to a window. You probably won't need to call this method.
+ 	 * 	Removes the standard event listeners to a window. You probably won't
+ 	 * 	need to call this method.
  	 */
 	void removeAllEvents(MTWindow *w);
 
@@ -301,6 +391,15 @@ private:
 	};
 
 	std::unordered_map<std::string, WindowParams> wpMap;
+
+	/**
+	 * ~/.local/share/filename
+	 * ~/Library/Preferences/filename
+	 * %systemdrive%%homepath%\Roaming\filename
+	 *
+	 */
+	std::filesystem::path appPreferencesPath = "";
+	void createAppPreferencesFilePath();
 };
 
 class MTAppModeChangeArgs : public ofEventArgs
