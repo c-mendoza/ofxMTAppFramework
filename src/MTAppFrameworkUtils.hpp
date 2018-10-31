@@ -28,10 +28,12 @@ public:
     bool complete = false;
 };
 
-/// MTProcedure is a queue of steps that are executed sequentially upon a
-/// success condition being met for each step. Useful for implementing actions
-/// that are sequential in nature and that require stepwise completion.
-/// Still TODO: Fire events when appropriate.
+/**
+* MTProcedure is a queue of steps that are executed sequentially upon a
+* success condition being met for each step. Useful for implementing actions
+* that are sequential in nature and that require stepwise completion.
+* Still TODO: Fire events when appropriate.
+*/
 
 class MTProcedure
 {
@@ -87,7 +89,6 @@ public:
     void addEventListener(std::unique_ptr<of::priv::AbstractEventToken> listener)
     {
     	eventListeners.push(std::move(listener));
-//        eventListeners.push_back(std::move(e));
     }
 
     void clearEventListeners()
@@ -100,24 +101,3 @@ protected:
     ofEventListeners eventListeners;
 };
 
-/*
- *  HomographyHelper
- *  Created by Elliot Woods on 26/11/2010.
- *  Edited by Krisjanis Rijnieks on 23/01/2016
- *
- *  Adapted from ofxPiMapper on 21 FEB 2018
- *
- *  Based entirely on arturo castro's homography implementation
- *  Created 08/01/2010, arturo castro
- *
- */
-
-class MTHomographyHelper {
-public:
-	static void gaussian_elimination(float *input, int n);
-	static glm::mat4 findHomography(float src[4][2], float dst[4][2]);
-
-	static glm::mat4 calculateHomography(ofRectangle source, std::vector<glm::vec3> vertices);
-
-private:
-};

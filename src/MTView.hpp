@@ -66,9 +66,9 @@ protected:
 
 public:
 	/**
-	 * @brief Sets the current view mode for this view. This method will call MTViewMode::exit() on
-	 * currentViewMode, assign 'mode' as the currentViewMode, and call MTViewMode::setup() on the now
-	 * currentViewMode.
+	 * @brief Sets the current view mode for this view. This method will call
+	 * MTViewMode::exit() on currentViewMode, assign 'mode' as the
+	 * currentViewMode, and call MTViewMode::setup() on the now currentViewMode.
 	 * @param mode
 	 */
 	void setViewMode(std::shared_ptr<MTViewMode> mode);
@@ -89,7 +89,6 @@ private:
 	//-----------------------------//
 	// EVENTS: METHODS TO OVERRIDE //
 	//-----------------------------//
-
 
 public:
 	/**
@@ -247,7 +246,16 @@ public:
 	void setFrameCenter(const glm::vec2& pos);
 	glm::vec3 getFrameCenter();
 
+	/**
+	 * @brief If true, the frame will clip the content. Otherwise, if the
+	 * content is larger than the frame the overflow contents will be visible.
+	 */
 	bool clipToFrame = false;
+
+	/**
+	 * @brief Sets the content rect for this View.
+	 * @param newContentRect
+	 */
 	void setContent(ofRectangle newContentRect);
 
 	/**
@@ -519,6 +527,7 @@ public:
 	 */
 	ofEvent<ofEventArgs> exitEvent;
 
+	// These should probably be private!
 	bool isMouseDown = false;
 	bool isMouseDragging = false;
 
@@ -535,11 +544,27 @@ public:
 	// OPERATION QUEUES
 	//------------------------------------------------------//
 
+	/**
+	 * @brief Adds a function that gets executed only once in the View's
+	 * draw method. The function is then discarded.
+	 * Very useful in multithreaded scenarios and a bit more
+	 * flexible than an ofThreadChannel. If you need to queue one-off slow
+	 * graphics code (i.e. allocating an FBO during runtime), this method
+	 * can make your life a lot less complicated.
+	 * @param funct
+	 */
 	void enqueueDrawOperation(std::function<void()> funct)
 	{
 		drawOpQueue.push(funct);
 	}
 
+	/**
+	 * @brief Adds a function that gets executed only once in the View's
+	 * draw update. The function is then discarded.
+	 * In views where rendering has been disabled, update() still will be
+	 * called on every frame.
+	 * @param funct
+	 */
 	void enqueueUpdateOperation(std::function<void()> f)
 	{ updateOpQueue.push(f); }
 
