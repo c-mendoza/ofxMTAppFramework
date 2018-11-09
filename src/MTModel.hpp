@@ -24,14 +24,25 @@ public:
 	void setName(std::string n);
 	ofParameterGroup& getParameters();
 
+	/**
+	 * @brief Serializes the ofParameterGroup of the Model. Override this method
+	 * if you need to serialize data that the ofParameter system can't handle on
+	 * its own.
+	 * This method is called by the Framework and you should never have to call
+	 * it directly.
+	 * @param serializer. This is provided by the Framework.
+	 */
 	virtual void serialize(ofXml& serializer);
-	virtual void deserialize(ofXml& serializer);
 
-    /**
-     * @brief Override this to allow the model to draw its own gui
-     * via ImGui
-     */
-    virtual void drawGui(ofxImGui::Settings& settings){}
+	/**
+	 * @brief Deserializes the ofParameterGroup of the Model. Override this method
+	 * if you need to deserialize data that the ofParameter system can't handle on
+	 * its own.
+	 * This method is called by the Framework and you should never have to call
+	 * it directly.
+	 * @param serializer. This is provided by the Framework.
+	 */
+	virtual void deserialize(ofXml& serializer);
 
 protected:
 	ofParameterGroup parameters;
