@@ -9,7 +9,7 @@
 #define ofxMTAppFramework_h
 
 #define MTAF_VERSION_MAJOR 0
-#define MTAF_VERSION_MINOR 1
+#define MTAF_VERSION_MINOR 2
 #define MTAF_VERSION_PATCH 0
 
 
