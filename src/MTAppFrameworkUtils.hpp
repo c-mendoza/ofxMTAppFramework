@@ -18,14 +18,16 @@
 class MTProcedureStep
 {
 public:
-    int index;
-    std::string name = "Step";
-    std::string information = "Descriptive text goes here";
-    ///If you test for success, and it is successful, you get sweet success action
-    std::function<bool()> successTest = []{ return false; };
-    ///When tests mean success, Action is your reward.
-    std::function<void()> successAction = []{};
-    bool complete = false;
+	int index;
+	std::string name = "Step";
+	std::string information = "Descriptive text goes here";
+	///If you test for success, and it is successful, you get sweet success action
+	std::function<bool()> successTest = []
+	{ return false; };
+	///When tests mean success, Action is your reward.
+	std::function<void()> successAction = []
+	{};
+	bool complete = false;
 };
 
 /**
@@ -39,17 +41,21 @@ class MTProcedure
 {
 public:
 
-    MTProcedureStep getCurrentStep();
-    void update();
-    void addStep(MTProcedureStep step);
-    bool isProcedureComplete() { return procedureComplete; }
-    std::function<void()> procedureCompleteAction = [] {};
+	MTProcedureStep getCurrentStep();
+	void update();
+	void addStep(MTProcedureStep step);
+
+	bool isProcedureComplete()
+	{ return procedureComplete; }
+
+	std::function<void()> procedureCompleteAction = []
+	{};
 
 private:
-    std::queue<MTProcedureStep> stepQueue;
-    int totalSteps = -1;
-    MTProcedureStep current;
-    bool procedureComplete = false;
+	std::queue<MTProcedureStep> stepQueue;
+	int totalSteps = -1;
+	MTProcedureStep current;
+	bool procedureComplete = false;
 };
 
 //template <class T>
@@ -75,29 +81,28 @@ private:
 // MT-EVENT-LISTENER  									//
 //------------------------------------------------------//
 
-/////////////////////////////////////////////////
-/// \brief The MTEventListenerStore class adds
-/// ofEventListener storage to any class that
-/// inherits from it.
-/////////////////////////////////////////////////
-
+/**
+ * @brief The MTEventListenerStore class adds ofEventListener storage to
+ * any class that inherits from it. This class was created before OF rolled
+ * out its own eventListener storage (which the class uses), but it remains
+ * here for both convenience and compatibility.
+ */
 class MTEventListenerStore
 {
 public:
-    /// \brief Adds event listeners that should be destroyed when this
-    /// object is destroyed.
-    void addEventListener(std::unique_ptr<of::priv::AbstractEventToken> listener)
-    {
-    	eventListeners.push(std::move(listener));
-    }
+	/// \brief Adds event listeners that should be destroyed when this
+	/// object is destroyed.
+	void addEventListener(std::unique_ptr<of::priv::AbstractEventToken> listener)
+	{
+		eventListeners.push(std::move(listener));
+	}
 
-    void clearEventListeners()
-    {
-        eventListeners.unsubscribeAll();
-    }
+	void clearEventListeners()
+	{
+		eventListeners.unsubscribeAll();
+	}
 
 protected:
 //    std::vector<ofEventListener> eventListeners;
-    ofEventListeners eventListeners;
+	ofEventListeners eventListeners;
 };
-
