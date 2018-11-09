@@ -2,8 +2,8 @@
 // Created by Cristobal Mendoza on 2/15/18.
 //
 
-#ifndef NERVOUSSTRUCTUREOF_MTFULLSCREEN_HPP
-#define NERVOUSSTRUCTUREOF_MTFULLSCREEN_HPP
+#ifndef MTFULLSCREEN_HPP
+#define MTFULLSCREEN_HPP
 
 #include "ofMain.h"
 #include "MTWindow.hpp"
@@ -66,4 +66,20 @@ public:
 	void draw() override;
 };
 
-#endif //NERVOUSSTRUCTUREOF_MTFULLSCREEN_HPP
+/**
+ * HomographyHelper
+ * Created by Elliot Woods on 26/11/2010.
+ * Edited by Krisjanis Rijnieks on 23/01/2016
+ * Adapted from ofxPiMapper on 21 FEB 2018
+ * Based entirely on arturo castro's homography implementation
+ * Created 08/01/2010, arturo castro
+*/
+namespace MTHomographyHelper
+{
+	static void gaussian_elimination(float *input, int n);
+	static glm::mat4 findHomography(float src[4][2], float dst[4][2]);
+	static glm::mat4 calculateHomography(ofRectangle source,
+										 std::vector<glm::vec3> vertices);
+};
+
+#endif //MTFULLSCREEN_HPP
