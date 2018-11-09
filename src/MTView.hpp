@@ -485,6 +485,7 @@ public:
 	void dragged(ofDragInfo& drag);
 	void messageReceived(ofMessage& message);
 	void modelLoaded(ofEventArgs& args);
+	void appModeChangedInternal(MTAppModeChangeArgs& args);
 
 private:
 	void updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord);

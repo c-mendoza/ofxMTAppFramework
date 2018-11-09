@@ -18,16 +18,16 @@ MTView::MTView(std::string _name)
 	backgroundColor.set("Background Color",
 						ofFloatColor(1.0, 1.0, 1.0, 1.0));
 	ofAddListener(MTApp::sharedApp->appModeChangedEvent,
-				  this, &MTView::appModeChanged,
-				  OF_EVENT_ORDER_AFTER_APP);
+				  this, &MTView::appModeChangedInternal,
+				  -100);
 	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
 }
 
 MTView::~MTView()
 {
 	ofRemoveListener(MTApp::sharedApp->appModeChangedEvent,
-					 this, &MTView::appModeChanged,
-					 OF_EVENT_ORDER_AFTER_APP);
+					 this, &MTView::appModeChangedInternal,
+					 -100);
 	subviews.clear();
 	ofLogVerbose("View Destruct: ") << name;
 }
@@ -559,6 +559,7 @@ void MTView::draw(ofEventArgs &args)
 
 void MTView::exit(ofEventArgs &args)
 {
+	currentViewMode->exit();
 	exit();
 	onExit();
 	for (auto sv : subviews)
@@ -823,7 +824,15 @@ const glm::mat4 &MTView::getFrameMatrix() const
 
 void MTView::setViewMode(std::shared_ptr<MTViewMode> mode)
 {
-	currentViewMode->exit();
 	currentViewMode = mode;
 	currentViewMode->setup();
+}
+
+void MTView::appModeChangedInternal(MTAppModeChangeArgs& args)
+{
+	if (currentViewMode)
+	{
+		currentViewMode->exit();
+	}
+	appModeChanged(args);
 }
