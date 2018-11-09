@@ -5,20 +5,37 @@
 #include "ofPath.h"
 
 class MTUIPath;
+class MTViewModePathEditor;
 
 class PathEditorEventArgs : public ofEventArgs
 {
+private:
+	MTViewModePathEditor* pathEditor;
 public:
+	/**
+	 * @brief The path that triggered the event
+	 */
 	std::shared_ptr<ofPath> path;
+
+	/**
+	 * @return A reference to the path editor
+	 */
+	MTViewModePathEditor& getPathEditor()
+	{
+		return *pathEditor;
+	}
+
+	friend class MTViewModePathEditor;
 };
 
-
+/**
+ * @brief Class to initialize and configure an MTViewModePathEditor
+ */
 class PathEditorSettings
 {
 public:
     std::shared_ptr<MTView> view;
 
-	
 	enum Options
 	{
         CanAddPoints = 0,
@@ -38,7 +55,7 @@ public:
 	 * @brief If @property allowMultiplePaths is true then this
 	 * member must contain a valid vector of shared_ptr<ofPath>
 	 */
-    std::vector<std::shared_ptr<ofPath>> *paths;
+    std::vector<std::shared_ptr<ofPath>> paths;
 	/**
 	 * @brief If @property allowMultiplePaths is false then this
 	 * member must contain a valid shared_ptr<ofPath>
@@ -77,15 +94,16 @@ public:
 	 * or PathEditorOptions::LimitToView must be set.
 	 */
 	std::unordered_map<ofPath*, ofRectangle> validRegionsMap;
-
-	std::vector<std::shared_ptr<ofPath>> *validRegions;
-
-
-	//TODO style options for pathEditor
-
 };
 
-
+/**
+ * @brief MTViewModePathEditor is a View Mode that allows users to interactively create,
+ * edit, or delete, one or multiple paths using GUI handles and keyboard commands.
+ * Once the GUI representation of the path is modified, an event is fired which lets
+ * you react to the changes the user makes to the paths.
+ *
+ *
+ */
 class MTViewModePathEditor : public MTViewMode {
   public:
 	MTViewModePathEditor(PathEditorSettings& settings);
@@ -97,37 +115,81 @@ class MTViewModePathEditor : public MTViewMode {
 
 
 	/**
-	 * @brief Fires when a vertex is added or deleted, or when a vertex is moved
+	 * @brief Fires when a vertex is added or deleted, or when a handle is moved.
+	 * To avoid sending out notifications while the user drags a handle, unset the
+	 * NotifyOnHandleDragged option in the PathEditorSettings::options bitfield.
+	 * If NotifyOnHandleDragged is off and the user is dragging a handle, this
+	 * event fires once dragging is done and the mouse is released.
 	 */
 	ofEvent<PathEditorEventArgs> pathModifiedEvent;
+
+	/**
+	 * @brief Fires when a path is created interactively.
+	 */
 	ofEvent<PathEditorEventArgs> pathCreatedEvent;
+
+	/**
+	 * @brief Fires when the first path is created interactively.
+	 */
 	ofEvent<PathEditorEventArgs> firstPathCreatedEvent;
+
+	/**
+	 * @brief Fires when a path is deleted.
+	 */
 	ofEvent<PathEditorEventArgs> pathDeletedEvent;
+
+	/**
+	 * @brief Fires when a path is deleted and there are no more paths in the
+	 * path collection.
+	 */
 	ofEvent<ofEventArgs> lastPathDeletedEvent;
 
 	/**
-	 * @brief onFirstPathCreated
+	 * @brief Convenience lambda for event.
 	 */
 	std::function<void(PathEditorEventArgs)> onFirstPathCreated = [](PathEditorEventArgs args){};
+	/**
+	 * @brief Convenience lambda for event.
+	 */
 	std::function<void(PathEditorEventArgs)> onPathCreated = [](PathEditorEventArgs args){};
+	/**
+	 * @brief Convenience lambda for event.
+	 */
 	std::function<void(PathEditorEventArgs)> onPathModified = [](PathEditorEventArgs args){};
+	/**
+	 * @brief Convenience lambda for event.
+	 */
 	std::function<void(PathEditorEventArgs)> onPathDeleted = [](PathEditorEventArgs args){};
+	/**
+	 * @brief Convenience lambda for event.
+	 */
 	std::function<void()> onLastPathDeleted = []{};
+	/**
+	 * @brief Convenience lambda for event.
+	 */
 	std::function<void()> onExit =[]{};
 
+	std::vector<std::shared_ptr<ofPath>> getPathCollection();
 
 
-  protected:
+  private:
 	PathEditorEventArgs pEventArgs;
-	PathEditorSettings settings;
     std::shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p, ofRectangle validRegion = ofRectangle());
 	bool removeUIPath(std::shared_ptr<MTUIPath> p);
-	typedef ofPath::Command ofPathCommand;
     std::vector<std::shared_ptr<MTUIPath>> uiPaths;
     std::vector<std::shared_ptr<ofPath>> pathCollection;
     std::shared_ptr<MTUIPath> activeUIPath = nullptr;
 	void handleMoved(const void* handle, ofMouseEventArgs& args);
 	bool handleWasPressed = false;
+
+	std::bitset<10> options;
+	std::shared_ptr<ofPath> path;
+	int maxPaths = INT_MAX;
+//	std::string appModeName = "";
+	ofColor pathColor;
+	float pathStrokeWidth = 2;
+	ofRectangle validRegion;
+	std::unordered_map<ofPath*, ofRectangle> validRegionsMap;
 };
 
 #endif   // MTAPPMODEPATHEDITOR_HPP

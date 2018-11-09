@@ -14,22 +14,37 @@ MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
 		: MTViewMode(settings.appModeName, settings.view)
 {
 	addAllEventListeners();
-	this->settings = settings;
+	pathCollection = settings.paths;
+	path = settings.path;
+	options = settings.options;
+	validRegion = settings.validRegion;
+	validRegionsMap = settings.validRegionsMap;
+	pathStrokeWidth = settings.pathStrokeWidth;
+	pathColor = settings.pathColor;
 
-	if (settings.options.test(PathEditorSettings::LimitToRegion))
+	pEventArgs.pathEditor = this;
+
+	if (options.test(PathEditorSettings::LimitToView))
 	{
-		if (settings.path != nullptr)
+		options.set(PathEditorSettings::LimitToRegion);
+		validRegion = view->getContent();
+	}
+	else if (options.test(PathEditorSettings::LimitToRegion))
+	{
+		if (path != nullptr)
 		{
-			if (settings.validRegion.getWidth() == 0)
+			if (validRegion.getWidth() == 0)
 			{
 				ofLogError("MTViewModePathEditor") << "Settings specify LimitToRegion, but no region was passed. "
-												  << "Using view as region";
-				settings.options.set(PathEditorSettings::LimitToView);
+												   << "Using view as region";
+				options.set(PathEditorSettings::LimitToView);
 			}
 		}
-		else
+		else //TODO: Valid Regions
 		{
-//			if (settings.validRegions->size() != settings.paths->size())
+			ofLogWarning("MTViewModePathEditor") << "validRegions not implemented yet!! Turning off LimitToRegion";
+			options.reset(PathEditorSettings::LimitToRegion);
+//			if (validRegions->size() != pathCollection.size())
 //			{
 //				ofLogError("MTViewModePathEditor")
 //						<< "Settings specify LimitToRegion using a vector of paths "
@@ -38,23 +53,19 @@ MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
 //			}
 		}
 	}
-	if (settings.options.test(PathEditorSettings::LimitToView))
-	{
-		this->settings.options.set(PathEditorSettings::LimitToRegion);
-		this->settings.validRegion = settings.view->getContent();
-	}
+
 }
 
 void MTViewModePathEditor::setup()
 {
 
-	ofLogVerbose("MTViewModePathEditor::setup") << settings.appModeName;
+	ofLogVerbose("MTViewModePathEditor::setup") << getName();
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 
-	if (settings.path == nullptr)
+	if (path == nullptr)
 	{
-		for (const auto& path : *settings.paths)
+		for (const auto& path : pathCollection)
 		{
 			auto uiPath = createUIPath(path);
 			activeUIPath = uiPath;
@@ -62,11 +73,12 @@ void MTViewModePathEditor::setup()
 	}
 	else
 	{
-		auto uiPath = createUIPath(settings.path);
+		auto uiPath = createUIPath(path);
 		activeUIPath = uiPath;
 	}
 
-	view->enqueueUpdateOperation([this]() { ofShowCursor(); });
+	view->enqueueUpdateOperation([this]()
+								 { ofShowCursor(); });
 }
 
 std::shared_ptr<MTUIPath> MTViewModePathEditor::createUIPath(
@@ -77,10 +89,10 @@ std::shared_ptr<MTUIPath> MTViewModePathEditor::createUIPath(
 	auto uiPath = std::make_shared<MTUIPath>();
 	std::bitset<5> uiPathOptions;
 
-	if (settings.options.test(PathEditorSettings::LimitToRegion))
+	if (options.test(PathEditorSettings::LimitToRegion))
 	{
 		uiPathOptions.set(MTUIPath::LimitToRegion);
-		auto regions = settings.validRegionsMap;
+		auto regions = validRegionsMap;
 		if (regions.size() > 0)
 		{
 			auto region = regions.find(p.get());
@@ -96,35 +108,35 @@ std::shared_ptr<MTUIPath> MTViewModePathEditor::createUIPath(
 		}
 		else
 		{
-			uiPath->setRegion(settings.validRegion);
+			uiPath->setRegion(validRegion);
 		}
 	}
-	if (settings.options.test(PathEditorSettings::CanAddPaths))
+	if (options.test(PathEditorSettings::CanAddPoints))
 	{
 		uiPathOptions.set(MTUIPath::CanAddPoints);
 	}
-	if (settings.options.test(PathEditorSettings::CanDeletePoints))
+	if (options.test(PathEditorSettings::CanDeletePoints))
 	{
 		uiPathOptions.set(MTUIPath::CanDeletePoints);
 	}
-	if (settings.options.test(PathEditorSettings::CanConvertPoints))
+	if (options.test(PathEditorSettings::CanConvertPoints))
 	{
 		uiPathOptions.set(MTUIPath::CanConvertPoints);
 	}
-	if (settings.options.test(PathEditorSettings::NotifyOnHandleDragged))
+	if (options.test(PathEditorSettings::NotifyOnHandleDragged))
 	{
 		uiPathOptions.set(MTUIPath::NotifyOnHandleDragged);
 	}
 
 	uiPath->setup(p, view, (unsigned int) uiPathOptions.to_ulong());
 
-	if (settings.options.test(PathEditorSettings::PathsAreClosed))
+	if (options.test(PathEditorSettings::PathsAreClosed))
 	{
 		uiPath->setClosed(true);
 	}
-	uiPath->getPath()->setColor(settings.pathColor);
+	uiPath->getPath()->setColor(pathColor);
 	uiPath->getPath()->setFilled(false);
-	uiPath->getPath()->setStrokeWidth(settings.pathStrokeWidth);
+	uiPath->getPath()->setStrokeWidth(pathStrokeWidth);
 
 #pragma mark listeners
 
@@ -181,20 +193,20 @@ bool MTViewModePathEditor::removeUIPath(std::shared_ptr<MTUIPath> p)
 	{
 
 		auto path = p->getPath();
-		auto iterOfPath = std::find_if(settings.paths->begin(),
-									   settings.paths->end(),
+		auto iterOfPath = std::find_if(pathCollection.begin(),
+									   pathCollection.end(),
 									   [&](std::shared_ptr<ofPath> const& current)
 									   {
 										   return current == path;
 									   });
 
-		if (iterOfPath != settings.paths->end())
+		if (iterOfPath != pathCollection.end())
 		{
 			// Clear the path first:
 			(*iterOfPath)->clear();
 
 			// Now remove the path from the model:
-			settings.paths->erase(iterOfPath);
+			pathCollection.erase(iterOfPath);
 			activeUIPath = nullptr;
 		}
 
@@ -224,12 +236,12 @@ void MTViewModePathEditor::mouseReleased(int x, int y, int button)
 		if (ofGetKeyPressed(OF_KEY_SHIFT))
 		{
 			if (activeUIPath != nullptr &&
-				settings.options.test(PathEditorSettings::CanAddPoints))
+				options.test(PathEditorSettings::CanAddPoints))
 			{
 				if (activeUIPath->getSelection().size() > 0)
 				{
 					auto dex = activeUIPath->getIndexForHandle(activeUIPath->getSelection().back());
-					activeUIPath->insertHandle(glm::vec3(x, y, 0), dex);
+					activeUIPath->insertHandle(glm::vec3(x, y, 0), dex + 1);
 				}
 				else
 				{
@@ -238,15 +250,15 @@ void MTViewModePathEditor::mouseReleased(int x, int y, int button)
 			}
 			else
 			{
-				if (settings.options.test(PathEditorSettings::AllowsMultiplePaths))
+				if (options.test(PathEditorSettings::AllowsMultiplePaths))
 				{
-					if (settings.paths->size() < settings.maxPaths)
+					if (pathCollection.size() < maxPaths)
 					{
 						auto pathPtr = std::make_shared<ofPath>();
 						pathPtr->moveTo(glm::vec3(x, y, 0));
 						activeUIPath = createUIPath(pathPtr);
 //					activeUIPath->addHandle(glm::vec3(x, y, 0));
-						settings.paths->push_back(pathPtr);
+						pathCollection.push_back(pathPtr);
 						pEventArgs.path = pathPtr;
 						pathCreatedEvent.notify(pEventArgs);
 						onPathCreated(pEventArgs);
@@ -277,8 +289,13 @@ void MTViewModePathEditor::draw()
 
 void MTViewModePathEditor::exit()
 {
-	ofLogVerbose("MTViewModePathEditor::exit()") << settings.appModeName;
+	ofLogVerbose("MTViewModePathEditor::exit()") << getName();
 	activeUIPath = nullptr;
 	uiPaths.clear();
 	onExit();
+}
+
+std::vector<std::shared_ptr<ofPath>> MTViewModePathEditor::getPathCollection()
+{
+	return pathCollection;
 }
