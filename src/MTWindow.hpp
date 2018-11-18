@@ -37,7 +37,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 #endif
   public:
 	MTWindow(std::string name);
-	~MTWindow();
+	virtual ~MTWindow();
 
 	ofParameter<std::string> name;
 

@@ -107,7 +107,7 @@ void priv::enterFullScreen()
 		fsDisplay->outputArea->setSize(oneWidth,
 									   outputHeight);
 
-		auto window = MTApp::sharedApp->createWindow("FS " + ofToString(count), glfwWindowSettings);
+		auto window = MTApp::Instance()->createWindow("FS " + ofToString(count), glfwWindowSettings);
 		auto fsView = std::make_shared<MTFullScreenView>("FS View " + ofToString(count),
 														 fsDisplay,
 														 outputTexture);
@@ -128,7 +128,7 @@ void priv::exitFullScreen()
 	for (const auto &window : fullScreenWindows)
 	{
 		window->setFullscreen(false);
-		MTApp::sharedApp->windowClosing(window);
+		MTApp::Instance()->windowClosing(window);
 		window->setWindowShouldClose();
 	}
 	windowWithOutput->setWindowPosition(windowPos.x, windowPos.y);

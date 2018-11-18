@@ -36,7 +36,7 @@ void MTOffscreenWindow::exit(ofEventArgs& args)
 			gui.close();
 			if (imCtx) ImGui::DestroyContext(imCtx);
 		}
-		MTApp::sharedApp->removeWindow(shared_from_this());
+		MTApp::Instance()->removeWindow(shared_from_this());
 	}
 }
 

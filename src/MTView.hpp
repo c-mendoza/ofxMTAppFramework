@@ -13,6 +13,10 @@
 #include "ofxMTAppFramework.h"
 #include <gl/ofFbo.h>
 #include "ofxImGui.h"
+#include "MTWindow.hpp"
+#include "MTApp.hpp"
+#include "MTViewMode.hpp"
+#include "MTModel.hpp"
 
 enum MTViewResizePolicy
 {
@@ -33,10 +37,10 @@ enum MTViewResizePolicy
 };
 
 
-class MTModel;
-class MTWindow;
-class MTAppModeChangeArgs;
-class MTViewMode;
+//class MTModel;
+//class MTWindow;
+//class MTAppModeChangeArgs;
+//class MTViewMode;
 
 class MTView : public MTEventListenerStore,
 			   public std::enable_shared_from_this<MTView>

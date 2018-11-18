@@ -136,7 +136,7 @@ void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
 
 void MTWindow::exit(ofEventArgs& args)
 {
-	MTApp::sharedApp->windowClosing(shared_from_this());
+	MTApp::Instance()->windowClosing(shared_from_this());
 	contentView->exit(args);
 	contentView = nullptr;
 	if (isImGuiEnabled)

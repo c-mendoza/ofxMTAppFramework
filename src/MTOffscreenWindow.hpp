@@ -6,6 +6,7 @@
 #define NERVOUSSTRUCTUREOF_MTOFFSCREENWINDOW_HPP
 
 #include "MTWindow.hpp"
+#include <ofFbo.h>
 
 class MTOffscreenWindow : public MTWindow
 {

@@ -6,7 +6,7 @@
 #define MTFULLSCREEN_HPP
 
 #include "ofMain.h"
-#include "MTWindow.hpp"
+#include "MTView.hpp"
 
 struct MTFullScreenDisplayInfo
 {

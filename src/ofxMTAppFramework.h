@@ -14,10 +14,23 @@
 
 
 #include "MTAppFrameworkUtils.hpp"
-#include "MTViewMode.hpp"
-#include "MTApp.hpp"
-#include "MTModel.hpp"
-#include "MTView.hpp"
-#include "MTWindow.hpp"
+//#include "MTViewMode.hpp"
+//#include "MTApp.hpp"
+//#include "MTModel.hpp"
+//#include "MTView.hpp"
+//#include "MTWindow.hpp"
+
+//template <typename A, typename M> class MTApplication
+//{
+//	static std::shared_ptr<A> app;
+//	static std::shared_ptr<M> model;
+//
+//	static void runApp() {
+//		app = std::make_shared<A>();
+//		model = std::make_shared<M>();
+//
+//	}
+//
+//};
 
 #endif
