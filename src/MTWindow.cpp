@@ -28,9 +28,11 @@ MTWindow::MTWindow(std::string name)
 
 MTWindow::~MTWindow()
 {
-	if(isImGuiEnabled)
+	if (isImGuiEnabled)
 	{
-//		if (imCtx) ImGui::DestroyContext(imCtx);
+		gui.close();
+		if (imCtx) ImGui::DestroyContext(imCtx);
+		setImGuiEnabled(false);
 	}
 }
 
@@ -133,17 +135,15 @@ void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
 	view->drawGui();
 }
 
+void MTWindow::setWindowShouldClose()
+{
+	ofAppGLFWWindow::setWindowShouldClose();
+	MTApp::sharedApp->windowClosing(shared_from_this());\
+}
 
 void MTWindow::exit(ofEventArgs& args)
 {
-	MTApp::sharedApp->windowClosing(shared_from_this());
-	contentView->exit(args);
-	contentView = nullptr;
-	if (isImGuiEnabled)
-	{
-		gui.close();
-		if (imCtx) ImGui::DestroyContext(imCtx);
-	}
+
 }
 
 void MTWindow::windowResized(ofResizeEventArgs& resize)
@@ -485,6 +485,5 @@ void MTWindow::mt_focus_callback(GLFWwindow* glfWwindow, int isFocused)
 	}
 
 }
-
 
 #endif

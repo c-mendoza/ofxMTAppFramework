@@ -59,6 +59,10 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	virtual void update(ofEventArgs& args);
 	virtual void draw(ofEventArgs& args);
 	virtual void exit(ofEventArgs& args);
+	// Ideally we would override close and call the superclass's close() in our override,
+	// but ofGLFWWindow's close() method is private.
+//	virtual void close();
+	void setWindowShouldClose() override;
 
 	void windowResized(ofResizeEventArgs& resize);
 	void keyPressed(ofKeyEventArgs& key);

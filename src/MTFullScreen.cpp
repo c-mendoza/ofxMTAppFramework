@@ -128,7 +128,6 @@ void priv::exitFullScreen()
 	for (const auto &window : fullScreenWindows)
 	{
 		window->setFullscreen(false);
-		MTApp::sharedApp->windowClosing(window);
 		window->setWindowShouldClose();
 	}
 	windowWithOutput->setWindowPosition(windowPos.x, windowPos.y);

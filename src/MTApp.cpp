@@ -393,7 +393,7 @@ void MTApp::removeWindow(std::shared_ptr<MTWindow> window)
 {
 	auto wIter = std::find(windows.begin(), windows.end(), window);
 	windows.erase(wIter);
-	window->setWindowShouldClose(); // Likely redundant, but probably harmless
+//	window->setWindowShouldClose(); // Likely redundant, but probably harmless
 	removeAllEvents(window.get());
 //    ofRemoveListener(window->events().keyPressed,
 //                  this,
