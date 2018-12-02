@@ -31,11 +31,6 @@ void MTOffscreenWindow::exit(ofEventArgs& args)
 	{
 		contentView->exit(args);
 		contentView = nullptr;
-		if (isImGuiEnabled)
-		{
-			gui.close();
-			if (imCtx) ImGui::DestroyContext(imCtx);
-		}
 		MTApp::sharedApp->removeWindow(shared_from_this());
 	}
 }
@@ -78,7 +73,6 @@ ofFbo& MTOffscreenWindow::getWindowOutput()
 }
 
 MTOffscreenWindow::~MTOffscreenWindow()
-{
-}
+{}
 
 #endif

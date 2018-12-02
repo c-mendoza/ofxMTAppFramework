@@ -23,17 +23,15 @@ MTWindow::MTWindow(std::string name)
 	focusedView = contentView;
 	mouseOverView = contentView;
 	this->name.set("Window Name", name);
-	imCtx = NULL;
+	imCtx = nullptr;
 }
 
 MTWindow::~MTWindow()
 {
-	if (isImGuiEnabled)
-	{
-		gui.close();
-		if (imCtx) ImGui::DestroyContext(imCtx);
-		setImGuiEnabled(false);
-	}
+	// This ensures that we destroy the right context:
+	bindImGuiContext();
+	// This will destroy the gui:
+	gui.reset();
 }
 
 // void MTWindow::setup(ofEventArgs & args)
@@ -116,12 +114,12 @@ void MTWindow::draw(ofEventArgs& args)
 
 	if (isImGuiEnabled)
 	{
-		ImGui::SetCurrentContext(imCtx);
+		bindImGuiContext();
 		auto& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2(getWidth(), getHeight());
-		getGui().begin();
+		getGui()->begin();
 		drawImGuiForView(contentView);
-		getGui().end();
+		getGui()->end();
 	}
 }
 
@@ -361,7 +359,7 @@ void MTWindow::addAllEvents()
 
 #pragma mark ImGui
 
-ofxImGui::Gui& MTWindow::getGui()
+shared_ptr<ofxImGui::Gui> MTWindow::getGui()
 {
 	return gui;
 }
@@ -377,9 +375,9 @@ void MTWindow::setImGuiEnabled(bool doGui)
 		enqueueUpdateOperation([this, doGui]()
 							   {
 								   isImGuiEnabled = doGui;
-								   imCtx = ImGui::CreateContext();
-								   ImGui::SetCurrentContext(imCtx);
-								   if (getGui().engine == NULL) getGui().setup();
+								   gui = std::make_shared<ofxImGui::Gui>();
+								   gui->setup();
+								   imCtx = ImGui::GetCurrentContext();
 							   });
 	}
 	else
@@ -387,7 +385,9 @@ void MTWindow::setImGuiEnabled(bool doGui)
 		enqueueUpdateOperation([this, doGui]()
 							   {
 								   isImGuiEnabled = doGui;
-								   ImGui::DestroyContext(imCtx);
+								   ImGui::SetCurrentContext(imCtx);
+								   gui.reset();
+								   imCtx = nullptr;
 							   });
 	}
 }

@@ -167,7 +167,16 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 * @param doGui
 	 */
 	void setImGuiEnabled(bool doGui);
-	ofxImGui::Gui & getGui();
+	shared_ptr<ofxImGui::Gui> getGui();
+
+	/**
+	 * @brief Sets the Window's ImGuiContext as the current global ImGuiContext.
+	 */
+	void bindImGuiContext()
+	{
+		ImGui::SetCurrentContext(imCtx);
+	}
+
 protected:
 	/**
 	 * @brief Recursively calls drawGui() on this view and all of its subviews
@@ -176,7 +185,7 @@ protected:
 	void drawImGuiForView(std::shared_ptr<MTView> view);
 	bool isImGuiEnabled = false;
 	ImGuiContext* imCtx;
-	ofxImGui::Gui gui;
+	std::shared_ptr<ofxImGui::Gui> gui;
 
 #pragma mark Internals
 
