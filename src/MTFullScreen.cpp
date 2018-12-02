@@ -184,12 +184,14 @@ void MTFullScreen::addFullScreenDisplay()
 	fsDisplay->perspectiveQuad = std::make_shared<ofPath>();
 	fsDisplay->perspectiveQuad->rectangle(*fsDisplay->outputArea.get());
 	addFullScreenDisplay(fsDisplay);
+	displayCountChanged.notify();
 }
 
 void MTFullScreen::removeFullScreenDisplay()
 {
 	displayOutputs.pop_back();
 	updateFullscreenDisplays();
+	displayCountChanged.notify();
 }
 
 std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator MTFullScreen::begin()

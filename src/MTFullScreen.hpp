@@ -39,8 +39,7 @@ namespace MTFullScreen
 	std::vector<std::shared_ptr<MTFullScreenDisplayInfo> >::iterator end();
 	int getDisplayCount();
 	std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> getDisplayOutputs();
-
-
+	static ofEvent<void> displayCountChanged;
 }
 
 #include "ofMesh.h"
