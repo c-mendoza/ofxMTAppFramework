@@ -62,6 +62,8 @@ void MTViewModePathEditor::setup()
 	ofLogVerbose("MTViewModePathEditor::setup") << getName();
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
+	uiPaths.clear();
+	
 
 	if (path == nullptr)
 	{
