@@ -28,8 +28,6 @@ public:
 	 * @brief Serializes the ofParameterGroup of the Model. Override this method
 	 * if you need to serialize data that the ofParameter system can't handle on
 	 * its own.
-	 * This method is called by the Framework and you should never have to call
-	 * it directly.
 	 * @param serializer. This is provided by the Framework.
 	 */
 	virtual void serialize(ofXml& serializer);
@@ -38,8 +36,8 @@ public:
 	 * @brief Deserializes the ofParameterGroup of the Model. Override this method
 	 * if you need to deserialize data that the ofParameter system can't handle on
 	 * its own.
-	 * This method is called by the Framework and you should never have to call
-	 * it directly.
+	 * If you are using nested ofParameterGroups you'll need to use this method.
+	 * ofDeserialize does not handle nested groups.
 	 * @param serializer. This is provided by the Framework.
 	 */
 	virtual void deserialize(ofXml& serializer);

@@ -28,6 +28,7 @@ MTWindow::MTWindow(std::string name)
 
 MTWindow::~MTWindow()
 {
+	ofLogVerbose("MTWindow") << name.get() << " destroyed";
 	// This ensures that we destroy the right context:
 	bindImGuiContext();
 	// This will destroy the gui:
@@ -133,15 +134,9 @@ void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
 	view->drawGui();
 }
 
-void MTWindow::setWindowShouldClose()
-{
-	ofAppGLFWWindow::setWindowShouldClose();
-	MTApp::sharedApp->windowClosing(shared_from_this());\
-}
-
 void MTWindow::exit(ofEventArgs& args)
 {
-
+	MTApp::sharedApp->closeWindow(shared_from_this());
 }
 
 void MTWindow::windowResized(ofResizeEventArgs& resize)

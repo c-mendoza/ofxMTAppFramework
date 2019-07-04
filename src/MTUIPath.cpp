@@ -138,7 +138,6 @@ void MTUIPath::setClosed(bool closed)
 	//I think that this updates the path:
 	path->getCommands();
 	updatePath();
-//	setup(path, view, (unsigned int) pathOptionFlags.to_ulong()); // Necessary??? TODO: Check
 }
 
 ///The actual drawing method

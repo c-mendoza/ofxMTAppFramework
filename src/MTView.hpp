@@ -459,6 +459,14 @@ public:
 
 	virtual void appModeChanged(MTAppModeChangeArgs &modeChange) {}
 
+//#pragma mark FULL SCREEN
+//private:
+//	bool isFullScreenActive = false;
+//
+//public:
+//	bool isFullScreen() { return isFullScreenActive; }
+//	void setFullScreen(bool fs);
+
 
 #pragma mark INTERNAL EVENT LISTENERS
 	//------------------------------------------------------//

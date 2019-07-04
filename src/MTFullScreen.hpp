@@ -13,7 +13,7 @@ struct MTFullScreenDisplayInfo
 	/**
 	 * @brief The physical display that will be used.
 	 */
-	MTDisplay display;
+	std::shared_ptr<MTDisplay> display;
 	/**
 	 * @brief The rectangular area of the overall output that will be shown by this display.
 	 */
@@ -32,6 +32,7 @@ namespace MTFullScreen
 	void updateFullscreenDisplays();
 	void toggleFullScreen();
 	void setFullScreen(bool fs);
+	bool isFullScreen();
 	void addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo> fsDisplay);
 	void addFullScreenDisplay();
 	void removeFullScreenDisplay();
@@ -40,6 +41,7 @@ namespace MTFullScreen
 	int getDisplayCount();
 	std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> getDisplayOutputs();
 	static ofEvent<void> displayCountChanged;
+	void updatePerspectiveTransforms();
 }
 
 #include "ofMesh.h"
@@ -63,6 +65,7 @@ public:
 	void setup() override;
 	void update() override;
 	void draw() override;
+	void updatePerspectiveTransform();
 };
 
 /**

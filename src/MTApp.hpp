@@ -21,11 +21,33 @@ typedef std::string MTAppModeName;
 
 class MTAppModeChangeArgs;
 
-struct MTDisplay
+class MTDisplay
 {
+private:
 	std::string name;
 	ofRectangle frame;
 	int id;
+public:
+	MTDisplay(std::string name, ofRectangle frame, int id) {
+		this->name = name;
+		this->frame = frame;
+		this->id = id;
+	}
+
+	const string& getName() const
+	{
+		return name;
+	}
+
+	const ofRectangle& getFrame() const
+	{
+		return frame;
+	}
+
+	int getId() const
+	{
+		return id;
+	}
 };
 
 //template<typename T>
@@ -163,18 +185,9 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	std::shared_ptr<MTWindow> createWindow(std::string windowName, ofGLFWWindowSettings &settings);
 #endif
 
-//	/**
-//	 * @brief Convenience method that creates a window and adds the passed view
-//	 * to the contentView of the created window.
-//	 * @param view
-//	 * @param windowName
-//	 * @param settings The ofWindowSettings for the window.
-//	 * @return A shared_ptr to the MTWindow
-//	 */
-//	std::shared_ptr<MTWindow> createWindowForView(std::shared_ptr<MTView> view,
-//												std::string windowName,
-//												ofWindowSettings& settings);
-	void removeWindow(std::shared_ptr<MTWindow> window);
+
+	void closeWindow(std::shared_ptr<MTWindow> window);
+//	void removeWindow(std::shared_ptr<MTWindow> window);
 //	/// Returns the mouse x-position in local coordinates of the current window
 //	int getLocalMouseX();
 //	/// Returns the mouse y-position in local coordinates of the current window
@@ -356,10 +369,10 @@ public:
 
 	/**
 	 * @brief Gets the currently connected displays.
-	 * @return A std::vector of MTDisplay structs.
+	 * @return A std::vector of shared_ptr<MTDisplay>.
 	 * @sa MTDisplay
 	 */
-	static const std::vector<MTDisplay> &getDisplays()
+	static const std::vector<std::shared_ptr<MTDisplay>> &getDisplays()
 	{ return displays; }
 
 	/**
@@ -370,7 +383,7 @@ public:
 	static void setMonitorCb(GLFWmonitor *monitor, int connected);
 
 protected:
-	static std::vector<MTDisplay> displays;
+	static std::vector<std::shared_ptr<MTDisplay>> displays;
 
 #pragma mark INTERNALS
 

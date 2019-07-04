@@ -62,7 +62,6 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	// Ideally we would override close and call the superclass's close() in our override,
 	// but ofGLFWWindow's close() method is private.
 //	virtual void close();
-	void setWindowShouldClose() override;
 
 	void windowResized(ofResizeEventArgs& resize);
 	void keyPressed(ofKeyEventArgs& key);
@@ -144,7 +143,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 * getWindowSize().
 	 * @return The width of the MTView that is currently focused.
 	 */
-	int getWidth();
+	int getWidth() override;
 
 	/**
 	 * @brief getHeight overrides ofBaseWindow::getHeight() and returns the height
@@ -154,7 +153,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	 * getWindowSize().
 	 * @return The height of the MTView that is currently focused.
 	 */
-	int getHeight();
+	int getHeight() override;
 
 
 #pragma mark ImGui

@@ -107,7 +107,9 @@ public:
 class MTViewModePathEditor : public MTViewMode {
   public:
 	MTViewModePathEditor(PathEditorSettings& settings);
+protected:
 	virtual void setup();
+public:
 	virtual void exit();
 	virtual void draw();
 	virtual void keyReleased(int key);
@@ -174,7 +176,7 @@ class MTViewModePathEditor : public MTViewMode {
 
   private:
 	PathEditorEventArgs pEventArgs;
-    std::shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p, ofRectangle validRegion = ofRectangle());
+    std::shared_ptr<MTUIPath> createUIPath(std::shared_ptr<ofPath> p);
 	bool removeUIPath(std::shared_ptr<MTUIPath> p);
     std::vector<std::shared_ptr<MTUIPath>> uiPaths;
     std::vector<std::shared_ptr<ofPath>> pathCollection;
