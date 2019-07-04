@@ -27,7 +27,9 @@ public:
     std::string getName() { return name; }
     void setName(std::string name) { this->name = name; }
 
+protected:
     virtual void setup() = 0;
+public:
     virtual void exit(){};
     virtual void update(){};
     virtual void draw(){};
@@ -47,6 +49,8 @@ public:
 protected:
     std::shared_ptr<MTView> view = nullptr;
     std::string name;
+
+    friend class MTView;
 };
 
 class MTViewModeVoid : public MTViewMode {
@@ -55,8 +59,10 @@ public:
         : MTViewMode("View Mode Void", view)
     {
     }
-    virtual void setup(){}
+
     virtual void exit() {}
+protected:
+    virtual void setup(){}
 };
 
 #endif /* MTViewMode_hpp */

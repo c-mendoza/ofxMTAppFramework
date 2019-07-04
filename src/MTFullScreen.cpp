@@ -10,7 +10,7 @@
 using namespace MTFullScreen;
 
 std::vector<std::shared_ptr<MTWindow>> fullScreenWindows;
-bool isFullScreen;
+bool isFullScreenActive = false;
 std::vector<std::shared_ptr<MTFullScreenDisplayInfo>> displayOutputs;
 std::shared_ptr<MTWindow> windowWithOutput;
 float outputWidth;
@@ -25,7 +25,7 @@ namespace priv
 }
 
 void MTFullScreen::setup(std::shared_ptr<MTWindow> _windowWithOutput,
-						 ofTexture& _outputTexture)
+						 ofTexture &_outputTexture)
 {
 	windowWithOutput = _windowWithOutput;
 	outputTexture = _outputTexture;
@@ -36,7 +36,7 @@ void MTFullScreen::setup(std::shared_ptr<MTWindow> _windowWithOutput,
 void MTFullScreen::updateFullscreenDisplays()
 {
 	int count = 0;
-	float oneWidth = outputWidth / (float) displayOutputs.size();
+	float oneWidth = outputWidth/(float) displayOutputs.size();
 	for (auto fsDisplay : displayOutputs)
 	{
 		ofRectangle displayArea;
@@ -47,7 +47,7 @@ void MTFullScreen::updateFullscreenDisplays()
 		}
 		else
 		{
-			fsDisplay->outputArea->setPosition(oneWidth * count, 0);
+			fsDisplay->outputArea->setPosition(oneWidth*count, 0);
 		}
 		fsDisplay->outputArea->setSize(oneWidth,
 									   outputHeight);
@@ -61,14 +61,30 @@ void MTFullScreen::updateFullscreenDisplays()
 	}
 }
 
+void MTFullScreen::updatePerspectiveTransforms()
+{
+	for (auto win : fullScreenWindows)
+	{
+		auto view = win->contentView->getSubviews()[0];
+		auto fsView = std::dynamic_pointer_cast<MTFullScreenView>(view);
+		fsView->updatePerspectiveTransform();
+	}
+}
+
 void MTFullScreen::toggleFullScreen()
 {
-	setFullScreen(!isFullScreen);
+	setFullScreen(!isFullScreenActive);
 }
 
 void MTFullScreen::setFullScreen(bool fs)
 {
-	isFullScreen = fs;
+	// Return immediately if the state is not changed:
+	if (fs == isFullScreenActive)
+	{
+		return;
+	}
+
+	isFullScreenActive = fs;
 	if (fs)
 	{
 		priv::enterFullScreen();
@@ -79,21 +95,32 @@ void MTFullScreen::setFullScreen(bool fs)
 	}
 }
 
+bool MTFullScreen::isFullScreen()
+{
+	return isFullScreenActive;
+}
+
 void priv::enterFullScreen()
 {
 	int count = 0;
 	glm::vec3 lastPosition;
 	glm::vec2 lastSize;
-	float oneWidth = outputWidth / (float) displayOutputs.size();
+	float oneWidth = outputWidth/(float) displayOutputs.size();
 	for (auto fsDisplay : displayOutputs)
 	{
 		ofGLFWWindowSettings glfwWindowSettings;
 		glfwWindowSettings.shareContextWith = windowWithOutput;
-		glfwWindowSettings.monitor = fsDisplay->display.id;
+		glfwWindowSettings.monitor = fsDisplay->display->getId();
 		glfwWindowSettings.windowMode = OF_FULLSCREEN;
 		glfwWindowSettings.visible = true;
-		auto frame = fsDisplay->display.frame;
+		auto frame = fsDisplay->display->getFrame();
 		glfwWindowSettings.setSize(frame.width, frame.height);
+
+		// TODO:
+		// fsDisplay->display.frame.position is not reporting the actual position of the display
+
+
+		glfwWindowSettings.setPosition(glm::vec2(frame.position));
 		ofRectangle displayArea;
 
 		if (count == 0)
@@ -102,15 +129,16 @@ void priv::enterFullScreen()
 		}
 		else
 		{
-			fsDisplay->outputArea->setPosition(oneWidth * count, 0);
+			fsDisplay->outputArea->setPosition(oneWidth*count, 0);
 		}
 		fsDisplay->outputArea->setSize(oneWidth,
 									   outputHeight);
 
-		auto window = MTApp::sharedApp->createWindow("FS " + ofToString(count), glfwWindowSettings);
-		auto fsView = std::make_shared<MTFullScreenView>("FS View " + ofToString(count),
+		auto window = MTApp::sharedApp->createWindow("FS "+ofToString(count), glfwWindowSettings);
+		auto fsView = std::make_shared<MTFullScreenView>("FS View "+ofToString(count),
 														 fsDisplay,
 														 outputTexture);
+		window->setWindowPosition(frame.position.x, frame.position.y);
 
 		window->contentView->addSubview(fsView);
 		fsView->setSize(window->contentView->getFrameSize());
@@ -128,7 +156,7 @@ void priv::exitFullScreen()
 	for (const auto &window : fullScreenWindows)
 	{
 		window->setFullscreen(false);
-		window->setWindowShouldClose();
+		MTApp::sharedApp->closeWindow(window);
 	}
 	windowWithOutput->setWindowPosition(windowPos.x, windowPos.y);
 	glfwShowWindow(windowWithOutput->getGLFWWindow());
@@ -140,14 +168,14 @@ void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo>
 	if (fsDisplay->outputArea == nullptr)
 	{
 		float xStart = 0;
-		for (auto& fsd : displayOutputs)
+		for (auto &fsd : displayOutputs)
 		{
 			xStart += fsd->outputArea->getMaxX();
 		}
 
 		fsDisplay->outputArea = std::make_shared<ofRectangle>(xStart, 0,
-															  fsDisplay->display.frame.getWidth(),
-															  fsDisplay->display.frame.getHeight());
+															  fsDisplay->display->getFrame().getWidth(),
+															  fsDisplay->display->getFrame().getHeight());
 	}
 
 	if (fsDisplay->perspectiveQuad == nullptr)
@@ -173,14 +201,14 @@ void MTFullScreen::addFullScreenDisplay()
 	fsDisplay->display = MTApp::getDisplays().front();
 
 	float xStart = 0;
-	for (auto& fsd : displayOutputs)
+	for (auto &fsd : displayOutputs)
 	{
 		xStart += fsd->outputArea->getMaxX();
 	}
 
 	fsDisplay->outputArea = std::make_shared<ofRectangle>(xStart, 0,
-														  fsDisplay->display.frame.getWidth(),
-														  fsDisplay->display.frame.getHeight());
+														  fsDisplay->display->getFrame().getWidth(),
+														  fsDisplay->display->getFrame().getHeight());
 	fsDisplay->perspectiveQuad = std::make_shared<ofPath>();
 	fsDisplay->perspectiveQuad->rectangle(*fsDisplay->outputArea.get());
 	addFullScreenDisplay(fsDisplay);
@@ -218,7 +246,7 @@ int MTFullScreen::getDisplayCount()
 
 MTFullScreenView::MTFullScreenView(std::string name,
 								   std::shared_ptr<MTFullScreenDisplayInfo> fullScreenDisplay,
-								   ofTexture& outputTexture) : MTView(name)
+								   ofTexture &outputTexture) : MTView(name)
 {
 	this->fullScreenDisplay = fullScreenDisplay;
 	this->outputTexture = outputTexture;
@@ -233,7 +261,10 @@ MTFullScreenView::MTFullScreenView(std::string name,
 													fullScreenDisplay->outputArea->getHeight(),
 													true, OF_RECTMODE_CORNER);
 	if (!wasHackEnabled) ofDisableTextureEdgeHack();
+	resizePolicy = MTViewResizePolicy::ResizePolicySuperview;
 	perspectiveMatrix = glm::mat4();
+	backgroundColor = ofColor(255, 0,0);
+	setDrawBackground(true);
 }
 
 void MTFullScreenView::setup()
@@ -248,68 +279,72 @@ void MTFullScreenView::update()
 
 void MTFullScreenView::draw()
 {
-	ofClear(0, 0, 0);
+//	ofClear(0, 0, 0);
 	ofSetColor(ofColor::white);
 	ofFill();
 
-//	if (perspectiveQuad->hasChanged())
-//	{
-//		perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
-//																	perspectiveQuad->getOutline()[0].getVertices());
-//	}
-//	ofPushMatrix();
-//	ofMultMatrix(perspectiveMatrix);
+	ofPushMatrix();
+	ofMultMatrix(perspectiveMatrix);
 	outputTexture.bind();
 	outputMesh.draw();
 	ofPopMatrix();
 }
 
+void MTFullScreenView::updatePerspectiveTransform()
+{
+	enqueueUpdateOperation([this]()
+						   {
+							   perspectiveMatrix = MTHomographyHelper::calculateHomography(getFrame(),
+																						   perspectiveQuad->getOutline()[0].getVertices());
+						   }
+	);
+}
 
-void MTHomographyHelper::gaussian_elimination(float* input, int n)
+void MTHomographyHelper::gaussian_elimination(float *input, int n)
 {
 	// ported to c from pseudocode in
 	// http://en.wikipedia.org/wiki/Gaussian_elimination
 
-	float* A = input;
+	float *A = input;
 	int i = 0;
 	int j = 0;
-	int m = n - 1;
+	int m = n-1;
 	while (i < m && j < n)
 	{
 		// Find pivot in column j, starting in row i:
 		int maxi = i;
-		for (int k = i + 1; k < m; k++)
+		for (int k = i+1; k < m; k++)
 		{
-			if (fabs(A[k * n + j]) > fabs(A[maxi * n + j]))
+			if (fabs(A[k*n+j]) > fabs(A[maxi*n+j]))
 			{
 				maxi = k;
 			}
 		}
-		if (A[maxi * n + j] != 0)
+		if (A[maxi*n+j] != 0)
 		{
 			//swap rows i and maxi, but do not change the value of i
 			if (i != maxi)
 				for (int k = 0; k < n; k++)
 				{
-					float aux = A[i * n + k];
-					A[i * n + k] = A[maxi * n + k];
-					A[maxi * n + k] = aux;
+					float aux = A[i*n+k];
+					A[i*n+k] = A[maxi*n+k];
+					A[maxi*n+k] = aux;
 				}
 			//Now A[i,j] will contain the old value of A[maxi,j].
 			//divide each entry in row i by A[i,j]
-			float A_ij = A[i * n + j];
+			float A_ij = A[i*n+j];
 			for (int k = 0; k < n; k++)
 			{
-				A[i * n + k] /= A_ij;
+				A[i*n+k] /= A_ij;
 			}
 			//Now A[i,j] will have the value 1.
-			for (int u = i + 1; u < m; u++)
+			for (int u = i+1; u < m; u++)
 			{
 				//subtract A[u,j] * row i from row u
-				float A_uj = A[u * n + j];
+				float A_uj = A[u*n+j];
 				for (int k = 0; k < n; k++)
 				{
-					A[u * n + k] -= A_uj * A[i * n + k];
+					A[u*n+k] -= A_uj*A[i*n+k];
 				}
 				//Now A[u,j] will be 0, since A[u,j] - A[i,j] * A[u,j] = A[u,j] - 1 * A[u,j] = 0.
 			}
@@ -320,18 +355,18 @@ void MTHomographyHelper::gaussian_elimination(float* input, int n)
 	}
 
 	//back substitution
-	for (int i = m - 2; i >= 0; i--)
+	for (int i = m-2; i >= 0; i--)
 	{
-		for (int j = i + 1; j < n - 1; j++)
+		for (int j = i+1; j < n-1; j++)
 		{
-			A[i * n + m] -= A[i * n + j] * A[j * n + m];
+			A[i*n+m] -= A[i*n+j]*A[j*n+m];
 			//A[i*n+j]=0;
 		}
 	}
 }
 
-
-glm::mat4 MTHomographyHelper::findHomography(float src[4][2], float dst[4][2]){
+glm::mat4 MTHomographyHelper::findHomography(float src[4][2], float dst[4][2])
+{
 
 	// create the equation system to be solved
 	//
@@ -351,40 +386,40 @@ glm::mat4 MTHomographyHelper::findHomography(float src[4][2], float dst[4][2]){
 	// after ordering the terms it gives the following matrix
 	// that can be solved with gaussian elimination:
 
-	float P[8][9]={
-			{-src[0][0], -src[0][1], -1,   0,   0,  0, src[0][0]*dst[0][0], src[0][1]*dst[0][0], -dst[0][0] }, // h11
-			{  0,   0,  0, -src[0][0], -src[0][1], -1, src[0][0]*dst[0][1], src[0][1]*dst[0][1], -dst[0][1] }, // h12
+	float P[8][9] = {
+			{-src[0][0], -src[0][1], -1, 0,          0,          0,  src[0][0]*dst[0][0], src[0][1]*dst[0][0], -dst[0][0]}, // h11
+			{0,          0,          0,  -src[0][0], -src[0][1], -1, src[0][0]*dst[0][1], src[0][1]*dst[0][1], -dst[0][1]}, // h12
 
-			{-src[1][0], -src[1][1], -1,   0,   0,  0, src[1][0]*dst[1][0], src[1][1]*dst[1][0], -dst[1][0] }, // h13
-			{  0,   0,  0, -src[1][0], -src[1][1], -1, src[1][0]*dst[1][1], src[1][1]*dst[1][1], -dst[1][1] }, // h21
+			{-src[1][0], -src[1][1], -1, 0,          0,          0,  src[1][0]*dst[1][0], src[1][1]*dst[1][0], -dst[1][0]}, // h13
+			{0,          0,          0,  -src[1][0], -src[1][1], -1, src[1][0]*dst[1][1], src[1][1]*dst[1][1], -dst[1][1]}, // h21
 
-			{-src[2][0], -src[2][1], -1,   0,   0,  0, src[2][0]*dst[2][0], src[2][1]*dst[2][0], -dst[2][0] }, // h22
-			{  0,   0,  0, -src[2][0], -src[2][1], -1, src[2][0]*dst[2][1], src[2][1]*dst[2][1], -dst[2][1] }, // h23
+			{-src[2][0], -src[2][1], -1, 0,          0,          0,  src[2][0]*dst[2][0], src[2][1]*dst[2][0], -dst[2][0]}, // h22
+			{0,          0,          0,  -src[2][0], -src[2][1], -1, src[2][0]*dst[2][1], src[2][1]*dst[2][1], -dst[2][1]}, // h23
 
-			{-src[3][0], -src[3][1], -1,   0,   0,  0, src[3][0]*dst[3][0], src[3][1]*dst[3][0], -dst[3][0] }, // h31
-			{  0,   0,  0, -src[3][0], -src[3][1], -1, src[3][0]*dst[3][1], src[3][1]*dst[3][1], -dst[3][1] }, // h32
+			{-src[3][0], -src[3][1], -1, 0,          0,          0,  src[3][0]*dst[3][0], src[3][1]*dst[3][0], -dst[3][0]}, // h31
+			{0,          0,          0,  -src[3][0], -src[3][1], -1, src[3][0]*dst[3][1], src[3][1]*dst[3][1], -dst[3][1]}, // h32
 	};
 
-	gaussian_elimination(&P[0][0],9);
+	gaussian_elimination(&P[0][0], 9);
 
 	// gaussian elimination gives the results of the equation system
 	// in the last column of the original matrix.
 	// opengl needs the transposed 4x4 matrix:
-	float aux_H[]={ P[0][8],P[3][8],0,P[6][8], // h11  h21 0 h31
-					P[1][8],P[4][8],0,P[7][8], // h12  h22 0 h32
-					0      ,      0,0,0,       // 0    0   0 0
-					P[2][8],P[5][8],0,1};      // h13  h23 0 h33
+	float aux_H[] = {P[0][8], P[3][8], 0, P[6][8], // h11  h21 0 h31
+					 P[1][8], P[4][8], 0, P[7][8], // h12  h22 0 h32
+					 0, 0, 0, 0,       // 0    0   0 0
+					 P[2][8], P[5][8], 0, 1};      // h13  h23 0 h33
 
-	glm::mat4 homography(P[0][8],P[3][8],0,P[6][8], // h11  h21 0 h31
-						 P[1][8],P[4][8],0,P[7][8], // h12  h22 0 h32
-						 0      ,      0,0,0,       // 0    0   0 0
-						 P[2][8],P[5][8],0,1);      // h13  h23 0 h33)
+	glm::mat4 homography(P[0][8], P[3][8], 0, P[6][8], // h11  h21 0 h31
+						 P[1][8], P[4][8], 0, P[7][8], // h12  h22 0 h32
+						 0, 0, 0, 0,       // 0    0   0 0
+						 P[2][8], P[5][8], 0, 1);      // h13  h23 0 h33)
 //	for(int i=0;i<16;i++) homography[i] = aux_H[i];
 	return homography;
 }
 
-
-glm::mat4 MTHomographyHelper::calculateHomography(ofRectangle source, std::vector<glm::vec3> destination){
+glm::mat4 MTHomographyHelper::calculateHomography(ofRectangle source, std::vector<glm::vec3> destination)
+{
 	float src[4][2];
 	float dst[4][2];
 	assert(destination.size() == 4);
@@ -398,14 +433,14 @@ glm::mat4 MTHomographyHelper::calculateHomography(ofRectangle source, std::vecto
 	src[3][0] = 0;
 	src[3][1] = source.height;
 
-	src[0][0] = 0;
-	src[0][1] = 0;
-	src[1][0] = 1920;
-	src[1][1] = 0;
-	src[2][0] = 1920;
-	src[2][1] = 1200;
-	src[3][0] = 0;
-	src[3][1] = 1200;
+//	src[0][0] = 0;
+//	src[0][1] = 0;
+//	src[1][0] = 1920;
+//	src[1][1] = 0;
+//	src[2][0] = 1920;
+//	src[2][1] = 1200;
+//	src[3][0] = 0;
+//	src[3][1] = 1200;
 
 	glm::vec3 p0 = destination[0];
 	glm::vec3 p1 = destination[1];
@@ -423,6 +458,5 @@ glm::mat4 MTHomographyHelper::calculateHomography(ofRectangle source, std::vecto
 
 	return MTHomographyHelper::findHomography(src, dst);
 }
-
 
 #endif

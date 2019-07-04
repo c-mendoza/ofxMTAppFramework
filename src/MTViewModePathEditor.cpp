@@ -42,15 +42,30 @@ MTViewModePathEditor::MTViewModePathEditor(PathEditorSettings& settings)
 		}
 		else //TODO: Valid Regions
 		{
-			ofLogWarning("MTViewModePathEditor") << "validRegions not implemented yet!! Turning off LimitToRegion";
-			options.reset(PathEditorSettings::LimitToRegion);
-//			if (validRegions->size() != pathCollection.size())
-//			{
-//				ofLogError("MTViewModePathEditor")
-//						<< "Settings specify LimitToRegion using a vector of paths "
-//						<< "but no equivalent vector of regions was passed.\n "
-//						<< "We should probably kill this here...";
-//			}
+			bool error = false;
+			if (validRegionsMap.size() == 0)
+			{
+				if (validRegion.getWidth() == 0)
+				{
+					error = true;
+					ofLogError("MTViewModePathEditor")
+							<< "Settings specify LimitToRegion using a vector of paths "
+							<< "but no valid region was supplied.\n ";
+				}
+			}
+			else if (validRegionsMap.size() != pathCollection.size())
+			{
+				error = true;
+				ofLogError("MTViewModePathEditor")
+						<< "Settings specify LimitToRegion using a vector of paths "
+						<< "but no equivalent vector of regions was passed.\n ";
+			}
+
+			if (error)
+			{
+				ofLogError("MTViewModePathEditor") << "Disabling LimitToRegion";
+				options.reset(PathEditorSettings::LimitToRegion);
+			}
 		}
 	}
 
@@ -84,7 +99,7 @@ void MTViewModePathEditor::setup()
 }
 
 std::shared_ptr<MTUIPath> MTViewModePathEditor::createUIPath(
-		std::shared_ptr<ofPath> p, ofRectangle validRegion)
+		std::shared_ptr<ofPath> p)
 {
 	// There has to be a less stupid way of doing this...
 	// I feel that OR'd flags would be simpler....
