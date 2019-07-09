@@ -118,7 +118,7 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 		{
 			open();
 		}
-		else if (key.key == 's')
+		else if (key.codepoint == 's')
 		{
 			if (key.hasModifier(OF_KEY_SHIFT))
 			{
