@@ -2,7 +2,11 @@
 
 //#include <ofMain.h>
 #include "ofAppRunner.h"
+#ifndef TARGET_OPENGLES
 #include "ofAppGLFWWindow.h"
+#else
+#include "ofAppEGLWindow.h"
+#endif
 #include "ofWindowSettings.h"
 #include "ofSystemUtils.h"
 #include "ofPath.h"
@@ -10,9 +14,7 @@
 #include "MTWindow.hpp"
 
 #ifndef TARGET_RASPBERRY_PI
-
 #include "MTOffscreenWindow.hpp"
-
 #endif
 
 MTApp* MTApp::sharedApp = 0;
@@ -38,7 +40,9 @@ MTApp::MTApp()
 		fileExtension = "";
 
 		ofInit();
+#ifndef TARGET_OPENGLES
 		glfwInit();
+#endif
 		MTApp::updateDisplays();
 //		ofSetLogLevel(OF_LOG_NOTICE);
 
@@ -91,30 +95,24 @@ void MTApp::keyPressed(ofKeyEventArgs& key)
 
 void MTApp::keyReleased(ofKeyEventArgs& key)
 {
-//	if (ofGetKeyPressed(OF_KEY_COMMAND) || ofGetKeyPressed(OF_KEY_CONTROL))
-//	{
-//		auto k = key.key;
-//		int bla = 'o';
-//		if (k == 15)
-//		{
-//			open();
-//		}
-//		else if (k == 19)
-//		{
-//			if (ofGetKeyPressed(OF_KEY_SHIFT))
-//			{
-//				saveAs();
-//			}
-//			else
-//			{
-//				save();
-//			}
-//		}
-//	}
-//
-//	appKeyReleased(key);
+	int commandModifier;
+	switch (ofGetTargetPlatform())
+	{
+		case OF_TARGET_LINUX:
+		case OF_TARGET_LINUX64:
+		case OF_TARGET_WINVS:
+		case OF_TARGET_MINGW:
+			commandModifier = OF_KEY_CONTROL;
+			break;
+		case OF_TARGET_OSX:
+			commandModifier = OF_KEY_COMMAND;
+			break;
+		default:
+			ofLogError("MTApp", "Target platform is not supported");
+			commandModifier = OF_KEY_CONTROL;
+	}
 
-	if (key.hasModifier(OF_KEY_COMMAND))
+	if (key.hasModifier(commandModifier))
 	{
 		if (key.codepoint == 'o')
 		{
@@ -152,7 +150,7 @@ void MTApp::createAppViews()
 #ifndef TARGET_RASPBERRY_PI
 	ofGLFWWindowSettings windowSettings;
 #else
-	ofGLESWindowSettings windowSettings;
+	ofAppEGLWindowSettings windowSettings;
 #endif
 	windowSettings.setSize(1280, 800);
 	mainWindow = createWindow("Main Window", windowSettings);
@@ -238,6 +236,16 @@ MTAppModeName MTApp::getAppMode()
 std::shared_ptr<MTOffscreenWindow>
 MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle)
 {
+	if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
+			ofGetTargetPlatform() == OF_TARGET_IOS ||
+			ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
+			ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
+			ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
+	{
+		ofLogError("MTApp") << "createOffscreenWindow() is not compatible with the current platform";
+		return nullptr;
+	}
+
 	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName, useTextureRectangle);
 //	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
 	offscreenWindow->setup(settings);
@@ -268,9 +276,9 @@ MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& setti
 
 #endif
 
-#ifdef TARGET_OPENGLES
+#ifdef TARGET_RASPBERRY_PI
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
-											  ofGLESWindowSettings& settings)
+											  ofAppEGLWindowSettings& settings)
 {
 	auto window = std::make_shared<MTWindow>(windowName);
 	ofGetMainLoop()->addWindow(window);
@@ -323,22 +331,6 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWind
 
 	addAllEvents(window.get());
 
-	// Who is adding these listeners?? It doesn't seem to be necessary
-	// to add them here for some reason...
-
-	// Add the "global" keyboard event listener:
-//	ofAddListener(window->events().keyPressed,
-//				  this,
-//				  &MTApp::keyPressed,
-//				  OF_EVENT_ORDER_BEFORE_APP);
-//	ofAddListener(window->events().keyReleased,
-//				  this,
-//				  &MTApp::keyReleased,
-//				  OF_EVENT_ORDER_BEFORE_APP);
-	//    window->events().
-
-	// Restore the window position and shape, but i
-//	if (windowName.find_first_of('FS') == std::string::npos)
 	auto wp = wpMap.find(windowName);
 	if (wp != wpMap.end())
 	{
@@ -381,8 +373,12 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWind
 
 void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 {
-	auto offscreenWindow = std::dynamic_pointer_cast<MTOffscreenWindow>(window);
 
+#ifndef TARGET_RASPBERRY_PI
+	auto offscreenWindow = std::dynamic_pointer_cast<MTOffscreenWindow>(window);
+#else
+	std::shared_ptr<MTWindow> offscreenWindow = nullptr;
+#endif
 	// 	Update the Window Parameters Map if the window is not an offscreen
 	// 	window
 	if (!offscreenWindow)
@@ -475,6 +471,16 @@ std::weak_ptr<ofAppBaseWindow> MTApp::getMainWindow()
 
 void MTApp::open()
 {
+	if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
+		ofGetTargetPlatform() == OF_TARGET_IOS ||
+		ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
+		ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
+		ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
+	{
+		ofLogError("MTApp") << "open() is not compatible with the current platform";
+		return;
+	}
+
 	ofFileDialogResult result = ofSystemLoadDialog();
 	if (result.bSuccess)
 	{
@@ -671,6 +677,8 @@ void MTApp::createAppPreferencesFilePath()
 	{
 		case OF_TARGET_LINUX:
 		case OF_TARGET_LINUX64:
+		case OF_TARGET_LINUXARMV7L:
+		case OF_TARGET_LINUXARMV6L:
 			prefix = home + "/.local/share/";
 			break;
 		case OF_TARGET_OSX:
@@ -793,8 +801,10 @@ std::string MTApp::pathToString(ofPath& path)
 	return out;
 }
 
+
 void MTApp::updateDisplays()
 {
+#ifndef TARGET_RASPBERRY_PI
 	int num;
 	auto glfwMonitors = glfwGetMonitors(&num);
 	MTApp::displays.clear();
@@ -810,11 +820,15 @@ void MTApp::updateDisplays()
 		auto display = std::make_shared<MTDisplay>(name, frame, i);
 		MTApp::displays.push_back(display);
 	}
+#endif
 }
 
+#ifndef TARGET_RASPBERRY_PI
 void MTApp::setMonitorCb(GLFWmonitor* monitor, int connected)
 {
 	MTApp::updateDisplays();
 	ofEventArgs args;
 	MTApp::sharedApp->displaysChangedEvent.notify(args);
 }
+
+#endif

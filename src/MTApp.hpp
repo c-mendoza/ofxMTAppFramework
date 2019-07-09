@@ -16,6 +16,7 @@ class MTViewMode;
 class ofAppBaseWindow;
 class ofWindowSettings;
 class MTOffscreenWindow;
+class ofAppEGLWindowSettings;
 
 typedef std::string MTAppModeName;
 
@@ -173,7 +174,7 @@ public:
 	 * @return A shared_ptr to the MTWindow
 	 */
 std::shared_ptr<MTWindow> createWindow(std::string windowName,
-									   ofGLESWindowSettings& settings);
+									   ofAppEGLWindowSettings& settings);
 #else
 
 	/**
@@ -380,7 +381,10 @@ public:
 	 * You should not have to call this function.
 	 */
 	static void updateDisplays();
+
+#ifndef TARGET_OPENGLES
 	static void setMonitorCb(GLFWmonitor *monitor, int connected);
+#endif
 
 protected:
 	static std::vector<std::shared_ptr<MTDisplay>> displays;
