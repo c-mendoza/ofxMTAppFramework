@@ -756,14 +756,23 @@ std::shared_ptr<MTView> MTView::hitTest(glm::vec2 &windowCoord)
 {
 	if (subviews.size() > 0)
 	{
-		for (auto it = subviews.end()-1; it >= subviews.begin(); --it)
+		for (int i = subviews.size() - 1; i >= 0; i--)
 		{
-			auto sv = it->get();
+			auto sv = subviews[i];
 			if (sv->screenFrame.inside(windowCoord))
 			{
 				return sv->hitTest(windowCoord);
 			}
 		}
+
+		//for (auto it = subviews.end()-1; it >= subviews.begin(); it--)
+		//{
+		//	auto sv = it->get();
+		//	if (sv->screenFrame.inside(windowCoord))
+		//	{
+		//		return sv->hitTest(windowCoord);
+		//	}
+		//}
 	}
 
 	return shared_from_this();
