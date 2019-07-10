@@ -265,8 +265,7 @@ public:
 
 	MTUIHandle(std::string _name);
 
-	void setup() override;
-	void draw() override;
+    void draw() override;
 	void mouseDragged(int x, int y, int button) override;
 	void superviewContentChanged() override;
 
@@ -292,18 +291,18 @@ public:
 	HandleState getState();
 	void setState(HandleState newState);
 
+    /**
+     * @brief Resizes the handle so that its size appears consistent regardless of the
+     * scale (zoom) of its superview(s)
+     */
+    void scaleToScreen();
+
 protected:
 	HandleState state;
 	// Can't use enums as keys (or values):
 	std::unordered_map<int, HandleStyle> stylesMap;
 	float originalWidth;
 	float originalHeight;
-
-	/**
-	 * @brief Resizes the handle so that its size appears consistent regardless of the
-	 * scale (zoom) of its superview(s)
-	 */
-	void scaleToScreen();
 
 };
 
