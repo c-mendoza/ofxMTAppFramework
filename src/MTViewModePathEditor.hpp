@@ -76,7 +76,7 @@ public:
 	float pathStrokeWidth = 2;
 
     /**
-     * @brief A rectantgular region that denotes the maximum and minimum values for the
+     * @brief A rectangular region that denotes the maximum and minimum values for the
      * handles in this editor. Points outside of the validRegion will be clamped.
      * If PathEditorOptions::LimitToRegion is set, you must provide a validRegion.
      * If PathEditorOptions::LimitToView is set, the validRegion will be created automatically

@@ -209,8 +209,6 @@ void MTUIPath::handlePressed(MTUIPathVertexHandle* handle, ofMouseEventArgs& arg
 					cp2->setFrameOrigin(toHandle->getFrameOrigin() + (tNorm * 50.0f));
 					command.type = ofPath::Command::bezierTo;
 					(*it)->setCommand(command);
-//                    (*it)->getCP1Handle()->setFrameOrigin(command->to.x, command->to.y);
-//                    (*it)->getCP2Handle()->setFrameOrigin(command->to.x, command->to.y);
 					view->addSubview(cp1);
 					view->addSubview(cp2);
 					this->pathChangedEvent.notify(this);
@@ -802,6 +800,9 @@ void MTUIPathVertexHandle::draw()
 MTUIHandle::MTUIHandle(std::string _name) : MTView(_name)
 {
 	wantsFocus = false;
+	addEventListener(addedToSuperviewEvent.newListener([this](ofEventArgs& args) {
+		scaleToScreen();
+	}));
 }
 
 void MTUIHandle::draw()
@@ -868,11 +869,6 @@ MTUIHandle::HandleState MTUIHandle::getState()
 void MTUIHandle::setState(MTUIHandle::HandleState newState)
 {
 	state = newState;
-}
-
-void MTUIHandle::setup()
-{
-	scaleToScreen();
 }
 
 void MTUIHandle::setHandleStyleForState(MTUIHandle::HandleStyle style, MTUIHandle::HandleState state)

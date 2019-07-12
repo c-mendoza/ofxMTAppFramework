@@ -283,11 +283,14 @@ void MTFullScreenView::draw()
 	ofSetColor(ofColor::white);
 	ofFill();
 
-	ofPushMatrix();
-	ofMultMatrix(perspectiveMatrix);
-	outputTexture.bind();
-	outputMesh.draw();
-	ofPopMatrix();
+	//TODO: Re-enable perspective warping later
+//	ofPushMatrix();
+//	ofMultMatrix(perspectiveMatrix);
+//	outputTexture.bind();
+//	outputMesh.draw();
+//	ofPopMatrix();
+
+	outputTexture.draw(0, 0, getWidth(), getHeight());
 }
 
 void MTFullScreenView::updatePerspectiveTransform()
