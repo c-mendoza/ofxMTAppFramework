@@ -112,6 +112,6 @@ void ofxImGui::AddParameter(std::shared_ptr<ofAbstractParameter> parameter)
 		return;
 	}
 
-	ofLogWarning(__FUNCTION__) << "Could not create GUI element for parameter " << parameter->getName();
-	
+//	ofLogWarning(__FUNCTION__) << "Could not create GUI element for parameter " << parameter->getName();
+
 }
