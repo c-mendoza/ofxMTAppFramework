@@ -102,7 +102,7 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
-	ofClear(0,0,0,1);
+	ofBackground(0,0,0,1);
 
 	while (!drawOpQueue.empty())
 	{
