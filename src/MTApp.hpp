@@ -394,6 +394,9 @@ protected:
 private:
 	bool ofAppInitialized = false;
 
+	int glVersionMajor;
+	int glVersionMinor;
+
 	bool saveAsImpl(std::string newName);
 	bool saveImpl();
 	bool openImpl(std::string file);

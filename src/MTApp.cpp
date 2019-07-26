@@ -246,6 +246,17 @@ MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& setti
 		return nullptr;
 	}
 
+	if (!ofAppInitialized)
+	{
+		glVersionMajor = settings.glVersionMajor;
+		glVersionMinor = settings.glVersionMinor;
+	}
+	else
+	{
+		settings.glVersionMajor = glVersionMajor;
+		settings.glVersionMinor = glVersionMinor;
+	}
+
 	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName, useTextureRectangle);
 //	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
 	offscreenWindow->setup(settings);
@@ -327,6 +338,18 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWind
 	auto window = std::make_shared<MTWindow>(windowName);
 	ofGetMainLoop()->addWindow(window);
 	windows.push_back(window);
+
+	if (!ofAppInitialized)
+	{
+		glVersionMajor = settings.glVersionMajor;
+		glVersionMinor = settings.glVersionMinor;
+	}
+	else
+	{
+		settings.glVersionMajor = glVersionMajor;
+		settings.glVersionMinor = glVersionMinor;
+	}
+
 	window->setup(settings);
 
 	addAllEvents(window.get());
