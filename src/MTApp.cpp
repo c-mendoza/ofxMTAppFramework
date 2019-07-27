@@ -695,7 +695,8 @@ void MTApp::exit()
 void MTApp::createAppPreferencesFilePath()
 {
 	std::string prefix;
-	std::string home = ofGetEnv("HOME");
+	std::string home = ofFilePath::getUserHomeDir();
+
 	switch (ofGetTargetPlatform())
 	{
 		case OF_TARGET_LINUX:
