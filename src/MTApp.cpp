@@ -133,6 +133,25 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 	}
 	appKeyReleased(key);
 }
+
+void MTApp::exit(ofEventArgs& args)
+{
+	// Last chance to store the size and position of windows:
+	for (auto& w : windows)
+	{
+		auto iter = wpMap.find(w->name.get());
+		if (iter != wpMap.end())
+		{
+			iter->second.position = w->getWindowPosition();
+			iter->second.size = w->getWindowSize();
+		}
+	}
+
+	saveAppPreferences();
+	exit();
+}
+
+
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
 /// well as the main
@@ -165,6 +184,12 @@ void MTApp::runApp()
 	appWillRun();
 	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(this));
 
+	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
+															{
+																saveAppPreferences();
+																exit();
+																return true;
+															}));
 //	MTApp::gui.setup();
 	// Only the first window gets notified of setup when ofRunApp is called
 	// so we need to do that ourselves:
@@ -237,10 +262,10 @@ std::shared_ptr<MTOffscreenWindow>
 MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle)
 {
 	if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
-			ofGetTargetPlatform() == OF_TARGET_IOS ||
-			ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
-			ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
-			ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
+		ofGetTargetPlatform() == OF_TARGET_IOS ||
+		ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
+		ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
+		ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
 	{
 		ofLogError("MTApp") << "createOffscreenWindow() is not compatible with the current platform";
 		return nullptr;
@@ -406,17 +431,19 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 	// 	window
 	if (!offscreenWindow)
 	{
-		auto& wp = wpMap[window->name.get()];
-		wp.position = window->getWindowPosition();
-		wp.size = window->getWindowSize();
-
-		saveAppPreferences();
+		auto it = wpMap.find(window->name.get());
+		if (it != wpMap.end())
+		{
+			auto& wp = it->second;
+			wp.position = window->getWindowPosition();
+			wp.size = window->getWindowSize();
+			saveAppPreferences();
+		}
 	}
 
 	auto wIter = std::find(windows.begin(), windows.end(), window);
 	windows.erase(wIter);
 	removeAllEvents(window.get());
-
 	window->setWindowShouldClose();
 }
 
@@ -427,7 +454,7 @@ void MTApp::addAllEvents(MTWindow* w)
 	ofAddListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().exit, w, &MTWindow::exit, OF_EVENT_ORDER_BEFORE_APP);
+//	ofAddListener(w->events().exit, w, &MTWindow::exit, OF_EVENT_ORDER_BEFORE_APP);
 	ofAddListener(w->events().keyPressed, w, &MTWindow::keyPressed, OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().keyReleased, w, &MTWindow::keyReleased, OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().mouseMoved, w, &MTWindow::mouseMoved, OF_EVENT_ORDER_APP);
@@ -459,7 +486,7 @@ void MTApp::removeAllEvents(MTWindow* w)
 	ofRemoveListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
 	ofRemoveListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
 	ofRemoveListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().exit, w, &MTWindow::exit, OF_EVENT_ORDER_BEFORE_APP);
+//	ofRemoveListener(w->events().exit, w, &MTWindow::exit, OF_EVENT_ORDER_BEFORE_APP);
 	ofRemoveListener(w->events().keyPressed, w, &MTWindow::keyPressed, OF_EVENT_ORDER_APP);
 	ofRemoveListener(w->events().keyReleased, w, &MTWindow::keyReleased, OF_EVENT_ORDER_APP);
 	ofRemoveListener(w->events().mouseMoved, w, &MTWindow::mouseMoved, OF_EVENT_ORDER_APP);
@@ -649,6 +676,7 @@ bool MTApp::revert()
 /// Saves!
 bool MTApp::saveAppPreferences()
 {
+	appPrefsXml.removeChild("App_Preferences");
 	ofSerialize(appPrefsXml, appPreferences);
 
 	auto root = appPrefsXml.getChild("App_Preferences");
@@ -657,8 +685,10 @@ bool MTApp::saveAppPreferences()
 
 	for (auto& wp : wpMap)
 	{
-		auto foundFsPos = wp.first.find_first_of("FS");
-		if (foundFsPos == 0) continue; // Don't store FS windows
+		auto foundFsPos = wp.first.find("FS");
+		if (foundFsPos == 0) {
+			continue; // Don't store FS windows
+		}
 		auto winXml = windowsXml.appendChild("Window");
 		winXml.appendChild("Name").set(wp.first);
 		winXml.appendChild("Position").set(wp.second.position);
@@ -668,22 +698,6 @@ bool MTApp::saveAppPreferences()
 	auto success = appPrefsXml.save(appPreferencesPath);
 	ofEnableDataPath();
 	return success;
-}
-
-void MTApp::exit()
-{
-	// Last chance to store the size and position of windows:
-	for (auto& w : windows)
-	{
-		auto iter = wpMap.find(w->name.get());
-		if (iter != wpMap.end())
-		{
-			iter->second.position = w->getWindowPosition();
-			iter->second.size = w->getWindowSize();
-		}
-	}
-
-	saveAppPreferences();
 }
 
 /**
@@ -847,6 +861,7 @@ void MTApp::updateDisplays()
 }
 
 #ifndef TARGET_RASPBERRY_PI
+
 void MTApp::setMonitorCb(GLFWmonitor* monitor, int connected)
 {
 	MTApp::updateDisplays();

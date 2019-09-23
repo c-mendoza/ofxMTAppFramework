@@ -15,7 +15,7 @@ public:
 	void setup(ofGLFWWindowSettings& settings) override;
 	void setupInternal(ofEventArgs& args) override;
 	void draw(ofEventArgs& args) override;
-	void exit(ofEventArgs& args) override;
+//	void exit(ofEventArgs& args) override;
 	ofFbo & getWindowOutput();
 protected:
 	ofFbo windowOutput;

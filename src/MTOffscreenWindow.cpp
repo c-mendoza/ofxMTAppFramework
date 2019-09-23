@@ -23,25 +23,19 @@ void MTOffscreenWindow::draw(ofEventArgs& args)
 	ofGetGLRenderer()->end(windowOutput);
 }
 
-void MTOffscreenWindow::exit(ofEventArgs& args)
-{
-//	MTWindow::exit(args);
-	ofLogVerbose("MTOffscreenWindow") << this->name << " closing";
-	if (contentView != nullptr) // Bit of a klugde
-	{
-		contentView->exit(args);
-		contentView = nullptr;
-		MTApp::sharedApp->closeWindow(shared_from_this());
-	}
-}
+//void MTOffscreenWindow::exit(ofEventArgs& args)
+//{
+////	MTWindow::exit(args);
+//
+//}
 
 ofFbo& MTOffscreenWindow::getWindowOutput()
 {
 	return windowOutput;
 }
 
-	void MTOffscreenWindow::setup(ofGLFWWindowSettings& settings)
-	{
+void MTOffscreenWindow::setup(ofGLFWWindowSettings& settings)
+{
 	aaSamples = settings.numSamples;
 	settings.visible = false;
 	settings.decorated = false;
@@ -74,6 +68,14 @@ ofFbo& MTOffscreenWindow::getWindowOutput()
 
 MTOffscreenWindow::~MTOffscreenWindow()
 {
+	ofLogVerbose("MTOffscreenWindow") << this->name << " closing";
+	if (contentView != nullptr) // Bit of a klugde
+	{
+		ofEventArgs args;
+		contentView->exit(args);
+		contentView = nullptr;
+		MTApp::sharedApp->closeWindow(shared_from_this());
+	}
 	ofLogVerbose("MTOffscreenWindow") << "MTOF Destroyed";
 }
 

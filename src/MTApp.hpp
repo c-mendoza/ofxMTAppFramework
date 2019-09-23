@@ -154,7 +154,7 @@ public:
 	virtual void appModeChanged(MTAppModeChangeArgs &changeArgs)
 	{}
 
-	virtual void exit();
+	virtual void exit(){}
 
 	//// UI
 	std::weak_ptr<ofAppBaseWindow> getMainWindow();
@@ -345,6 +345,7 @@ protected:
 	virtual void modelLoaded()
 	{}
 
+	virtual void exit(ofEventArgs & args);
 	// APP MODES
 	MTAppModeName currentMode;
 	std::vector<MTAppModeName> appModes;
