@@ -447,8 +447,12 @@ public:
 	bool getDrawBackground()
 	{ return isDrawingBackground; }
 
+private:
+	void drawGuiInternal();
+public:
 	virtual void drawGui()
 	{};
+	std::function<void()> onDrawGui = [] {};
 
 
 	bool isRenderingEnabled = true;

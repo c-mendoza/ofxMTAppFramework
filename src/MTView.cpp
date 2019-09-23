@@ -557,6 +557,12 @@ void MTView::draw(ofEventArgs &args)
 	}
 }
 
+void MTView::drawGuiInternal()
+{
+	drawGui();
+	onDrawGui();
+}
+
 void MTView::exit(ofEventArgs &args)
 {
 	currentViewMode->exit();
