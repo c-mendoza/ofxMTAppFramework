@@ -74,7 +74,10 @@ void MTWindow::setupInternal(ofEventArgs& args)
 	contentView->setSize(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
-
+//	isImGuiEnabled = true;
+//	gui = std::make_shared<ofxImGui::Gui>();
+//	gui->setup();
+//	imCtx = ImGui::GetCurrentContext();
 	contentView->setFrameOrigin(glm::vec3(0, 0, 0));
 	contentView->setup(args);
 	auto size = contentView->getFrameSize();
@@ -131,13 +134,13 @@ void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
 		drawImGuiForView(sv);
 	}
 
-	view->drawGui();
+	view->drawGuiInternal();
 }
 
-void MTWindow::exit(ofEventArgs& args)
-{
-	MTApp::sharedApp->closeWindow(shared_from_this());
-}
+//void MTWindow::exit(ofEventArgs& args)
+//{
+//	MTApp::sharedApp->closeWindow(shared_from_this());
+//}
 
 void MTWindow::windowResized(ofResizeEventArgs& resize)
 {
@@ -362,8 +365,6 @@ shared_ptr<ofxImGui::Gui> MTWindow::getGui()
 void MTWindow::setImGuiEnabled(bool doGui)
 {
 	if (isImGuiEnabled == doGui) return;
-
-
 
 	if (doGui)
 	{
