@@ -11,6 +11,9 @@
 #include <glm/mat4x4.hpp>
 #include <ofParameter.h>
 #include <graphics/ofPath.h>
+#include <utils/ofThreadChannel.h>
+
+
 //------------------------------------------------------//
 // MT-PROCEDURE     									//
 //------------------------------------------------------//
@@ -110,6 +113,7 @@ protected:
 };
 
 
+struct ImVec2;
 /**
  * @brief Class containing static utility methods.
  */
@@ -117,8 +121,12 @@ class MTAppFramework
 {
 private:
 	static bool fromBinding;
-	MTAppFramework(){};
-	~MTAppFramework(){};
+
+	MTAppFramework()
+	{};
+
+	~MTAppFramework()
+	{};
 
 public:
 	/**
@@ -175,7 +183,8 @@ public:
 
 		for (auto c : commands)
 		{
-			out += "{ "+ofToString(c.type)+"; "+ofToString(c.to)+"; "+ofToString(c.cp1)+"; "+ofToString(c.cp2)+"; } ";
+			out += "{ " + ofToString(c.type) + "; " + ofToString(c.to) + "; " + ofToString(c.cp1) + "; " +
+				   ofToString(c.cp2) + "; } ";
 		}
 
 		return out;
@@ -196,7 +205,7 @@ public:
 		{
 			std::vector<std::string> commandStringElements = ofSplitString(cs, ";", true, true);
 
-			ofPath::Command *thisCommand;
+			ofPath::Command* thisCommand;
 			int commandType = ofToInt(commandStringElements[0]);
 			ofPoint p, cp1, cp2;
 			switch (commandType)
@@ -231,6 +240,20 @@ public:
 		return thePath;
 	}
 
+	template<typename T>
+	static void FlushThreadChannel(ofThreadChannel<T>& channel)
+	{
+		T data;
+		while (channel.tryReceive(data))
+		{}
+	}
+
+	static bool ofPathImGuiEditor(const char* id,
+								  ofPath& originalPath,
+								  ofPath& resultPath,
+								  ImVec2& widgetSize,
+								  ImVec2& realSize,
+								  float handleRadius);
 };
 
 namespace ofxImGui
