@@ -371,6 +371,8 @@ public:
 	std::weak_ptr<MTUIPath> getUIPath()
 	{ return uiPath; }
 
+	void moveHandleBy(glm::vec3& amount);
+
 	///
 	/// \brief Updates the coordinates of the command to match that
 	/// of the handles. Called automatically whenever a handle is moved with

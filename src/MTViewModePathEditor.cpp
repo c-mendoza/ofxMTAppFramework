@@ -78,7 +78,7 @@ void MTViewModePathEditor::setup()
 	MTUIPath::vertexHandleStyle.bFill = false;
 	MTUIPath::selectedVextexHandleStyle.bFill = true;
 	uiPaths.clear();
-	
+
 
 	if (path == nullptr)
 	{
@@ -292,6 +292,25 @@ void MTViewModePathEditor::keyReleased(int key)
 	if (key == OF_KEY_RETURN)
 	{
 		activeUIPath = nullptr;
+	}
+}
+
+void MTViewModePathEditor::keyPressed(int key)
+{
+	if (activeUIPath != nullptr)
+	{
+		glm::vec3 nudge(0,0,0);
+		float nudgeAmount = 1;
+		if (key == OF_KEY_UP) nudge.y -= nudgeAmount;
+		if (key == OF_KEY_DOWN) nudge.y += nudgeAmount;
+		if (key == OF_KEY_LEFT) nudge.x -= nudgeAmount;
+		if (key == OF_KEY_RIGHT) nudge.x += nudgeAmount;
+
+		for (auto& handle : activeUIPath->getSelection())
+		{
+			handle->moveHandleBy(nudge);
+		}
+//		if (nudge.x != 0)
 	}
 }
 

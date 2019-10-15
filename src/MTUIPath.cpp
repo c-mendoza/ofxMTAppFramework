@@ -505,7 +505,7 @@ unsigned int MTUIPath::getIndexForHandle(std::shared_ptr<MTUIPathVertexHandle> h
 		}
 
 	}
-	return pathHandles.size()-1;
+	return pathHandles.size() - 1;
 }
 
 const std::vector<std::shared_ptr<MTUIPathVertexHandle>> MTUIPath::getSelection()
@@ -642,6 +642,26 @@ void MTUIPathVertexHandle::setup(std::weak_ptr<MTUIPath> uiPath, ofPath::Command
 				 updateCommand();
 			 }, OF_EVENT_ORDER_AFTER_APP));
 
+	addEventListener(toHandle->keyPressedEvent.newListener(
+			[this](ofKeyEventArgs& args)
+			{
+				glm::vec3 nudge(0,0,0);
+				float nudgeAmount = 1;
+				if (args.hasModifier(OF_KEY_SHIFT))
+				{
+					nudgeAmount = 10;
+				}
+				int key = args.key;
+				if (key == OF_KEY_UP) nudge.y -= nudgeAmount;
+				if (key == OF_KEY_DOWN) nudge.y += nudgeAmount;
+				if (key == OF_KEY_LEFT) nudge.x -= nudgeAmount;
+				if (key == OF_KEY_RIGHT) nudge.x += nudgeAmount;
+
+				for (auto& handle : getUIPath().lock()->getSelection())
+				{
+					handle->moveHandleBy(nudge);
+				}
+			}));
 	addEventListener(cp1Handle->mouseDraggedEvent.newListener
 			([this](ofMouseEventArgs& args)
 			 {
@@ -747,6 +767,17 @@ void MTUIPathVertexHandle::setControlPoints()
 			 }, OF_EVENT_ORDER_BEFORE_APP));
 }
 
+void MTUIPathVertexHandle::moveHandleBy(glm::vec3& amount)
+{
+	toHandle->shiftFrameOrigin(amount);
+	cp1Handle->shiftFrameOrigin(amount);
+	cp2Handle->shiftFrameOrigin(amount);
+	updateCommand();
+	auto uiPathPtr = uiPath.lock();
+	ofMouseEventArgs args;
+	uiPathPtr->pathHandleMovedEvent.notify(this, args);
+}
+
 void MTUIPathVertexHandle::updateCommand()
 {
 	if (command.type == ofPath::Command::bezierTo ||
@@ -799,10 +830,11 @@ void MTUIPathVertexHandle::draw()
 
 MTUIHandle::MTUIHandle(std::string _name) : MTView(_name)
 {
-	wantsFocus = false;
-	addEventListener(addedToSuperviewEvent.newListener([this](ofEventArgs& args) {
-		scaleToScreen();
-	}));
+	wantsFocus = true;
+	addEventListener(addedToSuperviewEvent.newListener([this](ofEventArgs& args)
+													   {
+														   scaleToScreen();
+													   }));
 }
 
 void MTUIHandle::draw()

@@ -112,6 +112,7 @@ protected:
 public:
 	virtual void exit();
 	virtual void draw();
+	virtual void keyPressed(int key);
 	virtual void keyReleased(int key);
 	virtual void mouseReleased(int x, int y, int button);
 
