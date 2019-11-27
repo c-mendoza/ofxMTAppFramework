@@ -17,6 +17,7 @@ float outputWidth;
 float outputHeight;
 ofTexture outputTexture;
 glm::vec2 windowPos;
+int frameRate = 60;
 
 namespace priv
 {
@@ -24,19 +25,19 @@ namespace priv
 	void exitFullScreen();
 }
 
-void MTFullScreen::setup(std::shared_ptr<MTWindow> _windowWithOutput,
-						 ofTexture &_outputTexture)
+void MTFullScreen::setup(std::shared_ptr<MTWindow> _windowWithOutput, ofTexture& _outputTexture, int _frameRate = 60)
 {
 	windowWithOutput = _windowWithOutput;
 	outputTexture = _outputTexture;
 	outputWidth = outputTexture.getWidth();
 	outputHeight = outputTexture.getHeight();
+	frameRate = _frameRate;
 }
 
 void MTFullScreen::updateFullscreenDisplays()
 {
 	int count = 0;
-	float oneWidth = outputWidth/(float) displayOutputs.size();
+	float oneWidth = outputWidth / (float) displayOutputs.size();
 	for (auto fsDisplay : displayOutputs)
 	{
 		ofRectangle displayArea;
@@ -139,7 +140,8 @@ void priv::enterFullScreen()
 														 fsDisplay,
 														 outputTexture);
 		window->setWindowPosition(frame.position.x, frame.position.y);
-
+		window->events().setFrameRate(frameRate);
+		window->setVerticalSync(false);
 		window->contentView->addSubview(fsView);
 		fsView->setSize(window->contentView->getFrameSize());
 		fullScreenWindows.push_back(window);

@@ -27,8 +27,7 @@ struct MTFullScreenDisplayInfo
 
 namespace MTFullScreen
 {
-	void setup(std::shared_ptr<MTWindow> windowWithOutput,
-			   ofTexture& outputTexture);
+	void setup(std::shared_ptr<MTWindow> windowWithOutput, ofTexture& outputTexture, int frameRate);
 	void updateFullscreenDisplays();
 	void toggleFullScreen();
 	void setFullScreen(bool fs);
