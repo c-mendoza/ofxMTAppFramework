@@ -48,7 +48,7 @@ void MTFullScreen::updateFullscreenDisplays()
 		}
 		else
 		{
-			fsDisplay->outputArea->setPosition(oneWidth*count, 0);
+			fsDisplay->outputArea->setPosition(oneWidth * count, 0);
 		}
 		fsDisplay->outputArea->setSize(oneWidth,
 									   outputHeight);
@@ -130,13 +130,13 @@ void priv::enterFullScreen()
 		}
 		else
 		{
-			fsDisplay->outputArea->setPosition(oneWidth*count, 0);
+			fsDisplay->outputArea->setPosition(oneWidth * count, 0);
 		}
 		fsDisplay->outputArea->setSize(oneWidth,
 									   outputHeight);
 
-		auto window = MTApp::sharedApp->createWindow("FS "+ofToString(count), glfwWindowSettings);
-		auto fsView = std::make_shared<MTFullScreenView>("FS View "+ofToString(count),
+		auto window = MTApp::sharedApp->createWindow("FS " + ofToString(count), glfwWindowSettings);
+		auto fsView = std::make_shared<MTFullScreenView>("FS View " + ofToString(count),
 														 fsDisplay,
 														 outputTexture);
 		window->setWindowPosition(frame.position.x, frame.position.y);
@@ -155,7 +155,7 @@ void priv::enterFullScreen()
 
 void priv::exitFullScreen()
 {
-	for (const auto &window : fullScreenWindows)
+	for (const auto& window : fullScreenWindows)
 	{
 		window->setFullscreen(false);
 		MTApp::sharedApp->closeWindow(window);
@@ -170,7 +170,7 @@ void MTFullScreen::addFullScreenDisplay(std::shared_ptr<MTFullScreenDisplayInfo>
 	if (fsDisplay->outputArea == nullptr)
 	{
 		float xStart = 0;
-		for (auto &fsd : displayOutputs)
+		for (auto& fsd : displayOutputs)
 		{
 			xStart += fsd->outputArea->getMaxX();
 		}
@@ -203,7 +203,7 @@ void MTFullScreen::addFullScreenDisplay()
 	fsDisplay->display = MTApp::getDisplays().front();
 
 	float xStart = 0;
-	for (auto &fsd : displayOutputs)
+	for (auto& fsd : displayOutputs)
 	{
 		xStart += fsd->outputArea->getMaxX();
 	}
@@ -248,7 +248,7 @@ int MTFullScreen::getDisplayCount()
 
 MTFullScreenView::MTFullScreenView(std::string name,
 								   std::shared_ptr<MTFullScreenDisplayInfo> fullScreenDisplay,
-								   ofTexture &outputTexture) : MTView(name)
+								   ofTexture& outputTexture) : MTView(name)
 {
 	this->fullScreenDisplay = fullScreenDisplay;
 	this->outputTexture = outputTexture;
@@ -265,7 +265,7 @@ MTFullScreenView::MTFullScreenView(std::string name,
 	if (!wasHackEnabled) ofDisableTextureEdgeHack();
 	resizePolicy = MTViewResizePolicy::ResizePolicySuperview;
 	perspectiveMatrix = glm::mat4();
-	backgroundColor = ofColor(255, 0,0);
+	backgroundColor = ofColor(255, 0, 0);
 	setDrawBackground(true);
 }
 
@@ -281,7 +281,7 @@ void MTFullScreenView::update()
 
 void MTFullScreenView::draw()
 {
-//	ofClear(0, 0, 0);
+	ofClear(0, 0, 0);
 	ofSetColor(ofColor::white);
 	ofFill();
 
