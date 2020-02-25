@@ -20,4 +20,18 @@
 #include "MTView.hpp"
 #include "MTWindow.hpp"
 
+inline std::ostream& operator<<(std::ostream& os, const ofPath& path)
+{
+	os << MTApp::pathToString(path);
+	return os;
+}
+
+inline std::istream& operator>>(std::istream& is, ofPath& path)
+{
+	std::string inString;
+	std::getline(is, inString);
+	path = MTApp::pathFromString(inString);
+	return is;
+}
+
 #endif
