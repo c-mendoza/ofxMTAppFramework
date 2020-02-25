@@ -824,7 +824,7 @@ ofPath MTApp::pathFromString(std::string s)
 	return thePath;
 }
 
-std::string MTApp::pathToString(ofPath& path)
+std::string MTApp::pathToString(const ofPath& path)
 {
 	std::vector<ofPath::Command> commands = path.getCommands();
 

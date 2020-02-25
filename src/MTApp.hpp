@@ -227,7 +227,7 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	/**
 	 * @brief Stringifies an ofPath.
 	 */
-	static std::string pathToString(ofPath &path);
+	static std::string pathToString(const ofPath &path);
 
 	/**
 	 * @brief Makes an ofPath from a stringified representation.
