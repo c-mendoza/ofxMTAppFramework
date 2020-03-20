@@ -3,6 +3,7 @@
 #include "MTAppFrameworkUtils.hpp"
 #include "ofxImGui.h"
 #include <imgui_internal.h>
+#include <utils/ofXml.h>
 
 ///////////////////////////////////////////
 /// MTProcedure
@@ -106,6 +107,94 @@ bool MTAppFramework::ofPathImGuiEditor(const char* id, ofPath& originalPath, ofP
 	return didChange;
 }
 
+std::string MTAppFramework::PathToString2(const ofPath& path)
+{
+	ofXml root;
+	auto xml = root.appendChild("ofPath");
+	auto points = xml.appendChild("points");
+
+	std::vector<ofPath::Command> commands = path.getCommands();
+
+	for (auto c : commands)
+	{
+		auto point = points.appendChild("point");
+		point.appendAttribute("type").set(ofToString(c.type));
+		point.appendAttribute("position").set(ofToString(c.to));
+		point.appendAttribute("cp1").set(ofToString(c.cp1));
+		point.appendAttribute("cp2").set(ofToString(c.cp2));
+	}
+
+	auto fill = xml.appendChild("fill");
+	fill.appendAttribute("color").set(ofToString(path.getFillColor()));
+	fill.appendAttribute("isFilled").set(ofToString(path.isFilled()));
+
+	auto stroke = xml.appendChild("stroke");
+	stroke.appendAttribute("color").set(ofToString(path.getStrokeColor()));
+	stroke.appendAttribute("strokeWidth").set(ofToString(path.getStrokeWidth()));
+
+	return root.toString();
+}
+
+ofPath MTAppFramework::PathFromString2(std::string s)
+{
+	ofXml rootXml;
+	ofPath path;
+	if (!rootXml.parse(s))
+	{
+		ofLogError("PathFromString2") << "Failed to parse the following string as xml:\n" << s;
+		return path;
+	}
+	ofXml xml = rootXml.getFirstChild();
+	auto iter = xml.getChild("points").getChildren();
+	for(auto child : iter){
+		int commandType = child.getAttribute("type").getIntValue();
+		ofPoint p, cp1, cp2;
+		switch (commandType)
+		{
+			case ofPath::Command::moveTo:
+				p = ofFromString<ofPoint>(child.getAttribute("position").getValue());
+				path.moveTo(p);
+				break;
+			case ofPath::Command::lineTo:
+				p = ofFromString<ofPoint>(child.getAttribute("position").getValue());
+				path.lineTo(p);
+				break;
+			case ofPath::Command::curveTo:
+				p = ofFromString<ofPoint>(child.getAttribute("position").getValue());
+				path.curveTo(p);
+				break;
+			case ofPath::Command::bezierTo:
+				p = ofFromString<ofPoint>(child.getAttribute("position").getValue());
+				cp1 = ofFromString<ofPoint>(child.getAttribute("cp1").getValue());
+				cp2 = ofFromString<ofPoint>(child.getAttribute("cp2").getValue());
+				path.bezierTo(cp1, cp2, p);
+				break;
+			case ofPath::Command::quadBezierTo:
+				p = ofFromString<ofPoint>(child.getAttribute("position").getValue());
+				cp1 = ofFromString<ofPoint>(child.getAttribute("cp1").getValue());
+				cp2 = ofFromString<ofPoint>(child.getAttribute("cp2").getValue());
+				path.quadBezierTo(cp1, cp2, p);
+				break;
+			case ofPath::Command::close:
+				path.close();
+				break;
+			default:
+				ofLog(OF_LOG_WARNING, "MTApp::pathFromString: A Path Command "
+									  "supplied is not implemented");
+				break;
+		}
+
+	}
+
+	auto fill = xml.getChild("fill");
+	path.setFillColor(ofFromString<ofColor>(fill.getAttribute("color").getValue()));
+	path.setFilled(fill.getAttribute("isFilled").getBoolValue());
+
+	auto stroke = xml.getChild("stroke");
+	path.setStrokeWidth(stroke.getAttribute("strokeWidth").getDoubleValue());
+	path.setStrokeColor(ofFromString<ofColor>(stroke.getAttribute("color").getValue()));
+	return path;
+}
 
 MTProcedureStep MTProcedure::getCurrentStep()
 {

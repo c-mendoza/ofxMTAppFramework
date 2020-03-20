@@ -112,7 +112,6 @@ protected:
 	ofEventListeners eventListeners;
 };
 
-
 struct ImVec2;
 /**
  * @brief Class containing static utility methods.
@@ -183,12 +182,16 @@ public:
 
 		for (auto c : commands)
 		{
-			out += "{ " + ofToString(c.type) + "; " + ofToString(c.to) + "; " + ofToString(c.cp1) + "; " +
-				   ofToString(c.cp2) + "; } ";
+			out += "{ "+ofToString(c.type)+"; "+ofToString(c.to)+"; "+ofToString(c.cp1)+"; "+
+				   ofToString(c.cp2)+"; } ";
 		}
 
 		return out;
 	}
+
+	static std::string PathToString2(const ofPath& path);
+
+	static ofPath PathFromString2(std::string s);
 
 	/**
 	 * @brief Makes an ofPath from a stringified representation.
@@ -200,7 +203,9 @@ public:
 	{
 		std::vector<std::string> commandStrings = ofSplitString(s, "{", true, true);
 		ofPath thePath;
-
+		thePath.setFilled(false);
+		thePath.setStrokeColor(ofColor::chocolate);
+		thePath.setStrokeWidth(2);
 		for (auto cs : commandStrings)
 		{
 			std::vector<std::string> commandStringElements = ofSplitString(cs, ";", true, true);

@@ -42,11 +42,14 @@ public:
 	 */
 	virtual void deserialize(ofXml& serializer);
 
+	void addChildModel(std::shared_ptr<MTModel> childModel);
+
 protected:
 	ofParameterGroup parameters;
 
 private:
     std::string name;
+    std::vector<std::shared_ptr<MTModel>> children;
 };
 
 #endif /* ofxMTModel_hpp */
