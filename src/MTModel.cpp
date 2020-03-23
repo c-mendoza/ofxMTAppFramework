@@ -49,29 +49,6 @@ void MTModel::serialize(ofXml& serializer)
 void MTModel::deserialize(ofXml &serializer)
 {
     ofDeserialize(serializer, parameters);
-	
-//	for (auto &parameter : parameters)
-//	{
-//        std::string escapedName = parameter->getEscapedName();
-//		auto child = serializer.getChild(escapedName);
-//		if(parameter->type() == typeid(ofParameter <int> ).name()){
-//			parameter->cast <int>() = child.getIntValue();
-//		}else if(parameter->type() == typeid(ofParameter <float> ).name()){
-//			parameter->cast <float>() = child.getFloatValue();
-//		}else if(parameter->type() == typeid(ofParameter <bool> ).name()){
-//			parameter->cast <bool>() = child.getBoolValue();
-//		}else if(parameter->type() == typeid(ofParameter <std::string> ).name()){
-//			parameter->cast <std::string>() = child.getValue();
-//		} else if(parameter->type() == typeid(ofParameterGroup).name()) {
-//			//Ignore groups
-//
-//		} else {
-//			parameter->fromString(child.getValue());
-//		}
-//
-//	}
-
-
 }
 
 void MTModel::addChildModel(std::shared_ptr<MTModel> childModel)
