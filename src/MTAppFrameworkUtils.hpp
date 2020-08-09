@@ -259,6 +259,13 @@ public:
 								  ImVec2& widgetSize,
 								  ImVec2& realSize,
 								  float handleRadius);
+
+	static void RemoveAllParameters(ofParameterGroup& group)
+	{
+		for (int i = 0; i < group.size(); i++) {
+			group.remove(i);
+		}
+	}
 };
 
 namespace ofxImGui

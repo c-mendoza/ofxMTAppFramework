@@ -44,6 +44,22 @@ public:
 
 	void addChildModel(std::shared_ptr<MTModel> childModel);
 
+	/**
+	 * @brief Adds one or many parameters to the model.
+	 */
+	template<typename ...Args>
+	void addParameters(ofAbstractParameter & p, Args&... parameters){
+		this->parameters.add(p);
+		this->parameters.add(parameters...);
+	}
+
+	/**
+	 * @brief Adds a parameter to the model.
+	 */
+	void addParameters(ofAbstractParameter & param) {
+		this->parameters.add(param);
+	}
+
 protected:
 	ofParameterGroup parameters;
 

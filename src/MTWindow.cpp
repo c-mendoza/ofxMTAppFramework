@@ -29,10 +29,17 @@ MTWindow::MTWindow(std::string name)
 MTWindow::~MTWindow()
 {
 	ofLogVerbose("MTWindow") << name.get() << " destroyed";
-	// This ensures that we destroy the right context:
-	bindImGuiContext();
-	// This will destroy the gui:
-	gui.reset();
+
+}
+
+void MTWindow::close()
+{
+	 ofAppBaseWindow::close();
+
+	 // This ensures that we destroy the right context:
+	 bindImGuiContext();
+// This will destroy the gui:
+	 gui.reset();
 }
 
 // void MTWindow::setup(ofEventArgs & args)

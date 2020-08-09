@@ -15,16 +15,6 @@ MTModel::MTModel(std::string _name)
     parameters.setName(name);
 }
 
-//MTModel::~MTModel()
-//{
-//    for (auto &el : eventListeners)
-//    {
-//        el.unsubscribe();
-//    }
-
-//    eventListeners.clear();
-//}
-
 std::string MTModel::getName()
 {
     return name;

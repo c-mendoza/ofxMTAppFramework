@@ -176,6 +176,8 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 		ImGui::SetCurrentContext(imCtx);
 	}
 
+	 void close() override;
+
 protected:
 	/**
 	 * @brief Recursively calls drawGui() on this view and all of its subviews
