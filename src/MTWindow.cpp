@@ -37,9 +37,12 @@ void MTWindow::close()
 	 ofAppBaseWindow::close();
 
 	 // This ensures that we destroy the right context:
-	 bindImGuiContext();
-// This will destroy the gui:
-	 gui.reset();
+	 if (isImGuiEnabled)
+	 {
+		setImGuiEnabled(false);
+	 }
+//// This will destroy the gui:
+//	 gui.reset();
 }
 
 // void MTWindow::setup(ofEventArgs & args)
@@ -375,23 +378,23 @@ void MTWindow::setImGuiEnabled(bool doGui)
 
 	if (doGui)
 	{
-		enqueueUpdateOperation([this, doGui]()
-							   {
+//		enqueueUpdateOperation([this, doGui]()
+//							   {
 								   isImGuiEnabled = doGui;
 								   gui = std::make_shared<ofxImGui::Gui>();
 								   gui->setup();
 								   imCtx = ImGui::GetCurrentContext();
-							   });
+//							   });
 	}
 	else
 	{
-		enqueueUpdateOperation([this, doGui]()
-							   {
+//		enqueueUpdateOperation([this, doGui]()
+//							   {
 								   isImGuiEnabled = doGui;
 								   ImGui::SetCurrentContext(imCtx);
 								   gui.reset();
 								   imCtx = nullptr;
-							   });
+//							   });
 	}
 }
 

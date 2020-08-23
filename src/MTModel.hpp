@@ -9,7 +9,6 @@
 #ifndef ofxMTModel_hpp
 #define ofxMTModel_hpp
 
-#include <Helpers.h>
 #include "MTAppFrameworkUtils.hpp"
 
 class ofXml;
