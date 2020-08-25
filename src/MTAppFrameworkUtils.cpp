@@ -15,6 +15,7 @@ bool MTAppFramework::ofPathImGuiEditor(const char* id, ofPath& originalPath, ofP
 									   ImVec2& realSize, float handleRadius)
 {
 	bool didChange = false;
+	static std::string selectedId = "";
 	using namespace ImGui;
 	const ImGuiStyle& Style = GetStyle();
 	const ImGuiIO& IO = GetIO();
@@ -24,7 +25,6 @@ bool MTAppFramework::ofPathImGuiEditor(const char* id, ofPath& originalPath, ofP
 		return false;
 
 	// header and spacing
-	int hovered = IsItemActive() || IsItemHovered(); // IsItemDragged() ?
 
 	ImRect bb(Window->DC.CursorPos, Window->DC.CursorPos + widgetSize);
 	ImVec2 mouse = GetIO().MousePos;
@@ -38,6 +38,12 @@ bool MTAppFramework::ofPathImGuiEditor(const char* id, ofPath& originalPath, ofP
 	int i = 0;
 //	ImGui::SetStateStorage();
 
+	int hovered = IsItemActive() || IsItemHovered();
+	if (hovered)
+	{
+		selectedId = std::string(id);
+	}
+
 	if (!IsMouseDown(0))
 	{
 		selectedIndex = -1;
@@ -45,54 +51,67 @@ bool MTAppFramework::ofPathImGuiEditor(const char* id, ofPath& originalPath, ofP
 
 	std::vector<ImVec2> scaledPoints;
 	scaledPoints.reserve(originalPath.getCommands().size());
+
 	for (int i = 0; i < originalPath.getCommands().size(); i++)
 	{
 		auto& command = originalPath.getCommands()[i];
 		if (command.type == ofPath::Command::Type::close)
 		{
-			resultPath.close();
 			break;
 		}
-
 		auto scaled = (glm::vec2(command.to) * invFactor) + bb.Min;
 		scaledPoints.push_back(scaled);
-		glm::vec2 nextPoint;
-		if (selectedIndex < 0)
-		{
-			auto dist = glm::distance(glm::vec2(mouse.x, mouse.y), scaled);
-			if (dist <= handleRadius)
-			{
-				SetTooltip("%i", i);
-				selectedIndex = i;
-				startPos = mouse;
-			}
-			nextPoint = command.to;
-		}
-		else if (selectedIndex == i)
-		{
-			if (IsMouseDragging(0))
-			{
-				auto delta = glm::vec2(GetMouseDragDelta(0));
-				auto newPos = startPos + GetMouseDragDelta(0);
-				nextPoint = (newPos - bb.Min) * factor;
-				nextPoint = glm::clamp(nextPoint,
-									   glm::vec2(0, 0),
-									   glm::vec2(realSize.x, realSize.y));
-				didChange = true;
-			}
-		}
-		else
-		{
-			nextPoint = command.to;
-		}
+	}
 
-		if (command.type == ofPath::Command::moveTo)
+	if (strcmp(selectedId.c_str(), id) == 0)
+	{
+		for (int i = 0; i < originalPath.getCommands().size(); i++)
 		{
-			resultPath.moveTo(nextPoint);
-		}
-		else
-		{
-			resultPath.lineTo(nextPoint);
+			auto& command = originalPath.getCommands()[i];
+			if (command.type == ofPath::Command::Type::close)
+			{
+				resultPath.close();
+				break;
+			}
+
+			glm::vec2 nextPoint;
+			if (selectedIndex < 0)
+			{
+				auto dist = glm::distance(glm::vec2(mouse.x, mouse.y), (glm::vec2) scaledPoints[i]);
+				if (dist <= handleRadius)
+				{
+					SetTooltip("%i", i);
+					selectedIndex = i;
+					startPos = mouse;
+				}
+				nextPoint = command.to;
+			}
+			else if (selectedIndex == i)
+			{
+				if (IsMouseDragging(0))
+				{
+					auto delta = glm::vec2(GetMouseDragDelta(0));
+					auto newPos = startPos + GetMouseDragDelta(0);
+					nextPoint = (newPos - bb.Min) * factor;
+					nextPoint = glm::clamp(nextPoint,
+										   glm::vec2(0, 0),
+										   glm::vec2(realSize.x, realSize.y));
+					didChange = true;
+				}
+			}
+			else
+			{
+				nextPoint = command.to;
+			}
+
+			if (command.type == ofPath::Command::moveTo)
+			{
+				resultPath.moveTo(nextPoint);
+			}
+			else
+			{
+				resultPath.lineTo(nextPoint);
+			}
 		}
 	}
 
@@ -146,7 +165,8 @@ ofPath MTAppFramework::PathFromString2(std::string s)
 	}
 	ofXml xml = rootXml.getFirstChild();
 	auto iter = xml.getChild("points").getChildren();
-	for(auto child : iter){
+	for (auto child : iter)
+	{
 		int commandType = child.getAttribute("type").getIntValue();
 		ofPoint p, cp1, cp2;
 		switch (commandType)
