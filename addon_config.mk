@@ -67,13 +67,3 @@ common:
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
     # ADDON_INCLUDES_EXCLUDE =
-
-msys2:
-	# when parsing the file system looking for sources exclude this for all or
-	# a specific platform
-	#ADDON_SOURCES_EXCLUDE = libs/oscpack/src/ip/posix/%
-
-vs:
-	# when parsing the file system looking for sources exclude this for all or
-	# a specific platform
-	#ADDON_SOURCES_EXCLUDE = libs/oscpack/src/ip/posix/%
