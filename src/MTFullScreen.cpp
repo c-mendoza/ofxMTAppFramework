@@ -140,8 +140,8 @@ void priv::enterFullScreen()
 														 fsDisplay,
 														 outputTexture);
 		window->setWindowPosition(frame.position.x, frame.position.y);
-		window->events().setFrameRate(frameRate);
-		window->setVerticalSync(false);
+//		window->events().setFrameRate(frameRate);
+//		window->setVerticalSync(false);
 		window->contentView->addSubview(fsView);
 		fsView->setSize(window->contentView->getFrameSize());
 		fullScreenWindows.push_back(window);
@@ -149,7 +149,7 @@ void priv::enterFullScreen()
 	}
 
 	windowPos = windowWithOutput->getWindowPosition();
-	glfwHideWindow(windowWithOutput->getGLFWWindow());
+//	glfwHideWindow(windowWithOutput->getGLFWWindow());
 //	windowWithOutput->setWindowPosition(-windowWithOutput->getWidth(), -windowWithOutput->getHeight());
 }
 
