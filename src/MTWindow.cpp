@@ -29,7 +29,6 @@ MTWindow::MTWindow(std::string name)
 MTWindow::~MTWindow()
 {
 	ofLogVerbose("MTWindow") << name.get() << " destroyed";
-
 }
 
 void MTWindow::close()

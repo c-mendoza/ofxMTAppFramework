@@ -157,7 +157,7 @@ public:
 	virtual void exit(){}
 
 	//// UI
-	std::weak_ptr<ofAppBaseWindow> getMainWindow();
+	std::weak_ptr<MTWindow> getMainWindow();
 
 #ifndef TARGET_RASPBERRY_PI
 	std::shared_ptr<MTOffscreenWindow>

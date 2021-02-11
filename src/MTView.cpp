@@ -662,7 +662,7 @@ void MTView::mouseDragged(ofMouseEventArgs &mouse)
 
 void MTView::mousePressed(ofMouseEventArgs &mouse)
 {
-//	ofLogVerbose("MTView") << "mousePressed: " << name.get();
+	ofLogVerbose("MTView") << "mousePressed: " << name.get();
 	updateMouseDownPositionsWithWindowCoordinate(mouse);
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Pressed,
@@ -676,7 +676,7 @@ void MTView::mousePressed(ofMouseEventArgs &mouse)
 
 void MTView::mouseReleased(ofMouseEventArgs &mouse)
 {
-	//	ofLogVerbose("MTView") << "mouseReleased: " << name.get();
+	ofLogVerbose("MTView") << "mouseReleased: " << name.get();
 	updateMouseUpPositionsWithWindowCoordinate(mouse);
 
 	ofMouseEventArgs localArgs = ofMouseEventArgs(ofMouseEventArgs::Released,

@@ -512,7 +512,7 @@ void MTApp::removeAllEvents(MTWindow* w)
 }
 
 //// UI
-std::weak_ptr<ofAppBaseWindow> MTApp::getMainWindow()
+std::weak_ptr<MTWindow> MTApp::getMainWindow()
 {
 	return mainWindow;
 }
