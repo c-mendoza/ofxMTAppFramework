@@ -21,6 +21,7 @@ MTView::MTView(std::string _name)
 				  this, &MTView::appModeChangedInternal,
 				  -100);
 	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
+	setFrameSize(200, 200);
 }
 
 MTView::~MTView()
