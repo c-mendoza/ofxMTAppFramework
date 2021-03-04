@@ -356,9 +356,23 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 }
 
 #else
+std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName)
+{
+	ofGLFWWindowSettings settings;
+	settings.shareContextWith = mainWindow;
+	return createWindow(windowName, settings);
+}
 
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWindowSettings& settings)
 {
+
+	for (auto& w : windows)
+	{
+		if (w->name.get() == windowName)
+		{
+			return nullptr;
+		}
+	}
 
 	auto window = std::make_shared<MTWindow>(windowName);
 	ofGetMainLoop()->addWindow(window);

@@ -178,13 +178,24 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 #else
 
 	/**
-	 * @brief Creates a window.
-	 * @param windowName
+	 * @brief Creates a window. If a Main Window exists, the OpenGL major and minor versions will be copied from that window.
+	 * @param windowName is used to provide a title, and recall size and position. It must not be in use by any
+	 * other window, otherwise createWindow returns nullptr.
 	 * @param settings
-	 * @return A shared_ptr to the MTWindow
+	 * @return A shared_ptr to the MTWindow, or nullptr if you used a windowName already in use by another window.
 	 */
 	std::shared_ptr<MTWindow> createWindow(std::string windowName, ofGLFWWindowSettings &settings);
+
+	/**
+	 * @brief Creates a window with default settings. The OpenGL context will be shared with the Main Window.
+	 * @param windowName is used to provide a title, and recall size and position. It must not be in use by any
+	 * other window, otherwise createWindow returns nullptr.
+	 * @return A shared_ptr to the MTWindow, or nullptr if you used a windowName already in use by another window.
+	 */
+	std::shared_ptr<MTWindow> createWindow(std::string windowName);
+
 #endif
+
 
 
 	void closeWindow(std::shared_ptr<MTWindow> window);
