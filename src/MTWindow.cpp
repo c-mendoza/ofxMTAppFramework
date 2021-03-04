@@ -28,20 +28,52 @@ MTWindow::MTWindow(std::string name)
 
 MTWindow::~MTWindow()
 {
+	if (gui)
+	{
+		bindImGuiContext();
+		gui.reset();
+	}
+
 	ofLogVerbose("MTWindow") << name.get() << " destroyed";
 }
 
 void MTWindow::close()
 {
-	 ofAppBaseWindow::close();
 
-	 // This ensures that we destroy the right context:
-	 if (isImGuiEnabled)
-	 {
-		setImGuiEnabled(false);
-	 }
+	MTApp::sharedApp->closeWindow(shared_from_this());
+	onClose();
+//	if(auto windowP = getGLFWWindow()){
+//		MTApp::sharedApp->closeWindow(shared_from_this());
+//		glfwSetMouseButtonCallback( windowP, nullptr );
+//		glfwSetCursorPosCallback( windowP, nullptr );
+//		glfwSetCursorEnterCallback( windowP, nullptr );
+//		glfwSetKeyCallback( windowP, nullptr );
+//		glfwSetWindowSizeCallback( windowP, nullptr );
+//		glfwSetFramebufferSizeCallback( windowP, nullptr);
+//		glfwSetWindowCloseCallback( windowP, nullptr );
+//		glfwSetScrollCallback( windowP, nullptr );
+//#if GLFW_VERSION_MAJOR>3 || GLFW_VERSION_MINOR>=1
+//		glfwSetDropCallback( windowP, nullptr );
+//#endif
+//		//hide the window before we destroy it stops a flicker on OS X on exit.
+//		glfwHideWindow(windowP);
+//
+//		// We must ensure renderer is destroyed *before* glfw destroys the window in glfwDestroyWindow,
+//		// as `glfwDestroyWindow` at least on Windows has the effect of unloading OpenGL, making all
+//		// calls to OpenGL illegal.
+//		renderer().reset();
+//
+//		glfwDestroyWindow(windowP);
+//		windowP = nullptr;
+//		events().disable();
+//	}
+	// This ensures that we destroy the right context:
+//	 if (isImGuiEnabled)
+//	 {
+//		setImGuiEnabled(false);
+//	 }
 //// This will destroy the gui:
-//	 gui.reset();
+	gui.reset();
 }
 
 // void MTWindow::setup(ofEventArgs & args)
@@ -90,7 +122,7 @@ void MTWindow::setupInternal(ofEventArgs& args)
 	contentView->setFrameOrigin(glm::vec3(0, 0, 0));
 	contentView->setup(args);
 	auto size = contentView->getFrameSize();
-	ofLogVerbose("MTWindow") <<  "setupInternal() contentView size:" <<  size.x << " " << size.y;
+	ofLogVerbose("MTWindow") << "setupInternal() contentView size:" << size.x << " " << size.y;
 }
 
 void MTWindow::update(ofEventArgs& args)
@@ -114,7 +146,7 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
-	ofBackground(0,0,0,1);
+	ofBackground(0, 0, 0, 1);
 
 	while (!drawOpQueue.empty())
 	{
@@ -127,12 +159,13 @@ void MTWindow::draw(ofEventArgs& args)
 
 	if (isImGuiEnabled)
 	{
-		bindImGuiContext();
-		auto& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2(getWidth(), getHeight());
-		getGui()->begin();
-		drawImGuiForView(contentView);
-		getGui()->end();
+		if (ofGetLastFrameTime() != 0)
+		{
+			getGui()->begin();
+
+			drawImGuiForView(contentView);
+			getGui()->end();
+		}
 	}
 }
 
@@ -383,23 +416,26 @@ void MTWindow::setImGuiEnabled(bool doGui)
 
 	if (doGui)
 	{
-//		enqueueUpdateOperation([this, doGui]()
-//							   {
+		enqueueUpdateOperation([this, doGui]()
+							   {
 								   isImGuiEnabled = doGui;
+								   // Attempting a workaround for ImGUI to work on multiple windows but it just
+								   // doesn't work
+								   ImGui::SetCurrentContext(NULL);
 								   gui = std::make_shared<ofxImGui::Gui>();
 								   gui->setup();
 								   imCtx = ImGui::GetCurrentContext();
-//							   });
+							   });
 	}
 	else
 	{
-//		enqueueUpdateOperation([this, doGui]()
-//							   {
+		enqueueUpdateOperation([this, doGui]()
+							   {
 								   isImGuiEnabled = doGui;
 								   ImGui::SetCurrentContext(imCtx);
 								   gui.reset();
 								   imCtx = nullptr;
-//							   });
+							   });
 	}
 }
 
