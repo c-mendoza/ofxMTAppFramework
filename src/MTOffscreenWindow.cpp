@@ -74,7 +74,7 @@ MTOffscreenWindow::~MTOffscreenWindow()
 		ofEventArgs args;
 		contentView->exit(args);
 		contentView = nullptr;
-		MTApp::sharedApp->closeWindow(shared_from_this());
+		MTApp::Instance()->closeWindow(shared_from_this());
 	}
 	ofLogVerbose("MTOffscreenWindow") << "MTOF Destroyed";
 }

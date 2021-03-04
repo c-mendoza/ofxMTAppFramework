@@ -40,10 +40,10 @@ MTWindow::~MTWindow()
 void MTWindow::close()
 {
 
-	MTApp::sharedApp->closeWindow(shared_from_this());
+	MTApp::Instance()->closeWindow(shared_from_this());
 	onClose();
 //	if(auto windowP = getGLFWWindow()){
-//		MTApp::sharedApp->closeWindow(shared_from_this());
+//		MTApp::Instance()->closeWindow(shared_from_this());
 //		glfwSetMouseButtonCallback( windowP, nullptr );
 //		glfwSetCursorPosCallback( windowP, nullptr );
 //		glfwSetCursorEnterCallback( windowP, nullptr );
@@ -181,7 +181,7 @@ void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
 
 //void MTWindow::exit(ofEventArgs& args)
 //{
-//	MTApp::sharedApp->closeWindow(shared_from_this());
+//	MTApp::Instance()->closeWindow(shared_from_this());
 //}
 
 void MTWindow::windowResized(ofResizeEventArgs& resize)

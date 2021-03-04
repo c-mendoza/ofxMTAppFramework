@@ -71,11 +71,33 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 {
 
 public:
+
+	template<class AppType = MTApp, class ModelType = MTModel>
+	static void CreateApp()
+	{
+		MTApp::InstanceFn = []() {
+			static auto instance = std::make_shared<AppType>();
+			return std::dynamic_pointer_cast<MTApp>(instance);
+		};
+
+		Instance()->model = std::make_shared<ModelType>();
+		Instance()->runApp();
+	}
+
+private:
+	MTApp(MTApp const&) = delete;
+	void operator=(MTApp const&) = delete;
+	static std::function<std::shared_ptr<MTApp>()> InstanceFn;
+
+public:
+	static std::shared_ptr<MTApp> Instance() {
+		return InstanceFn();
+	}
+
 	MTApp();
+public:
 	virtual ~MTApp();
 
-	// TODO: Proper singleton
-	static MTApp *sharedApp;
 
 	/**
 	 * @brief initialize  Override this method to instantiate your model,
@@ -113,15 +135,15 @@ public:
 	template<class T>
 	static std::shared_ptr<T> Model()
 	{
-		auto outModel = std::dynamic_pointer_cast<T>(MTApp::sharedApp->model);
+		auto outModel = std::dynamic_pointer_cast<T>(MTApp::Instance()->model);
 		return outModel;
 	}
 
 	// I'm sure that there is a better way than this, but right now...
 	template<class T>
-	static T *App()
+	static T &App()
 	{
-		return dynamic_cast<T>(MTApp::sharedApp);
+		return dynamic_cast<T>(MTApp::Instance());
 	}
 
 	//------ APP MODES
