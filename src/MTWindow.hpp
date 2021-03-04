@@ -103,6 +103,13 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	/// method if you want to respond to mode changes.
 	virtual void appModeChanged(MTAppModeChangeArgs& modeChange) {}
 
+	std::function<void()> onModelLoaded = [](){};
+	std::function<void()> onWindowResized = [](){};
+	std::function<void(ofKeyEventArgs&)> onKeyPressed = [](ofKeyEventArgs& args){};
+	std::function<void(ofKeyEventArgs&)> onKeyReleased = [](ofKeyEventArgs& args){};
+	std::function<void()> onClose = [](){};
+
+
 	void setFocusedView(std::shared_ptr<MTView> view);
 
     /**

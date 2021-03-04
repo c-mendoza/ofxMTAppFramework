@@ -157,6 +157,7 @@ void MTWindow::windowResized(ofResizeEventArgs& resize)
 	ofViewport(0, 0, size.x, size.y);
 	contentView->setFrameSize(resize.width, resize.height);
 	contentView->windowResized(resize);
+	onWindowResized();
 }
 
 void MTWindow::keyPressed(ofKeyEventArgs& key)
@@ -167,6 +168,7 @@ void MTWindow::keyPressed(ofKeyEventArgs& key)
 		fv->keyPressedInternal(key);
 	}
 	this->keyPressed(key.key);
+	onKeyPressed(key);
 }
 
 void MTWindow::keyReleased(ofKeyEventArgs& key)
@@ -177,6 +179,7 @@ void MTWindow::keyReleased(ofKeyEventArgs& key)
 		fv->keyReleasedInternal(key);
 	}
 	this->keyReleased(key.key);
+	onKeyReleased(key);
 }
 
 void MTWindow::mouseMoved(ofMouseEventArgs& mouse)
@@ -271,7 +274,10 @@ void MTWindow::messageReceived(ofMessage& message)
 void MTWindow::modelLoaded(ofEventArgs& args)
 {
 	enqueueUpdateOperation([this]()
-						   { modelLoaded(); });
+						   {
+							   modelLoaded();
+							   onModelLoaded();
+						   });
 
 	contentView->modelLoaded(args);
 }
