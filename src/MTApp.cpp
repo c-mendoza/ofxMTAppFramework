@@ -28,6 +28,15 @@ std::function<std::shared_ptr<MTApp>()> MTApp::InstanceFn = []() {
 	return nullptr;
 };
 
+std::shared_ptr<MTApp> MTApp::instance;
+
+void MTApp::shutdown() {
+	for (auto& w : windows)
+	{
+		w->contentView->removeAllSubviews();
+		w->contentView = nullptr;
+	}
+}
 MTApp::MTApp()
 {
 

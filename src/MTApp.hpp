@@ -75,23 +75,24 @@ public:
 	template<class AppType = MTApp, class ModelType = MTModel>
 	static void CreateApp()
 	{
-		MTApp::InstanceFn = []() {
-			static auto instance = std::make_shared<AppType>();
-			return std::dynamic_pointer_cast<MTApp>(instance);
-		};
-
-		Instance()->model = std::make_shared<ModelType>();
-		Instance()->runApp();
+		if (!instance)
+		{
+			instance = std::make_shared<AppType>();
+			Instance()->model = std::make_shared<ModelType>();
+			Instance()->runApp();
+			Instance()->shutdown();
+		}
 	}
 
 private:
 	MTApp(MTApp const&) = delete;
 	void operator=(MTApp const&) = delete;
 	static std::function<std::shared_ptr<MTApp>()> InstanceFn;
-
+	static std::shared_ptr<MTApp> instance;
+	void shutdown();
 public:
 	static std::shared_ptr<MTApp> Instance() {
-		return InstanceFn();
+		return instance;
 	}
 
 	MTApp();
