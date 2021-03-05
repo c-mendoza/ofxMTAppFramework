@@ -24,19 +24,12 @@
 #endif
 
 std::vector<std::shared_ptr<MTDisplay>> MTApp::displays;
-std::function<std::shared_ptr<MTApp>()> MTApp::InstanceFn = []() {
+std::function<MTApp*()> MTApp::InstanceFn = []() {
 	return nullptr;
 };
 
-std::shared_ptr<MTApp> MTApp::instance;
+MTApp* MTApp::instance;
 
-void MTApp::shutdown() {
-	for (auto& w : windows)
-	{
-		w->contentView->removeAllSubviews();
-		w->contentView = nullptr;
-	}
-}
 MTApp::MTApp()
 {
 
@@ -50,8 +43,6 @@ MTApp::MTApp()
 	currentMode = defaultMode;
 	registerAppMode(defaultMode);
 
-	fileExtension = "";
-
 	ofInit();
 #ifndef TARGET_OPENGLES
 	glfwInit();
@@ -61,11 +52,6 @@ MTApp::MTApp()
 
 	addEventListener(modelLoadedEvent.newListener([this](ofEventArgs& args)
 												  { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
-
-	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
-										   {
-
-										   }));
 }
 
 MTApp::~MTApp()
@@ -197,7 +183,7 @@ void MTApp::runApp()
 	loadAppPreferences();
 	createAppViews();
 //	appWillRun();
-	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), Instance());
+	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(Instance()));
 
 	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
 															{

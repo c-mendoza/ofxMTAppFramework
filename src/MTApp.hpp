@@ -72,31 +72,38 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
 public:
 
+	struct MTAppSettings
+	{
+		std::string fileExtension = "xml";
+		std::string appPreferencesFileName = "com.yourName.yourApp";
+	};
+
 	template<class AppType = MTApp, class ModelType = MTModel>
-	static void CreateApp()
+	static void CreateApp(MTAppSettings settings)
 	{
 		if (!instance)
 		{
-			instance = std::make_shared<AppType>();
+			instance = new AppType();
 			Instance()->model = std::make_shared<ModelType>();
+			Instance()->appPreferencesFilename = settings.appPreferencesFileName;
+			Instance()->fileExtension = settings.fileExtension;
 			Instance()->runApp();
-			Instance()->shutdown();
+//			Instance()->shutdown();
 		}
 	}
 
 private:
 	MTApp(MTApp const&) = delete;
 	void operator=(MTApp const&) = delete;
-	static std::function<std::shared_ptr<MTApp>()> InstanceFn;
-	static std::shared_ptr<MTApp> instance;
-	void shutdown();
+	static std::function<MTApp*()> InstanceFn;
+	static MTApp* instance;
+
 public:
-	static std::shared_ptr<MTApp> Instance() {
+	static MTApp* Instance() {
 		return instance;
 	}
 
 	MTApp();
-public:
 	virtual ~MTApp();
 
 
