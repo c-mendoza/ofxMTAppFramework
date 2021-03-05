@@ -71,11 +71,41 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 {
 
 public:
+
+	struct MTAppSettings
+	{
+		std::string fileExtension = "xml";
+		std::string appPreferencesFileName = "com.yourName.yourApp";
+	};
+
+	template<class AppType = MTApp, class ModelType = MTModel>
+	static void CreateApp(MTAppSettings settings)
+	{
+		if (!instance)
+		{
+			instance = new AppType();
+			Instance()->model = std::make_shared<ModelType>();
+			Instance()->appPreferencesFilename = settings.appPreferencesFileName;
+			Instance()->fileExtension = settings.fileExtension;
+			Instance()->runApp();
+//			Instance()->shutdown();
+		}
+	}
+
+private:
+	MTApp(MTApp const&) = delete;
+	void operator=(MTApp const&) = delete;
+	static std::function<MTApp*()> InstanceFn;
+	static MTApp* instance;
+
+public:
+	static MTApp* Instance() {
+		return instance;
+	}
+
 	MTApp();
 	virtual ~MTApp();
 
-	// TODO: Proper singleton
-	static MTApp *sharedApp;
 
 	/**
 	 * @brief initialize  Override this method to instantiate your model,
@@ -113,15 +143,15 @@ public:
 	template<class T>
 	static std::shared_ptr<T> Model()
 	{
-		auto outModel = std::dynamic_pointer_cast<T>(MTApp::sharedApp->model);
+		auto outModel = std::dynamic_pointer_cast<T>(MTApp::Instance()->model);
 		return outModel;
 	}
 
 	// I'm sure that there is a better way than this, but right now...
 	template<class T>
-	static T *App()
+	static T &App()
 	{
-		return dynamic_cast<T>(MTApp::sharedApp);
+		return dynamic_cast<T>(MTApp::Instance());
 	}
 
 	//------ APP MODES

@@ -2,11 +2,15 @@
 
 //#include <ofMain.h>
 #include "ofAppRunner.h"
+
 #ifndef TARGET_OPENGLES
+
 #include "ofAppGLFWWindow.h"
+
 #else
 #include "ofAppEGLWindow.h"
 #endif
+
 #include "ofWindowSettings.h"
 #include "ofSystemUtils.h"
 #include "ofPath.h"
@@ -14,46 +18,44 @@
 #include "MTWindow.hpp"
 
 #ifndef TARGET_RASPBERRY_PI
+
 #include "MTOffscreenWindow.hpp"
+
 #endif
 
-MTApp* MTApp::sharedApp = 0;
 std::vector<std::shared_ptr<MTDisplay>> MTApp::displays;
+std::function<MTApp*()> MTApp::InstanceFn = []() {
+	return nullptr;
+};
+
+MTApp* MTApp::instance;
 
 MTApp::MTApp()
 {
 
-	// TODO: Proper singleton
-	if (!MTApp::sharedApp)
-	{
-		// Set the basic preferences
-		MTPrefLastFile.set("MTPrefLastFile", "");
-		MTPrefAutoloadLastFile.set("MTPrefAutoloadLastFile", true);
-		MTPrefLaunchInFullScreen.set("MTPrefLaunchInFullScreen", false);
-		appPreferences.setName("App Preferences");
-		appPreferences.add(MTPrefLaunchInFullScreen, MTPrefLastFile, MTPrefAutoloadLastFile);
+	// Set the basic preferences
+	MTPrefLastFile.set("MTPrefLastFile", "");
+	MTPrefAutoloadLastFile.set("MTPrefAutoloadLastFile", true);
+	MTPrefLaunchInFullScreen.set("MTPrefLaunchInFullScreen", false);
+	appPreferences.setName("App Preferences");
+	appPreferences.add(MTPrefLaunchInFullScreen, MTPrefLastFile, MTPrefAutoloadLastFile);
 
-		MTApp::sharedApp = this;
-		currentMode = defaultMode;
-		registerAppMode(defaultMode);
+	currentMode = defaultMode;
+	registerAppMode(defaultMode);
 
-		fileExtension = "";
-
-		ofInit();
+	ofInit();
 #ifndef TARGET_OPENGLES
-		glfwInit();
+	glfwInit();
 #endif
-		MTApp::updateDisplays();
+	MTApp::updateDisplays();
 //		ofSetLogLevel(OF_LOG_NOTICE);
 
-		addEventListener(modelLoadedEvent.newListener([this](ofEventArgs& args)
-													  { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
-	}
+	addEventListener(modelLoadedEvent.newListener([this](ofEventArgs& args)
+												  { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
 }
 
 MTApp::~MTApp()
 {
-	saveAppPreferences();
 }
 
 void MTApp::loadAppPreferences()
@@ -148,6 +150,7 @@ void MTApp::exit(ofEventArgs& args)
 	}
 
 	saveAppPreferences();
+
 	exit();
 }
 
@@ -159,9 +162,7 @@ void MTApp::exit(ofEventArgs& args)
 
 void MTApp::initialize()
 {
-	// These should be overriden sometime
-	//	model = shared_ptr<ofxMTModel>(new ofxMTModel("default"));
-	model = nullptr;
+
 }
 
 void MTApp::createAppViews()
@@ -181,8 +182,8 @@ void MTApp::runApp()
 	createAppPreferencesFilePath();
 	loadAppPreferences();
 	createAppViews();
-	appWillRun();
-	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(this));
+//	appWillRun();
+	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(Instance()));
 
 	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
 															{
@@ -356,6 +357,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
 }
 
 #else
+
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName)
 {
 	ofGLFWWindowSettings settings;
@@ -700,7 +702,8 @@ bool MTApp::saveAppPreferences()
 	for (auto& wp : wpMap)
 	{
 		auto foundFsPos = wp.first.find("FS");
-		if (foundFsPos == 0) {
+		if (foundFsPos == 0)
+		{
 			continue; // Don't store FS windows
 		}
 		auto winXml = windowsXml.appendChild("Window");
@@ -784,13 +787,13 @@ void MTApp::createAppPreferencesFilePath()
 
 int mtGetLocalMouseX()
 {
-//	return MTApp::sharedApp->getLocalMouseX();
+//	return MTApp::Instance()->getLocalMouseX();
 	return -1;
 }
 
 int mtGetLocalMouseY()
 {
-//	return MTApp::sharedApp->getLocalMouseY();
+//	return MTApp::Instance()->getLocalMouseY();
 	return -1;
 }
 
@@ -881,7 +884,7 @@ void MTApp::setMonitorCb(GLFWmonitor* monitor, int connected)
 {
 	MTApp::updateDisplays();
 	ofEventArgs args;
-	MTApp::sharedApp->displaysChangedEvent.notify(args);
+	MTApp::Instance()->displaysChangedEvent.notify(args);
 }
 
 #endif

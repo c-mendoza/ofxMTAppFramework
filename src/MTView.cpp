@@ -17,7 +17,7 @@ MTView::MTView(std::string _name)
 
 	backgroundColor.set("Background Color",
 						ofFloatColor(1.0, 1.0, 1.0, 1.0));
-	ofAddListener(MTApp::sharedApp->appModeChangedEvent,
+	ofAddListener(MTApp::Instance()->appModeChangedEvent,
 				  this, &MTView::appModeChangedInternal,
 				  -100);
 	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
@@ -26,7 +26,7 @@ MTView::MTView(std::string _name)
 
 MTView::~MTView()
 {
-	ofRemoveListener(MTApp::sharedApp->appModeChangedEvent,
+	ofRemoveListener(MTApp::Instance()->appModeChangedEvent,
 					 this, &MTView::appModeChangedInternal,
 					 -100);
 	subviews.clear();
@@ -478,7 +478,7 @@ void MTView::update(ofEventArgs &args)
 	update();
 	onUpdate();
 
-	if (MTApp::sharedApp->autoUpdateAppModes) currentViewMode->update();
+	if (MTApp::Instance()->autoUpdateAppModes) currentViewMode->update();
 
 	for (auto sv : subviews)
 	{
@@ -535,7 +535,7 @@ void MTView::draw(ofEventArgs &args)
 	onDraw();
 
 	// Should I fire a drawEvent here instead? It would make sense...
-	if (MTApp::sharedApp->autoDrawViewModes)
+	if (MTApp::Instance()->autoDrawViewModes)
 	{
 		if (currentViewMode != nullptr)
 		{
