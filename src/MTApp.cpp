@@ -29,6 +29,7 @@ std::function<MTApp*()> MTApp::InstanceFn = []() {
 };
 
 MTApp* MTApp::instance;
+std::shared_ptr<MTApp> MTApp::instancePtr;
 
 MTApp::MTApp()
 {
@@ -201,7 +202,7 @@ void MTApp::runApp()
 	createAppViews();
 //	appWillRun();
 	inLoop = true;
-	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(Instance()));
+	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), instancePtr);
 
 	// Only the first window gets notified of setup when ofRunApp is called
 	// so we need to do that ourselves:
