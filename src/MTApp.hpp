@@ -84,6 +84,7 @@ public:
 		if (!instance)
 		{
 			instance = new AppType();
+			instancePtr = std::shared_ptr<MTApp>(instance);
 			Instance()->model = std::make_shared<ModelType>();
 			Instance()->appPreferencesFilename = settings.appPreferencesFileName;
 			Instance()->fileExtension = settings.fileExtension;
@@ -97,6 +98,7 @@ private:
 	void operator=(MTApp const&) = delete;
 	static std::function<MTApp*()> InstanceFn;
 	static MTApp* instance;
+	static std::shared_ptr<MTApp> instancePtr;
 
 public:
 	static MTApp* Instance() {

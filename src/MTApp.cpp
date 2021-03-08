@@ -29,6 +29,7 @@ std::function<MTApp*()> MTApp::InstanceFn = []() {
 };
 
 MTApp* MTApp::instance;
+std::shared_ptr<MTApp> MTApp::instancePtr;
 
 MTApp::MTApp()
 {
@@ -183,7 +184,7 @@ void MTApp::runApp()
 	loadAppPreferences();
 	createAppViews();
 //	appWillRun();
-	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(Instance()));
+	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), instancePtr);
 
 	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
 															{
