@@ -299,6 +299,14 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	bool autoUpdateAppModes = true;
 	bool autoDrawViewModes = true;
 
+	/**
+	 * @brief Runs a lambda a single time after the mainLoop iterates over the windows.
+	 * @param f
+	 */
+	void runOncePostLoop(std::function<void()> f)
+	{
+		loopFunctionQueue.push(f);
+	}
 #pragma mark EVENTS
 	/**
 	 * @brief Fires when displays are connected or disconnected.
@@ -462,6 +470,10 @@ private:
 	 */
 	std::filesystem::path appPreferencesPath = "";
 	void createAppPreferencesFilePath();
+
+	std::queue<std::function<void()>> loopFunctionQueue;
+
+	bool inLoop = false;
 };
 
 class MTAppModeChangeArgs : public ofEventArgs

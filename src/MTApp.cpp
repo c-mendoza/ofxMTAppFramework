@@ -178,20 +178,31 @@ void MTApp::createAppViews()
 
 void MTApp::runApp()
 {
-	initialize();
-	createAppPreferencesFilePath();
-	loadAppPreferences();
-	createAppViews();
-//	appWillRun();
-	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(Instance()));
+	addEventListener(ofGetMainLoop()->loopEvent.newListener([this]()
+															{
+//																ofLogVerbose("loop queue size")
+//																		<< loopFunctionQueue.size();
+																while (!loopFunctionQueue.empty())
+																{
+																	auto f = loopFunctionQueue.front();
+																	f();
+																	loopFunctionQueue.pop();
+																}
+															}));
 
 	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
 															{
 																saveAppPreferences();
 																exit();
-																return true;
 															}));
-//	MTApp::gui.setup();
+	initialize();
+	createAppPreferencesFilePath();
+	loadAppPreferences();
+	createAppViews();
+//	appWillRun();
+	inLoop = true;
+	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), std::shared_ptr<ofBaseApp>(Instance()));
+
 	// Only the first window gets notified of setup when ofRunApp is called
 	// so we need to do that ourselves:
 	for (auto iter = windows.begin() + 1; iter < windows.end(); iter++)
