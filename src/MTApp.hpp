@@ -93,6 +93,13 @@ public:
 		}
 	}
 
+	template<class AppType = MTApp, class ModelType = MTModel>
+	static void CreateApp()
+	{
+		MTAppSettings settings;
+		CreateApp<AppType, ModelType>(settings);
+	}
+
 private:
 	MTApp(MTApp const&) = delete;
 	void operator=(MTApp const&) = delete;
