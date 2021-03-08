@@ -12,6 +12,7 @@
 #define MTAF_VERSION_MINOR 4
 #define MTAF_VERSION_PATCH 0
 
+//#define ImTextureID unsigned int
 
 #include "MTAppFrameworkUtils.hpp"
 #include "MTViewMode.hpp"
