@@ -143,7 +143,7 @@ public:
 
 	// I'm sure that there is a better way than this, but right now...
 	template<class T>
-	static std::shared_ptr<T> Model()
+	static std::shared_ptr<T> GetModel()
 	{
 		auto outModel = std::dynamic_pointer_cast<T>(MTApp::Instance()->model);
 		return outModel;
@@ -151,7 +151,7 @@ public:
 
 	// I'm sure that there is a better way than this, but right now...
 	template<class T>
-	static T &App()
+	static T &GetApp()
 	{
 		return dynamic_cast<T>(MTApp::Instance());
 	}
