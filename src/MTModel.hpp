@@ -18,6 +18,7 @@ class MTModel : public MTEventListenerStore
 {
 public:
 	MTModel(std::string _name);
+	MTModel() : MTModel("Model"){}
 	virtual ~MTModel(){}
     std::string getName();
 	void setName(std::string n);

@@ -15,7 +15,6 @@
 #include "ofSystemUtils.h"
 #include "ofPath.h"
 #include "MTApp.hpp"
-#include "MTWindow.hpp"
 
 #ifndef TARGET_RASPBERRY_PI
 
@@ -24,12 +23,7 @@
 #endif
 
 std::vector<std::shared_ptr<MTDisplay>> MTApp::displays;
-std::function<MTApp*()> MTApp::InstanceFn = []() {
-	return nullptr;
-};
-
-MTApp* MTApp::instance;
-std::shared_ptr<MTApp> MTApp::instancePtr;
+std::weak_ptr<MTApp> MTApp::AppPtr;
 
 MTApp::MTApp()
 {
@@ -53,10 +47,80 @@ MTApp::MTApp()
 
 	addEventListener(modelLoadedEvent.newListener([this](ofEventArgs& args)
 												  { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
+	addEventListener(ofGetMainLoop()->loopEvent.newListener([this]()
+															{
+//																ofLogVerbose("loop queue size")
+//																		<< loopFunctionQueue.size();
+																while (!loopFunctionQueue.empty())
+																{
+																	auto f = loopFunctionQueue.front();
+																	f();
+																	loopFunctionQueue.pop();
+																}
+															}));
+
+	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
+															{
+																saveAppPreferences();
+																exit();
+															}));
+	createAppPreferencesFilePath();
+	loadAppPreferences();
+
+	runOncePostLoop([this]()
+					{
+						initialize();
+
+						// Only the first window gets notified of setup when ofRunApp is called
+						// so we need to do that ourselves:
+						for (auto iter = windows.begin() + 1; iter < windows.end(); iter++)
+						{
+							(*iter)->events().notifySetup();
+						}
+
+//	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
+						isInitialized = false;
+#ifndef TARGET_RASPBERRY_PI
+						glfwSetMonitorCallback(&setMonitorCb);
+#endif
+						createAppViews();
+						appWillRun();
+						if (MTPrefAutoloadLastFile)
+						{
+							isInitialized = openImpl(MTPrefLastFile);
+
+							if (!isInitialized)
+							{
+								std::string msg = "Tried to open " + MTPrefLastFile.get() + " but could not find it";
+								ofLogNotice("MTApp") << msg;
+								ofSystemAlertDialog(msg);
+								isInitialized = true;
+								newFile();
+							}
+						}
+						else
+						{
+							isInitialized = true;
+							newFile();
+						}
+
+
+						ofLogVerbose("MTApp") << "Running Main Loop";
+					});
+}
+
+void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings)
+{
+	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
+	AppPtr = app;
+	ofRunApp(std::move(app));
+//	ofGetMainLoop()->loopOnce();
+	ofRunMainLoop();
 }
 
 MTApp::~MTApp()
 {
+	eventListeners.unsubscribeAll();
 }
 
 void MTApp::loadAppPreferences()
@@ -175,72 +239,6 @@ void MTApp::createAppViews()
 #endif
 	windowSettings.setSize(1280, 800);
 	mainWindow = createWindow("Main Window", windowSettings);
-}
-
-void MTApp::runApp()
-{
-	addEventListener(ofGetMainLoop()->loopEvent.newListener([this]()
-															{
-//																ofLogVerbose("loop queue size")
-//																		<< loopFunctionQueue.size();
-																while (!loopFunctionQueue.empty())
-																{
-																	auto f = loopFunctionQueue.front();
-																	f();
-																	loopFunctionQueue.pop();
-																}
-															}));
-
-	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
-															{
-																saveAppPreferences();
-																exit();
-															}));
-	initialize();
-	createAppPreferencesFilePath();
-	loadAppPreferences();
-	createAppViews();
-//	appWillRun();
-	inLoop = true;
-	ofRunApp(std::dynamic_pointer_cast<ofAppBaseWindow>(windows.front()), instancePtr);
-
-	// Only the first window gets notified of setup when ofRunApp is called
-	// so we need to do that ourselves:
-	for (auto iter = windows.begin() + 1; iter < windows.end(); iter++)
-	{
-		(*iter)->events().notifySetup();
-	}
-
-//	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
-	isInitialized = false;
-
-	if (MTPrefAutoloadLastFile)
-	{
-		isInitialized = openImpl(MTPrefLastFile);
-
-		if (!isInitialized)
-		{
-			std::string msg = "Tried to open " + MTPrefLastFile.get() + " but could not find it";
-			ofLogNotice("MTApp") << msg;
-			ofSystemAlertDialog(msg);
-			isInitialized = true;
-			newFile();
-		}
-	}
-	else
-	{
-		isInitialized = true;
-		newFile();
-	}
-
-#ifndef TARGET_RASPBERRY_PI
-	glfwSetMonitorCallback(&setMonitorCb);
-#endif
-	appWillRun();
-	ofLogVerbose("MTApp") << "Running Main Loop";
-	ofRunMainLoop();
-
-//	ImGui::Shutdown();
 }
 
 /// APP MODES
@@ -377,7 +375,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName)
 	return createWindow(windowName, settings);
 }
 
-std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWindowSettings& settings)
+std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWindowSettings settings)
 {
 
 	for (auto& w : windows)

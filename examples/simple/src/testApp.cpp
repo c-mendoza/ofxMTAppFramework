@@ -4,7 +4,6 @@
 
 void testApp::initialize()
 {
-	model = std::make_shared<MTModel>("test model");
 }
 
 void testApp::createAppViews()
@@ -29,9 +28,9 @@ void testApp::createAppViews()
 	view2->setFrameOrigin(glm::vec2(400, 100));
 	view2->backgroundColor = ofColor(10, 200, 10);
 
-	ofGLFWWindowSettings windowSettings;
-	windowSettings.setSize(1920, 1080);
-	mainWindow = createWindow("Main Window", windowSettings);
+//	ofGLFWWindowSettings windowSettings;
+//	windowSettings.setSize(1920, 1080);
+//	mainWindow = createWindow("Main Window", windowSettings);
 
 	mainWindow->contentView->addSubview(view1);
 	mainWindow->contentView->addSubview(view2);

@@ -3,6 +3,5 @@
 
 //========================================================================
 int main( ){
-	testApp* app = new testApp();
-	app->runApp();
+	MTApp::CreateApp<testApp, MTModel>();
 }
