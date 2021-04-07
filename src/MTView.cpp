@@ -17,20 +17,14 @@ MTView::MTView(std::string _name)
 
 	backgroundColor.set("Background Color",
 						ofFloatColor(1.0, 1.0, 1.0, 1.0));
-	ofAddListener(MTApp::Instance()->appModeChangedEvent,
-				  this, &MTView::appModeChangedInternal,
-				  -100);
-	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
+//	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
 	setFrameSize(200, 200);
 }
 
 MTView::~MTView()
 {
-	ofRemoveListener(MTApp::Instance()->appModeChangedEvent,
-					 this, &MTView::appModeChangedInternal,
-					 -100);
 	subviews.clear();
-	ofLogVerbose("View Destruct: ") << name;
+	ofLogVerbose("MTView") << name << " destroyed";
 }
 
 //------------------------------------------------------//
@@ -456,6 +450,15 @@ int MTView::getWindowHeight()
 void MTView::setup(ofEventArgs &args)
 {
 	currentViewMode = std::make_shared<MTViewModeVoid>(shared_from_this());
+	eventListeners.unsubscribeAll();
+	addEventListener(MTApp::GetApp()->appModeChangedEvent.newListener([this](MTAppModeChangeArgs& args)
+																	  {
+																		  if (currentViewMode)
+																		  {
+																			  currentViewMode->exit();
+																		  }
+																		  appModeChanged(args);
+																	  }, -100));
 	setup();
 	onSetup();
 	isSetUp = true;
@@ -844,11 +847,4 @@ void MTView::setViewMode(std::shared_ptr<MTViewMode> mode)
 	currentViewMode->setup();
 }
 
-void MTView::appModeChangedInternal(MTAppModeChangeArgs& args)
-{
-	if (currentViewMode)
-	{
-		currentViewMode->exit();
-	}
-	appModeChanged(args);
-}
+

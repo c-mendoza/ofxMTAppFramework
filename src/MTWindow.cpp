@@ -16,7 +16,7 @@
 
 static ofEventArgs voidEventArgs;
 
-MTWindow::MTWindow(std::string name)
+MTWindow::MTWindow(const std::string& name)
 {
 	contentView = std::make_shared<MTView>("root");
 	contentView->backgroundColor = ofColor(0);
@@ -39,7 +39,6 @@ MTWindow::~MTWindow()
 
 void MTWindow::close()
 {
-
 	MTApp::Instance()->closeWindow(shared_from_this());
 	onClose();
 //	if(auto windowP = getGLFWWindow()){
@@ -73,6 +72,8 @@ void MTWindow::close()
 //		setImGuiEnabled(false);
 //	 }
 //// This will destroy the gui:
+	bindImGuiContext();
+
 	gui.reset();
 }
 
@@ -161,6 +162,7 @@ void MTWindow::draw(ofEventArgs& args)
 	{
 		if (ofGetLastFrameTime() != 0)
 		{
+			bindImGuiContext();
 			getGui()->begin();
 
 			drawImGuiForView(contentView);

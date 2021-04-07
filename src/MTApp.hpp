@@ -9,13 +9,16 @@
 #include "ofxImGui.h"
 #include "ofBaseApp.h"
 
-class MTWindow;
 class MTView;
+
 class MTModel;
+
 class MTViewMode;
-class ofAppBaseWindow;
-class ofWindowSettings;
+
+class MTWindow;
+
 class MTOffscreenWindow;
+
 class ofAppEGLWindowSettings;
 
 typedef std::string MTAppModeName;
@@ -29,7 +32,8 @@ private:
 	ofRectangle frame;
 	int id;
 public:
-	MTDisplay(std::string name, ofRectangle frame, int id) {
+	MTDisplay(std::string name, ofRectangle frame, int id)
+	{
 		this->name = name;
 		this->frame = frame;
 		this->id = id;
@@ -76,21 +80,20 @@ public:
 	{
 		std::string fileExtension = "xml";
 		std::string appPreferencesFileName = "com.yourName.yourApp";
+		ofGLFWWindowSettings mainWindowSettings;
 	};
 
 	template<class AppType = MTApp, class ModelType = MTModel>
 	static void CreateApp(MTAppSettings settings)
 	{
-		if (!instance)
-		{
-			instance = new AppType();
-			instancePtr = std::shared_ptr<MTApp>(instance);
-			Instance()->model = std::make_shared<ModelType>();
-			Instance()->appPreferencesFilename = settings.appPreferencesFileName;
-			Instance()->fileExtension = settings.fileExtension;
-			Instance()->runApp();
-//			Instance()->shutdown();
-		}
+//		if (!ofGetMainLoop()->getCurrentApp())
+//		{
+		auto app = std::make_shared<AppType>();
+		app->model = std::make_unique<ModelType>();
+		app->appPreferencesFilename = settings.appPreferencesFileName;
+		app->fileExtension = settings.fileExtension;
+		RunApp(std::move(app), settings.mainWindowSettings);
+//		}
 	}
 
 	template<class AppType = MTApp, class ModelType = MTModel>
@@ -101,15 +104,16 @@ public:
 	}
 
 private:
+	static void RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings);
 	MTApp(MTApp const&) = delete;
 	void operator=(MTApp const&) = delete;
-	static std::function<MTApp*()> InstanceFn;
-	static MTApp* instance;
-	static std::shared_ptr<MTApp> instancePtr;
+//	static MTApp* instance;
+//	static std::shared_ptr<MTApp> instance;
 
 public:
-	static MTApp* Instance() {
-		return instance;
+	static std::shared_ptr<MTApp> Instance()
+	{
+		return GetApp();
 	}
 
 	MTApp();
@@ -142,27 +146,25 @@ public:
 	virtual void appWillRun()
 	{}
 
-	/**
-	 * @brief Starts the app's run loop. You shouldn't have to call this
-	 * method yourself.
-	 */
-	void runApp();
-
 	// I'm sure that there is a better way than this, but right now...
-	template<class T>
+	template<class T = MTModel>
 	static std::shared_ptr<T> GetModel()
 	{
-		auto outModel = std::dynamic_pointer_cast<T>(MTApp::Instance()->model);
-		return outModel;
+//		auto p = MTApp::Instance()->model.get();
+//		return *dynamic_cast<T*>(p);
+		return std::dynamic_pointer_cast<T>(Instance()->model);
 	}
 
 	// I'm sure that there is a better way than this, but right now...
-	template<class T>
-	static T &GetApp()
+	template<class T = MTApp>
+	static std::shared_ptr<T> GetApp()
 	{
-		return dynamic_cast<T>(MTApp::Instance());
+		return std::dynamic_pointer_cast<T>(AppPtr.lock());
 	}
 
+private:
+	static std::weak_ptr<MTApp> AppPtr;
+public:
 	//------ APP MODES
 	const MTAppModeName defaultMode = "MTAppModeDefault";
 
@@ -190,17 +192,20 @@ public:
 	 * event.
 	 * The default implementation does nothing.
 	 */
-	virtual void appModeChanged(MTAppModeChangeArgs &changeArgs)
+	virtual void appModeChanged(MTAppModeChangeArgs& changeArgs)
 	{}
 
-	virtual void exit(){}
+	virtual void exit()
+	{
+//		MTApp::instance.reset();
+	}
 
 	//// UI
 	std::weak_ptr<MTWindow> getMainWindow();
 
 #ifndef TARGET_RASPBERRY_PI
 	std::shared_ptr<MTOffscreenWindow>
-	createOffscreenWindow(std::string windowName, ofGLFWWindowSettings &settings, bool useTextureRectangle = true);
+	createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle = true);
 #endif
 
 #ifdef TARGET_OPENGLES
@@ -223,7 +228,7 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	 * @param settings
 	 * @return A shared_ptr to the MTWindow, or nullptr if you used a windowName already in use by another window.
 	 */
-	std::shared_ptr<MTWindow> createWindow(std::string windowName, ofGLFWWindowSettings &settings);
+	std::shared_ptr<MTWindow> createWindow(std::string windowName, ofGLFWWindowSettings settings);
 
 	/**
 	 * @brief Creates a window with default settings. The OpenGL context will be shared with the Main Window.
@@ -234,7 +239,6 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	std::shared_ptr<MTWindow> createWindow(std::string windowName);
 
 #endif
-
 
 
 	void closeWindow(std::shared_ptr<MTWindow> window);
@@ -271,13 +275,13 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	 * automatically prior to the app closing.
 	 * @param preference An ofParameter
 	 */
-	void registerAppPreference(ofAbstractParameter &preference);
+	void registerAppPreference(ofAbstractParameter& preference);
 
 	/////// UTILITY
 	/**
 	 * @brief Stringifies an ofPath.
 	 */
-	static std::string pathToString(const ofPath &path);
+	static std::string pathToString(const ofPath& path);
 
 	/**
 	 * @brief Makes an ofPath from a stringified representation.
@@ -316,7 +320,7 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	{
 		loopFunctionQueue.push(f);
 	}
-#pragma mark EVENTS
+
 	/**
 	 * @brief Fires when displays are connected or disconnected.
 	 * When displays change, the MTApp::displays vector is recreated,
@@ -349,9 +353,11 @@ protected:
 	/// but it can be anything you want.
 	std::string fileExtension = "xml";
 
+private:
 	std::shared_ptr<MTWindow> mainWindow;
 	std::shared_ptr<MTModel> model;
 
+protected:
 	/**
 	 * The app preferences file name. It can be anything you want, but to avoid
 	 * naming conflicts it is recommended that you use reverse DNS notation.
@@ -373,18 +379,18 @@ protected:
 	/**
 	 * @brief Event handler. You should not have to call this method.
 	 */
-	virtual void keyPressed(ofKeyEventArgs &key);
+	virtual void keyPressed(ofKeyEventArgs& key);
 	/**
 	 * @brief Event handler. You should not have to call this method.
  	 */
-	virtual void keyReleased(ofKeyEventArgs &key);
+	virtual void keyReleased(ofKeyEventArgs& key);
 
 	/**
 	 * @brief Called whenever there is a key pressed anywhere in the app.
 	 * Override this to detect key presses globally.
 	 * Default implementation does nothing.
 	 */
-	virtual void appKeyPressed(ofKeyEventArgs &key)
+	virtual void appKeyPressed(ofKeyEventArgs& key)
 	{}
 
 	/**
@@ -392,7 +398,7 @@ protected:
 	 * Override this to detect key presses globally.
 	 * Default implementation does nothing.
 	 */
-	virtual void appKeyReleased(ofKeyEventArgs &key)
+	virtual void appKeyReleased(ofKeyEventArgs& key)
 	{}
 
 	/**
@@ -403,7 +409,7 @@ protected:
 	virtual void modelLoaded()
 	{}
 
-	virtual void exit(ofEventArgs & args);
+	virtual void exit(ofEventArgs& args);
 	// APP MODES
 	MTAppModeName currentMode;
 	std::vector<MTAppModeName> appModes;
@@ -416,15 +422,14 @@ protected:
 	 * 	Adds the standard event listeners to a window. You probably won't
 	 * 	need to call this method.
 	 */
-	void addAllEvents(MTWindow *w);
+	void addAllEvents(MTWindow* w);
 
 	/**
  	 * 	Removes the standard event listeners to a window. You probably won't
  	 * 	need to call this method.
  	 */
-	void removeAllEvents(MTWindow *w);
+	void removeAllEvents(MTWindow* w);
 
-#pragma mark DISPLAY MANAGEMENT
 public:
 
 	/**
@@ -432,7 +437,7 @@ public:
 	 * @return A std::vector of shared_ptr<MTDisplay>.
 	 * @sa MTDisplay
 	 */
-	static const std::vector<std::shared_ptr<MTDisplay>> &getDisplays()
+	static const std::vector<std::shared_ptr<MTDisplay>>& getDisplays()
 	{ return displays; }
 
 	/**
@@ -442,13 +447,12 @@ public:
 	static void updateDisplays();
 
 #ifndef TARGET_OPENGLES
-	static void setMonitorCb(GLFWmonitor *monitor, int connected);
+	static void setMonitorCb(GLFWmonitor* monitor, int connected);
 #endif
 
 protected:
 	static std::vector<std::shared_ptr<MTDisplay>> displays;
 
-#pragma mark INTERNALS
 
 private:
 	bool ofAppInitialized = false;

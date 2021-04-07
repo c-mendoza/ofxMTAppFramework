@@ -20,9 +20,9 @@
 
 #include "ofxImGui.h"
 
-class MTModel;
-class MTAppModeChangeArgs;
-class MTView;
+//class MTModel;
+//class MTAppModeChangeArgs;
+//class MTView;
 class MTWindowEventArgs;
 
 #ifndef TARGET_RASPBERRY_PI
@@ -36,7 +36,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 {
 #endif
   public:
-	MTWindow(std::string name);
+	MTWindow(const std::string& name);
 	~MTWindow();
 
 	ofParameter<std::string> name;
