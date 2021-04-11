@@ -158,7 +158,7 @@ void priv::exitFullScreen()
 	for (const auto& window : fullScreenWindows)
 	{
 		window->setFullscreen(false);
-		MTApp::Instance()->closeWindow(window);
+		window->setWindowShouldClose();
 	}
 	windowWithOutput->setWindowPosition(windowPos.x, windowPos.y);
 	glfwShowWindow(windowWithOutput->getGLFWWindow());
