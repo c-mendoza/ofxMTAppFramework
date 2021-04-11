@@ -468,7 +468,12 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 	}
 
 	auto wIter = std::find(windows.begin(), windows.end(), window);
-	windows.erase(wIter);
+	if (wIter != windows.end())
+	{
+		windows.erase(wIter);
+	} else {
+		ofLogWarning(__FUNCTION__ ) << "Could not find window to delete: " << window->name;
+	}
 	removeAllEvents(window.get());
 	window->setWindowShouldClose();
 }
