@@ -20,25 +20,25 @@
 #include "MTModel.hpp"
 #include "MTView.hpp"
 #include "MTWindow.hpp"
-
-inline std::ostream& operator<<(std::ostream& os, const ofPath& path)
-{
-	os << MTAppFramework::PathToString2(path);
-	return os;
-}
-
-inline std::istream& operator>>(std::istream& is, ofPath& path)
-{
-	std::string line;
-	std::string result;
-	while (std::getline(is, line))
-	{
-		if (!line.empty())
-			result += line;
-	}
-
-	path = MTAppFramework::PathFromString2(result);
-	return is;
-}
+//
+//inline std::ostream& operator<<(std::ostream& os, const ofPath& path)
+//{
+//	os << MTAppFramework::PathToString2(path);
+//	return os;
+//}
+//
+//inline std::istream& operator>>(std::istream& is, ofPath& path)
+//{
+//	std::string line;
+//	std::string result;
+//	while (std::getline(is, line))
+//	{
+//		if (!line.empty())
+//			result += line;
+//	}
+//
+//	path = MTAppFramework::PathFromString2(result);
+//	return is;
+//}
 
 #endif
