@@ -64,8 +64,7 @@ MTApp::MTApp()
 																saveAppPreferences();
 																exit();
 															}));
-	createAppPreferencesFilePath();
-	loadAppPreferences();
+
 
 	runOncePostLoop([this]()
 					{
@@ -113,6 +112,8 @@ void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindow
 {
 	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
 	AppPtr = app;
+	app->createAppPreferencesFilePath();
+	app->loadAppPreferences();
 	ofRunApp(std::move(app));
 //	ofGetMainLoop()->loopOnce();
 	ofRunMainLoop();
