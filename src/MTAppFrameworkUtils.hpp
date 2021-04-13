@@ -262,9 +262,7 @@ public:
 
 	static void RemoveAllParameters(ofParameterGroup& group)
 	{
-		for (int i = 0; i < group.size(); i++) {
-			group.remove(i);
-		}
+		while(group.size() > 0) group.remove(group.size()-1);
 	}
 };
 
