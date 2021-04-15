@@ -49,13 +49,15 @@ MTApp::MTApp()
 												  { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
 	addEventListener(ofGetMainLoop()->loopEvent.newListener([this]()
 															{
-//																ofLogVerbose("loop queue size")
-//																		<< loopFunctionQueue.size();
-																while (!loopFunctionQueue.empty())
+																// We only iterate until size so that if a
+																// loopFunction adds another entry into the deque
+																// it won't get executed until the next loop
+																auto size = loopFunctions.size();
+																if (size == 0) return;
+																for (int i = 0; i < size; i++)
 																{
-																	auto f = loopFunctionQueue.front();
-																	f();
-																	loopFunctionQueue.pop();
+																	loopFunctions.front()();
+																	loopFunctions.pop_front();
 																}
 															}));
 

@@ -318,7 +318,7 @@ std::shared_ptr<MTWindow> createWindow(std::string windowName,
 	 */
 	void runOncePostLoop(std::function<void()> f)
 	{
-		loopFunctionQueue.push(f);
+		loopFunctions.push_back(f);
 	}
 
 	/**
@@ -484,7 +484,9 @@ private:
 	std::filesystem::path appPreferencesPath = "";
 	void createAppPreferencesFilePath();
 
-	std::queue<std::function<void()>> loopFunctionQueue;
+//	std::queue<std::function<void()>> loopFunctionQueue;
+
+	std::deque<std::function<void()>> loopFunctions;
 
 	bool inLoop = false;
 };
