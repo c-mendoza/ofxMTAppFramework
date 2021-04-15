@@ -85,7 +85,12 @@ MTApp::MTApp()
 						glfwSetMonitorCallback(&setMonitorCb);
 #endif
 						createAppViews();
-						appWillRun();
+
+						runOncePostLoop([this]()
+						{
+							appWillRun();
+						});
+
 						if (MTPrefAutoloadLastFile)
 						{
 							isInitialized = openImpl(MTPrefLastFile);
@@ -117,8 +122,6 @@ void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindow
 	app->createAppPreferencesFilePath();
 	app->loadAppPreferences();
 	ofRunApp(std::move(app));
-//	ofGetMainLoop()->loopOnce();
-	ofRunMainLoop();
 }
 
 MTApp::~MTApp()
@@ -474,8 +477,10 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 	if (wIter != windows.end())
 	{
 		windows.erase(wIter);
-	} else {
-		ofLogWarning(__FUNCTION__ ) << "Could not find window to delete: " << window->name;
+	}
+	else
+	{
+		ofLogWarning(__FUNCTION__) << "Could not find window to delete: " << window->name;
 	}
 	removeAllEvents(window.get());
 	window->setWindowShouldClose();
