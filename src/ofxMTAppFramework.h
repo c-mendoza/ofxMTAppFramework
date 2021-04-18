@@ -9,7 +9,7 @@
 #define ofxMTAppFramework_h
 
 #define MTAF_VERSION_MAJOR 0
-#define MTAF_VERSION_MINOR 5
+#define MTAF_VERSION_MINOR 6
 #define MTAF_VERSION_PATCH 0
 
 //#define ImTextureID unsigned int
