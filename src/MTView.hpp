@@ -186,28 +186,28 @@ public:
 	//
 	//--------------------------------------------------//
 
-	std::function<void()> onModelLoaded = [] {};
-	std::function<void()> onSetup = [] {};
-	std::function<void()> onUpdate = [] {};
-	std::function<void()> onDraw = [] {};
-	std::function<void()> onExit = [] {};
-	std::function<void(int, int)> onWindowResized = [](int w, int h) {};
-	std::function<void()> onSuperviewFrameChanged = [] {};
-	std::function<void()> onFrameChanged = [] {};
-	std::function<void()> onSuperviewContentChanged = [] {};
-	std::function<void(int)> onKeyPressed = [](int key) {};
-	std::function<void(int)> onKeyReleased = [](int key) {};
-	std::function<void(int, int)> onMouseMoved = [](int x, int y) {};
-	std::function<void(int, int, int)> onMouseDragged =
-	  [](int x, int y, int button) {};
-	std::function<void(int, int, int)> onMousePressed =
-	  [](int x, int y, int button) {};
-	std::function<void(int, int, int)> onMouseReleased =
-	  [](int x, int y, int button) {};
-	std::function<void(int, int, float, float)> onMouseScrolled =
-	  [](int x, int y, float scrollX, float scrollY) {};
-	std::function<void(int, int)> onMouseEntered = [](int x, int y) {};
-	std::function<void(int, int)> onMouseExited = [](int x, int y) {};
+	std::function<void(MTView*)> onModelLoaded = [](MTView* view) {};
+	std::function<void(MTView*)> onSetup = [](MTView* view) {};
+	std::function<void(MTView*)> onUpdate = [](MTView* view) {};
+	std::function<void(MTView*)> onDraw = [](MTView* view) {};
+	std::function<void(MTView*)> onExit = [](MTView* view) {};
+	std::function<void(MTView*,int, int)> onWindowResized = [](MTView* view, int w, int h) {};
+	std::function<void(MTView*)> onSuperviewFrameChanged = [](MTView* view){};
+	std::function<void(MTView*)> onFrameChanged = [](MTView* view){};
+	std::function<void(MTView*)> onSuperviewContentChanged = [](MTView* view){};
+	std::function<void(MTView*, int)> onKeyPressed = [](MTView* view, int key) {};
+	std::function<void(MTView*, int)> onKeyReleased = [](MTView* view, int key) {};
+	std::function<void(MTView*, int, int)> onMouseMoved = [](MTView* view, int x, int y) {};
+	std::function<void(MTView*, int, int, int)> onMouseDragged =
+	  [](MTView* view, int x, int y, int button) {};
+	std::function<void(MTView*, int, int, int)> onMousePressed =
+	  [](MTView* view, int x, int y, int button) {};
+	std::function<void(MTView*, int, int, int)> onMouseReleased =
+	  [](MTView*, int x, int y, int button) {};
+	std::function<void(MTView*, int, int, float, float)> onMouseScrolled =
+	  [](MTView* view, int x, int y, float scrollX, float scrollY) {};
+	std::function<void(MTView*, int, int)> onMouseEntered = [](MTView* view, int x, int y) {};
+	std::function<void(MTView*, int, int)> onMouseExited = [](MTView* view, int x, int y) {};
 
 
 #pragma mark FRAME AND CONTENT

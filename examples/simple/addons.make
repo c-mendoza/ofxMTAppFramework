@@ -1,3 +1,2 @@
-ofxmtappframework
-ofxCv
+ofxMTAppFramework
 ofxImGui

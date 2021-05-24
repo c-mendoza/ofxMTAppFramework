@@ -33,7 +33,7 @@ MTWindow::~MTWindow()
 		bindImGuiContext();
 		gui.reset();
 	}
-
+	contentView->removeAllSubviews();
 	ofLogVerbose("MTWindow") << name.get() << " destroyed";
 }
 

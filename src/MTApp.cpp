@@ -56,8 +56,9 @@ MTApp::MTApp()
 																if (size == 0) return;
 																for (int i = 0; i < size; i++)
 																{
-																	loopFunctions.front()();
+																	auto f = loopFunctions.front();
 																	loopFunctions.pop_front();
+																	f();
 																}
 															}));
 
@@ -122,6 +123,8 @@ void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindow
 	app->createAppPreferencesFilePath();
 	app->loadAppPreferences();
 	ofRunApp(std::move(app));
+	AppPtr.reset();
+
 }
 
 MTApp::~MTApp()
@@ -483,6 +486,7 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 		ofLogWarning(__FUNCTION__) << "Could not find window to delete: " << window->name;
 	}
 	removeAllEvents(window.get());
+
 	window->setWindowShouldClose();
 }
 

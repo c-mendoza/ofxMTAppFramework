@@ -325,19 +325,23 @@ void MTView::setSuperview(std::shared_ptr<MTView> view)
 void MTView::addSubview(std::shared_ptr<MTView> subview)
 {
 	//	subview->window = window; // window for the subview is set in setSuperview
+	ofLogVerbose(name.get() + " 1") << subview.use_count();
 	subview->setSuperview(shared_from_this());
-
+	ofLogVerbose("2") << subview.use_count();
 	if (this->isSetUp) // If setupInternal has run already, then call the subview's setup
 	{
 		// Enqueue it in update() so that we may call setup() under the right
 		// OpenGL context.
-		enqueueUpdateOperation([this, subview]()
+		auto subviewPtr = subview.get();
+		enqueueUpdateOperation([subviewPtr]()
 							   {
 								   auto args = ofEventArgs();
-								   subview->setup(args);
+								   subviewPtr->setup(args);
 							   });
 	}
+	ofLogVerbose("3") << subview.use_count();
 	subviews.push_back(subview);
+	ofLogVerbose("4") << subview.use_count();
 }
 
 std::vector<std::shared_ptr<MTView>> &MTView::getSubviews()
@@ -406,8 +410,13 @@ void MTView::removeAllSubviews()
 {
 	for (auto &view : subviews)
 	{
+		view->removeAllSubviews();
 		view->superview.reset();
 		view->resetWindowPointer();
+	}
+	if (!subviews.empty())
+	{
+		ofLogVerbose("BLA") << subviews.front()->name <<  " " << subviews.front().use_count();
 	}
 	subviews.clear();
 }
@@ -460,7 +469,7 @@ void MTView::setup(ofEventArgs &args)
 																		  appModeChanged(args);
 																	  }, -100));
 	setup();
-	onSetup();
+	onSetup(this);
 	isSetUp = true;
 	for (auto sv : subviews)
 	{
@@ -479,7 +488,7 @@ void MTView::update(ofEventArgs &args)
 
 	//Call user's update()
 	update();
-	onUpdate();
+	onUpdate(this);
 
 	if (MTApp::Instance()->autoUpdateAppModes) currentViewMode->update();
 
@@ -535,7 +544,7 @@ void MTView::draw(ofEventArgs &args)
 
 	// Call the user's draw() function(s)
 	draw();
-	onDraw();
+	onDraw(this);
 
 	// Should I fire a drawEvent here instead? It would make sense...
 	if (MTApp::Instance()->autoDrawViewModes)
@@ -571,7 +580,7 @@ void MTView::exit(ofEventArgs &args)
 {
 	currentViewMode->exit();
 	exit();
-	onExit();
+	onExit(this);
 	for (auto sv : subviews)
 	{
 		sv->exit(args);
@@ -583,7 +592,7 @@ void MTView::windowResized(ofResizeEventArgs &resize)
 //	updateMatrices();
 //	layoutInternal();
 	windowResized(resize.width, resize.height);
-	onWindowResized(resize.width, resize.height);
+	onWindowResized(this, resize.width, resize.height);
 	for (auto view : subviews)
 	{
 		view->windowResized(resize);
@@ -596,7 +605,7 @@ void MTView::keyPressedInternal(ofKeyEventArgs &key)
 	ofLogVerbose("MTView") << "keyPressed: " << name.get()+" " << (char) key.key;
 	keyPressed(key.key);
 	keyPressed(key);
-	onKeyPressed(key.key);
+	onKeyPressed(this, key.key);
 	keyPressedEvent.notify(this, key);
 }
 
@@ -605,7 +614,7 @@ void MTView::keyReleasedInternal(ofKeyEventArgs &key)
 	ofLogVerbose("MTView") << "keyReleasedInternal: " << name.get()+" " << (char) key.key;
 	keyReleased(key.key);
 	keyReleased(key);
-	onKeyReleased(key.key);
+	onKeyReleased(this, key.key);
 	keyReleasedEvent.notify(this, key);
 }
 
@@ -641,7 +650,7 @@ void MTView::mouseMoved(ofMouseEventArgs &mouse)
 												  contentMouse.y,
 												  mouse.button);
 	mouseMoved(contentMouse.x, contentMouse.y);
-	onMouseMoved(contentMouse.x, contentMouse.y);
+	onMouseMoved(this, contentMouse.x, contentMouse.y);
 	mouseMovedEvent.notify(this, localArgs);
 }
 
@@ -660,7 +669,7 @@ void MTView::mouseDragged(ofMouseEventArgs &mouse)
 												  contentMouse.y,
 												  mouse.button);
 	mouseDragged(contentMouse.x, contentMouse.y, mouse.button);
-	onMouseDragged(contentMouse.x, contentMouse.y, mouse.button);
+	onMouseDragged(this, contentMouse.x, contentMouse.y, mouse.button);
 	mouseDraggedEvent.notify(this, localArgs);
 }
 
@@ -674,7 +683,7 @@ void MTView::mousePressed(ofMouseEventArgs &mouse)
 												  contentMouse.y,
 												  mouse.button);
 	mousePressed(contentMouse.x, contentMouse.y, mouse.button);
-	onMousePressed(contentMouse.x, contentMouse.y, mouse.button);
+	onMousePressed(this, contentMouse.x, contentMouse.y, mouse.button);
 	mousePressedEvent.notify(this, localArgs);
 }
 
@@ -695,7 +704,7 @@ void MTView::mouseReleased(ofMouseEventArgs &mouse)
 
 	isMouseDown = false;
 	mouseReleased(contentMouse.x, contentMouse.y, mouse.button);
-	onMouseReleased(contentMouse.x, contentMouse.y, mouse.button);
+	onMouseReleased(this, contentMouse.x, contentMouse.y, mouse.button);
 	mouseReleasedEvent.notify(this, localArgs);
 }
 
@@ -709,7 +718,7 @@ void MTView::mouseScrolled(ofMouseEventArgs &mouse)
 	mouseWheel = mouse.scrollY;
 //    ofLogNotice("MTView::mouseScrolled") << "scrollX and scrollY are in Window coordinates"
 	mouseScrolled(contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
-	onMouseScrolled(contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
+	onMouseScrolled(this, contentMouse.x, contentMouse.y, mouse.scrollX, mouse.scrollY);
 	mouseScrolledEvent.notify(this, localArgs);
 }
 
@@ -721,7 +730,7 @@ void MTView::mouseEntered(ofMouseEventArgs &mouse)
 												  contentMouse.y,
 												  mouse.button);
 	mouseEntered(contentMouse.x, contentMouse.y);
-	onMouseEntered(contentMouse.x, contentMouse.y);
+	onMouseEntered(this, contentMouse.x, contentMouse.y);
 	mouseEnteredEvent.notify(this, localArgs);
 }
 
@@ -733,7 +742,7 @@ void MTView::mouseExited(ofMouseEventArgs &mouse)
 												  contentMouse.y,
 												  mouse.button);
 	mouseExited(contentMouse.x, contentMouse.y);
-	onMouseExited(contentMouse.x, contentMouse.y);
+	onMouseExited(this, contentMouse.x, contentMouse.y);
 	mouseExitedEvent.notify(this, localArgs);
 }
 
@@ -752,7 +761,7 @@ void MTView::modelLoaded(ofEventArgs &args)
 	enqueueUpdateOperation([this]()
 						   {
 							   modelLoaded();
-							   onModelLoaded();
+							   onModelLoaded(this);
 						   });
 
 	// Recurse:
