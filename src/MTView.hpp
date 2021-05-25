@@ -61,8 +61,8 @@ public:
 
 protected:
 	std::weak_ptr<MTWindow> window;
-	std::weak_ptr<MTView> superview;
-	std::vector<std::shared_ptr<MTView>> subviews;
+	MTView* superview;
+	std::vector<std::unique_ptr<MTView>> subviews;
 
 public:
 	/**
@@ -295,7 +295,7 @@ public:
 
 	/// \brief Returns the deepest subview that occupies the specified
 	/// window coordinate.
-	virtual std::shared_ptr<MTView> hitTest(glm::vec2& windowCoord);
+	virtual MTView* hitTest(glm::vec2& windowCoord);
 
 
 #pragma mark MOUSE
@@ -348,7 +348,7 @@ public:
 
 	/// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
-	glm::vec2 transformPoint(glm::vec2& coords, std::shared_ptr<MTView> toView);
+	glm::vec2 transformPoint(glm::vec2& coords, MTView* toView);
 
 	/// \brief Transforms the passed point from frame
 	/// coordinates to content coordinates.
@@ -382,21 +382,23 @@ public:
 	 * @brief
 	 * @return Returns this view's superview, or @code nullptr @endcode if there isn't one.
 	 */
-	std::shared_ptr<MTView> getSuperview();
+	MTView* getSuperview();
 
 	/// \brief Adds a subview.
-	void addSubview(std::shared_ptr<MTView> subview);
+	void addSubview(std::unique_ptr<MTView> subview);
 
-	std::vector<std::shared_ptr<MTView>>& getSubviews();
+	std::vector<std::unique_ptr<MTView>>& getSubviews();
 
-	void setSuperview(std::shared_ptr<MTView> view);
+protected:
+	void setSuperview(MTView* view);
 
+public:
 	/// \returns True if successful.
 	bool removeFromSuperview();
 
 	/// \returns True if there was a view to be removed.
 	bool removeLastSubview();
-	bool removeSubview(std::shared_ptr<MTView> view);
+	bool removeSubview(MTView* view);
 	void removeAllSubviews();
 
 	std::weak_ptr<MTWindow> getWindow();

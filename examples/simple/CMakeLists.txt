@@ -10,7 +10,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 
 project( ofxMTAppFramework_Example )
-add_subdirectory("../../../addons/ofxMTAppFramework" "build")
+add_subdirectory("../../" "build")
 
 
 # ========================================================
@@ -21,7 +21,7 @@ set( APP_NAME   ofxMTAppFramework_Example )
 
 # ------------------------ OF Path -----------------------
 # --- If outside the OF structure, set an absolute OF path
-set( OF_DIRECTORY_BY_USER "../../.." )
+set( OF_DIRECTORY_BY_USER "../../../../" )
 
 # --------------------- Source Files ---------------------
 
@@ -37,12 +37,6 @@ set( ${APP_NAME}_SOURCE_FILES
 
 # ------------------------ AddOns  -----------------------
 set( OFX_ADDONS_ACTIVE
-#        ofxOpenCv
-#        ofxCv
-#        ofxScreenSetup
-#        ofxFX
-#        ofxOsc
-#        ofxProjectorBlend
         ofxImGui
         ofxMTAppFramework
         )

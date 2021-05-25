@@ -181,7 +181,7 @@ void MTView::frameChangedInternal()
 	frameChangedEvent.notify(this, args);
 
 	// Notify the rest of the hierarchy:
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->superviewFrameChangedInternal();
 		//			sv->superviewFrameChangedInternal();
@@ -195,7 +195,7 @@ void MTView::contentChangedInternal()
 
 	contentChanged();
 
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 //		sv->superviewFrameChangedInternal();
 		sv->superviewContentChangedInternal();
@@ -215,7 +215,7 @@ void MTView::superviewContentChangedInternal()
 {
 	updateMatrices();
 	updateScreenFrame();
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->superviewContentChangedInternal();
 	}
@@ -232,13 +232,12 @@ void MTView::layoutInternal()
 
 void MTView::performResizePolicy()
 {
-	auto super = superview.lock();
-	if (!super) return;
+	if (!superview) return;
 
 	switch (resizePolicy)
 	{
 		case ResizePolicySuperview:
-			setFrameSize(super->getFrameSize());
+			setFrameSize(superview->getFrameSize());
 			break;
 		case ResizePolicyNone:
 			break;
@@ -256,11 +255,11 @@ void MTView::performResizePolicy()
 
 void MTView::updateScreenFrame()
 {
-	if (auto super = superview.lock())
+	if (superview)
 	{
-		glm::vec4 screenFramePosition = super->contentMatrix*glm::vec4(frame.getPosition(), 1);
+		glm::vec4 screenFramePosition = superview->contentMatrix*glm::vec4(frame.getPosition(), 1);
 		screenFrame.setPosition(screenFramePosition);
-		auto size = glm::vec4(getFrameSize(), 0, 0) * super->contentMatrix; //TODO: check if this is correct
+		auto size = glm::vec4(getFrameSize(), 0, 0) * superview->contentMatrix; //TODO: check if this is correct
 		screenFrame.setSize(size.x, size.y);
 	}
 	else
@@ -278,9 +277,9 @@ glm::vec2 MTView::transformPoint(glm::vec2 &coords,
 }
 
 glm::vec2 MTView::transformPoint(glm::vec2 &coords,
-								 std::shared_ptr<MTView> toView)
+								 MTView* toView)
 {
-	return transformPoint(coords, toView.get());
+	return transformPoint(coords, toView);
 }
 
 glm::vec2 MTView::transformFramePointToContent(glm::vec2 &coords)
@@ -305,12 +304,12 @@ glm::vec2 MTView::transformFramePointToScreen(glm::vec2 &coords)
 // VIEW HEIRARCHY                                       //
 //------------------------------------------------------//
 
-std::shared_ptr<MTView> MTView::getSuperview()
+MTView* MTView::getSuperview()
 {
-	return superview.lock();
+	return superview;
 }
 
-void MTView::setSuperview(std::shared_ptr<MTView> view)
+void MTView::setSuperview(MTView* view)
 {
 	superview = view;
 	setWindow(view->window);
@@ -322,12 +321,10 @@ void MTView::setSuperview(std::shared_ptr<MTView> view)
 }
 /// \brief Adds a subview.
 
-void MTView::addSubview(std::shared_ptr<MTView> subview)
+void MTView::addSubview(std::unique_ptr<MTView> subview)
 {
 	//	subview->window = window; // window for the subview is set in setSuperview
-	ofLogVerbose(name.get() + " 1") << subview.use_count();
-	subview->setSuperview(shared_from_this());
-	ofLogVerbose("2") << subview.use_count();
+	subview->setSuperview(this);
 	if (this->isSetUp) // If setupInternal has run already, then call the subview's setup
 	{
 		// Enqueue it in update() so that we may call setup() under the right
@@ -339,12 +336,10 @@ void MTView::addSubview(std::shared_ptr<MTView> subview)
 								   subviewPtr->setup(args);
 							   });
 	}
-	ofLogVerbose("3") << subview.use_count();
-	subviews.push_back(subview);
-	ofLogVerbose("4") << subview.use_count();
+	subviews.push_back(std::move(subview));
 }
 
-std::vector<std::shared_ptr<MTView>> &MTView::getSubviews()
+std::vector<std::unique_ptr<MTView>> &MTView::getSubviews()
 {
 	return subviews;
 }
@@ -352,12 +347,13 @@ std::vector<std::shared_ptr<MTView>> &MTView::getSubviews()
 /// \returns True if successful.
 bool MTView::removeFromSuperview()
 {
-	if (auto s = superview.lock())
+	if (superview)
 	{
-		if (s->removeSubview(shared_from_this()))
+		if (superview->removeSubview(this))
 		{
 			ofEventArgs voidArgs;
 			removedFromSuperviewEvent.notify(voidArgs);
+			return true;
 		}
 	}
 
@@ -372,7 +368,7 @@ bool MTView::removeLastSubview()
 {
 	if (!subviews.empty())
 	{
-		return removeSubview(subviews.back());
+		return removeSubview(subviews.back().get());
 	}
 	else
 	{
@@ -392,12 +388,12 @@ void MTView::resetWindowPointer()
 	}
 }
 
-bool MTView::removeSubview(std::shared_ptr<MTView> view)
+bool MTView::removeSubview(MTView* view)
 {
 	auto iter = std::find(subviews.begin(), subviews.end(), view);
 	if (iter < subviews.end())
 	{
-		view->superview.reset();
+		view->superview = nullptr;
 		view->resetWindowPointer();
 		subviews.erase(iter);
 		return true;
@@ -411,13 +407,10 @@ void MTView::removeAllSubviews()
 	for (auto &view : subviews)
 	{
 		view->removeAllSubviews();
-		view->superview.reset();
+		view->superview = nullptr;
 		view->resetWindowPointer();
 	}
-	if (!subviews.empty())
-	{
-		ofLogVerbose("BLA") << subviews.front()->name <<  " " << subviews.front().use_count();
-	}
+
 	subviews.clear();
 }
 
@@ -471,7 +464,7 @@ void MTView::setup(ofEventArgs &args)
 	setup();
 	onSetup(this);
 	isSetUp = true;
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->setup(args);
 	}
@@ -492,7 +485,7 @@ void MTView::update(ofEventArgs &args)
 
 	if (MTApp::Instance()->autoUpdateAppModes) currentViewMode->update();
 
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->update(args);
 	}
@@ -559,7 +552,7 @@ void MTView::draw(ofEventArgs &args)
 	ofPopMatrix();
 
 	// Draw subviews:
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->draw(args);
 	}
@@ -581,7 +574,7 @@ void MTView::exit(ofEventArgs &args)
 	currentViewMode->exit();
 	exit();
 	onExit(this);
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->exit(args);
 	}
@@ -593,9 +586,9 @@ void MTView::windowResized(ofResizeEventArgs &resize)
 //	layoutInternal();
 	windowResized(resize.width, resize.height);
 	onWindowResized(this, resize.width, resize.height);
-	for (auto view : subviews)
+	for (const auto & sv : subviews)
 	{
-		view->windowResized(resize);
+		sv->windowResized(resize);
 	}
 }
 //#pragma mark KEYBOARD EVENTS
@@ -765,19 +758,19 @@ void MTView::modelLoaded(ofEventArgs &args)
 						   });
 
 	// Recurse:
-	for (auto sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->modelLoaded(args);
 	}
 }
 
-std::shared_ptr<MTView> MTView::hitTest(glm::vec2 &windowCoord)
+MTView* MTView::hitTest(glm::vec2 &windowCoord)
 {
 	if (subviews.size() > 0)
 	{
 		for (int i = subviews.size() - 1; i >= 0; i--)
 		{
-			auto sv = subviews[i];
+			auto& sv = subviews[i];
 			if (sv->screenFrame.inside(windowCoord))
 			{
 				return sv->hitTest(windowCoord);
@@ -794,7 +787,7 @@ std::shared_ptr<MTView> MTView::hitTest(glm::vec2 &windowCoord)
 		//}
 	}
 
-	return shared_from_this();
+	return this;
 }
 
 bool MTView::hasFocus()
@@ -804,9 +797,9 @@ bool MTView::hasFocus()
 
 void MTView::updateMatrices()
 {
-	if (auto sv = superview.lock())
+	if (superview)
 	{
-		frameMatrix = glm::translate(sv->contentMatrix, frame.getPosition());
+		frameMatrix = glm::translate(superview->contentMatrix, frame.getPosition());
 	}
 	else
 	{
@@ -819,7 +812,7 @@ void MTView::updateMatrices()
 	contentMatrix = transMatrix*scaleMatrix;
 	invContentMatrix = glm::inverse(contentMatrix);
 
-	for (auto &sv : subviews)
+	for (const auto & sv : subviews)
 	{
 		sv->updateMatrices();
 	}

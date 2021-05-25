@@ -66,8 +66,8 @@ void MTFullScreen::updatePerspectiveTransforms()
 {
 	for (auto win : fullScreenWindows)
 	{
-		auto view = win->contentView->getSubviews()[0];
-		auto fsView = std::dynamic_pointer_cast<MTFullScreenView>(view);
+		auto& view = win->contentView->getSubviews()[0];
+		auto* fsView = dynamic_cast<MTFullScreenView*>(view.get());
 		fsView->updatePerspectiveTransform();
 	}
 }
