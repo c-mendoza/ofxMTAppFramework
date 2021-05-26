@@ -136,14 +136,20 @@ void priv::enterFullScreen()
 									   outputHeight);
 
 		auto window = MTApp::Instance()->createWindow("FS " + ofToString(count), glfwWindowSettings);
-		auto fsView = std::make_shared<MTFullScreenView>("FS View " + ofToString(count),
+
+		std::string name = "FS View " + ofToString(count);
+		auto fv = MTView::CreateView<MTFullScreenView>(name, fsDisplay,
+													   outputTexture);
+
+
+		auto fsView = MTView::CreateView<MTFullScreenView>(name,
 														 fsDisplay,
 														 outputTexture);
 		window->setWindowPosition(frame.position.x, frame.position.y);
 //		window->events().setFrameRate(frameRate);
 //		window->setVerticalSync(false);
-		window->contentView->addSubview(fsView);
 		fsView->setSize(window->contentView->getFrameSize());
+		window->contentView->addSubview(std::move(fsView));
 		fullScreenWindows.push_back(window);
 		count++;
 	}

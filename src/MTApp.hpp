@@ -107,11 +107,13 @@ private:
 	static void RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings);
 	MTApp(MTApp const&) = delete;
 	void operator=(MTApp const&) = delete;
+
+	void releasePointers();
 //	static MTApp* instance;
 //	static std::shared_ptr<MTApp> instance;
 
 public:
-	static std::shared_ptr<MTApp> Instance()
+	static MTApp* Instance()
 	{
 		return GetApp();
 	}
@@ -157,9 +159,9 @@ public:
 
 	// I'm sure that there is a better way than this, but right now...
 	template<class T = MTApp>
-	static std::shared_ptr<T> GetApp()
+	static T* GetApp()
 	{
-		return std::dynamic_pointer_cast<T>(AppPtr.lock());
+		return dynamic_cast<T*>(AppPtr.lock().get());
 	}
 
 private:

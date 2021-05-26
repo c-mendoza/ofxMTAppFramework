@@ -321,7 +321,7 @@ void MTView::setSuperview(MTView* view)
 }
 /// \brief Adds a subview.
 
-void MTView::addSubview(std::unique_ptr<MTView> subview)
+void MTView::addSubview(std::unique_ptr<MTView>&& subview)
 {
 	//	subview->window = window; // window for the subview is set in setSuperview
 	subview->setSuperview(this);
@@ -345,26 +345,26 @@ std::vector<std::unique_ptr<MTView>> &MTView::getSubviews()
 }
 
 /// \returns True if successful.
-bool MTView::removeFromSuperview()
+std::unique_ptr<MTView> MTView::removeFromSuperview()
 {
 	if (superview)
 	{
-		if (superview->removeSubview(this))
+		if (auto view = superview->removeSubview(this))
 		{
 			ofEventArgs voidArgs;
 			removedFromSuperviewEvent.notify(voidArgs);
-			return true;
+			return std::move(view);
 		}
 	}
 
-	return false;
+	return nullptr;
 }
 
 /**
  * @brief
  * returns true if there was a view to be removed.
  */
-bool MTView::removeLastSubview()
+std::unique_ptr<MTView> MTView::removeLastSubview()
 {
 	if (!subviews.empty())
 	{
@@ -372,7 +372,7 @@ bool MTView::removeLastSubview()
 	}
 	else
 	{
-		return false;
+		return nullptr;
 	}
 }
 
@@ -388,18 +388,18 @@ void MTView::resetWindowPointer()
 	}
 }
 
-bool MTView::removeSubview(MTView* view)
+std::unique_ptr<MTView> MTView::removeSubview(MTView* view)
 {
-	auto iter = std::find(subviews.begin(), subviews.end(), view);
+	auto iter = std::find_if(subviews.begin(), subviews.end(), [&](std::unique_ptr<MTView>& p) { return p.get() == view;});
 	if (iter < subviews.end())
 	{
 		view->superview = nullptr;
 		view->resetWindowPointer();
 		subviews.erase(iter);
-		return true;
+		return std::move(*iter);
 	}
 
-	return false;
+	return nullptr;
 }
 
 void MTView::removeAllSubviews()
@@ -451,7 +451,7 @@ int MTView::getWindowHeight()
 
 void MTView::setup(ofEventArgs &args)
 {
-	currentViewMode = std::make_shared<MTViewModeVoid>(shared_from_this());
+	currentViewMode = std::make_shared<MTViewModeVoid>(this);
 	eventListeners.unsubscribeAll();
 	addEventListener(MTApp::GetApp()->appModeChangedEvent.newListener([this](MTAppModeChangeArgs& args)
 																	  {

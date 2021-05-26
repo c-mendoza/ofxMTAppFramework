@@ -123,13 +123,11 @@ void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindow
 	app->createAppPreferencesFilePath();
 	app->loadAppPreferences();
 	ofRunApp(std::move(app));
-	AppPtr.reset();
-
 }
 
 MTApp::~MTApp()
 {
-	eventListeners.unsubscribeAll();
+	releasePointers();
 }
 
 void MTApp::loadAppPreferences()
@@ -224,11 +222,18 @@ void MTApp::exit(ofEventArgs& args)
 	}
 
 	saveAppPreferences();
-
+	// Remove all windows to avoid dangling references
+	releasePointers();
 	exit();
 }
 
-
+void MTApp::releasePointers()
+{
+	windows.clear();
+	mainWindow.reset();
+	AppPtr.reset();
+	eventListeners.unsubscribeAll();
+}
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
 /// well as the main
