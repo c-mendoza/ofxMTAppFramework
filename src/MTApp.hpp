@@ -89,6 +89,7 @@ public:
 //		if (!ofGetMainLoop()->getCurrentApp())
 //		{
 		auto app = std::make_shared<AppType>();
+		AppPtr = app;
 		app->model = std::make_unique<ModelType>();
 		app->appPreferencesFilename = settings.appPreferencesFileName;
 		app->fileExtension = settings.fileExtension;
@@ -107,11 +108,13 @@ private:
 	static void RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings);
 	MTApp(MTApp const&) = delete;
 	void operator=(MTApp const&) = delete;
+
+	void releasePointers();
 //	static MTApp* instance;
 //	static std::shared_ptr<MTApp> instance;
 
 public:
-	static std::shared_ptr<MTApp> Instance()
+	static MTApp* Instance()
 	{
 		return GetApp();
 	}
@@ -157,9 +160,9 @@ public:
 
 	// I'm sure that there is a better way than this, but right now...
 	template<class T = MTApp>
-	static std::shared_ptr<T> GetApp()
+	static T* GetApp()
 	{
-		return std::dynamic_pointer_cast<T>(AppPtr.lock());
+		return dynamic_cast<T*>(AppPtr.lock().get());
 	}
 
 private:
@@ -204,8 +207,8 @@ public:
 	std::weak_ptr<MTWindow> getMainWindow();
 
 #ifndef TARGET_RASPBERRY_PI
-	std::shared_ptr<MTOffscreenWindow>
-	createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle = true);
+//	std::shared_ptr<MTOffscreenWindow>
+//	createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle = true);
 #endif
 
 #ifdef TARGET_OPENGLES

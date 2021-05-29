@@ -34,7 +34,7 @@ public:
 class PathEditorSettings
 {
 public:
-    std::shared_ptr<MTView> view;
+    MTView* view;
 
 	enum Options
 	{

@@ -114,3 +114,9 @@ Desktop.ini
 \.idea/
 
 cmake-build-debug/
+
+examples/simple/bin/libfmod.so
+
+examples/simple/bin/libfmodex.so
+
+examples/simple/bin/simple_debug

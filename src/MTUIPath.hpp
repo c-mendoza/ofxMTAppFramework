@@ -54,7 +54,7 @@ public:
 	* header file.
 	*/
 	void setup(std::shared_ptr<ofPath> path,
-			   std::shared_ptr<MTView> view,
+			   MTView* view,
 			   unsigned int options);
 
 	/**
@@ -70,7 +70,7 @@ public:
 	*/
 
 	void setup(std::shared_ptr<ofPath> path,
-			   std::shared_ptr<MTView> view);
+			   MTView* view);
 	void draw();
 //    void setAutoDraw(bool autoDraw);
 	void setVisibility(bool visible);
@@ -104,27 +104,27 @@ public:
 	/////////////////////////////////
 
 	///Returns true if the handle is found and deleted
-	bool deleteHandle(std::shared_ptr<MTUIPathVertexHandle> handle);
+	bool deleteHandle(const std::shared_ptr<MTUIPathVertexHandle>& handle);
 
 	///Deletes all selected handles
 	void deleteSelected();
 
 
-	void addHandle(glm::vec3 point);
+	void addHandle(const glm::vec3& point);
 
 	/**
 	 * @brief Adds a path handle at the end of the path.
 	 * @param handle
 	 */
-	void addHandle(std::shared_ptr<MTUIPathVertexHandle> handle);
+	void addHandle(const std::shared_ptr<MTUIPathVertexHandle>& handle);
 
 	/**
 	 * @brief Inserts a path handle at the specified index.
 	 * @param handle
 	 * @param index
 	 */
-	void insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsigned int index);
-	void insertHandle(glm::vec3 point, unsigned int index);
+	void insertHandle(const std::shared_ptr<MTUIPathVertexHandle>& handle, unsigned int index);
+	void insertHandle(const glm::vec3& point, unsigned int index);
 
 	unsigned int getIndexForHandle(std::shared_ptr<MTUIPathVertexHandle> handle);
 	/// Adds a user data pointer, which gets returned via the MTUIPath events.
@@ -153,7 +153,7 @@ public:
 	void selectAll();
 
 	///Gets the selected handles. It is not safe to modify this vector nor to change the Path commands directly.
-	const std::vector<std::shared_ptr<MTUIPathVertexHandle>> getSelection();
+	std::vector<std::shared_ptr<MTUIPathVertexHandle>> getSelection();
 
 //    ///
 //    /// \brief addEventListeners adds mouse and keyboard
@@ -233,7 +233,7 @@ protected:
 	bool isVisible = true;
 	bool autoDraw = false;
 //    bool useAutoEventListeners = true;
-	std::shared_ptr<MTView> view = nullptr;
+	MTView* view = nullptr;
 
 	void updatePath();
 

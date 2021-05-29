@@ -18,12 +18,13 @@ static ofEventArgs voidEventArgs;
 
 MTWindow::MTWindow(const std::string& name)
 {
-	contentView = std::make_shared<MTView>("root");
+	contentView = MTView::CreateView("root");
 	contentView->backgroundColor = ofColor(0);
-	focusedView = contentView;
-	mouseOverView = contentView;
+	focusedView = contentView.get();
+	mouseOverView = contentView.get();
 	this->name.set("Window Name", name);
 	imCtx = nullptr;
+
 }
 
 MTWindow::~MTWindow()
@@ -33,12 +34,18 @@ MTWindow::~MTWindow()
 		bindImGuiContext();
 		gui.reset();
 	}
-
+//	contentView->removeAllSubviews();
 	ofLogVerbose("MTWindow") << name.get() << " destroyed";
 }
 
 void MTWindow::close()
 {
+	if (contentView)
+	{
+		contentView->removeAllSubviews();
+		contentView.reset();
+	}
+
 	MTApp::Instance()->closeWindow(shared_from_this());
 	onClose();
 //	if(auto windowP = getGLFWWindow()){
@@ -73,7 +80,6 @@ void MTWindow::close()
 //	 }
 //// This will destroy the gui:
 	bindImGuiContext();
-
 	gui.reset();
 }
 
@@ -88,7 +94,14 @@ void MTWindow::setup(ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
 	contentView->setWindow(shared_from_this());
-
+	addEventListener(ofEvents().exit.newListener([this](ofEventArgs& args)
+												 {
+													 if (contentView)
+													 {
+														 contentView->removeAllSubviews();
+														 contentView.reset();
+													 }
+												 }));
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
 	glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
@@ -147,8 +160,7 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
-	ofBackground(0, 0, 0, 1);
-
+	ofBackground(backgroundColor);
 	while (!drawOpQueue.empty())
 	{
 		auto op = drawOpQueue.front();
@@ -156,6 +168,7 @@ void MTWindow::draw(ofEventArgs& args)
 		drawOpQueue.pop();
 	}
 
+	contentView->backgroundColor = backgroundColor;
 	contentView->draw(args);
 
 	if (isImGuiEnabled)
@@ -165,20 +178,40 @@ void MTWindow::draw(ofEventArgs& args)
 			bindImGuiContext();
 			getGui()->begin();
 
-			drawImGuiForView(contentView);
+			drawImGuiForView(contentView.get());
 			getGui()->end();
 		}
 	}
 }
 
-void MTWindow::drawImGuiForView(std::shared_ptr<MTView> view)
+void MTWindow::drawImGuiForView(MTView* view)
 {
-	for (auto& sv : view->getSubviews())
+	for (const auto& sv : view->getSubviews())
 	{
-		drawImGuiForView(sv);
+		drawImGuiForView(sv.get());
 	}
 
 	view->drawGuiInternal();
+}
+
+void MTWindow::addSubview(std::shared_ptr<MTView> subview)
+{
+	contentView->addSubview(subview);
+}
+
+void MTWindow::removeAllSubviews()
+{
+	contentView->removeAllSubviews();
+}
+
+glm::vec2 MTWindow::getFrameSize()
+{
+	return contentView->getFrameSize();
+}
+
+const MTView* MTWindow::getRootView()
+{
+	return contentView.get();
 }
 
 //void MTWindow::exit(ofEventArgs& args)
@@ -197,10 +230,9 @@ void MTWindow::windowResized(ofResizeEventArgs& resize)
 
 void MTWindow::keyPressed(ofKeyEventArgs& key)
 {
-	auto fv = focusedView.lock();
-	if (fv)
+	if (focusedView)
 	{
-		fv->keyPressedInternal(key);
+		focusedView->keyPressedInternal(key);
 	}
 	this->keyPressed(key.key);
 	onKeyPressed(key);
@@ -208,10 +240,9 @@ void MTWindow::keyPressed(ofKeyEventArgs& key)
 
 void MTWindow::keyReleased(ofKeyEventArgs& key)
 {
-	auto fv = focusedView.lock();
-	if (fv)
+	if (focusedView)
 	{
-		fv->keyReleasedInternal(key);
+		focusedView->keyReleasedInternal(key);
 	}
 	this->keyReleased(key.key);
 	onKeyReleased(key);
@@ -220,16 +251,16 @@ void MTWindow::keyReleased(ofKeyEventArgs& key)
 void MTWindow::mouseMoved(ofMouseEventArgs& mouse)
 {
 	auto v = contentView->hitTest(mouse);
-	if (auto mo = mouseOverView.lock())
+	if (mouseOverView)
 	{
-		if ((v != mo) && mo)
+		if ((v != mouseOverView) && mouseOverView)
 		{
 //			mo->mouseReleased(mouse);  // Why was this here??
-			mo->mouseExited(mouse);
+			mouseOverView->mouseExited(mouse);
 			mouseOverView = v;
 			v->mouseEntered(mouse);
 		}
-		mo->mouseMoved(mouse);
+		mouseOverView->mouseMoved(mouse);
 	}
 	else
 	{
@@ -247,10 +278,7 @@ void MTWindow::mouseDragged(ofMouseEventArgs& mouse)
 		mouseDragStart = glm::vec2(mouse.x, mouse.y);
 	}
 
-	if (auto mo = mouseOverView.lock())
-	{
-		mo->mouseDragged(mouse);
-	}
+	mouseOverView->mouseDragged(mouse);
 }
 
 void MTWindow::mousePressed(ofMouseEventArgs& mouse)
@@ -259,11 +287,9 @@ void MTWindow::mousePressed(ofMouseEventArgs& mouse)
 	mouseButtonInUse = mouse.button;
 	mouseDownPos = glm::vec2(mouse.x, mouse.y);
 
-	if (auto mo = mouseOverView.lock())
-	{
-		mo->mousePressed(mouse);
-		setFocusedView(mo);
-	}
+	mouseOverView->mousePressed(mouse);
+	setFocusedView(mouseOverView);
+
 }
 
 void MTWindow::mouseReleased(ofMouseEventArgs& mouse)
@@ -272,20 +298,17 @@ void MTWindow::mouseReleased(ofMouseEventArgs& mouse)
 	isMouseDragging = false;
 	mouseUpPos = glm::vec2(mouse.x, mouse.y);
 	mouseButtonInUse = mouse.button;
-	if (auto mo = mouseOverView.lock())
-	{
-		mo->mouseReleased(mouse);
-	}
+
+	mouseOverView->mouseReleased(mouse);
+
 }
 
 /// TODO: Scrolling in MTWindow
 void MTWindow::mouseScrolled(ofMouseEventArgs& mouse)
 {
 	mouseButtonInUse = mouse.button;
-	if (auto mo = mouseOverView.lock())
-	{
-		mo->mouseScrolled(mouse);
-	}
+
+	mouseOverView->mouseScrolled(mouse);
 }
 
 void MTWindow::mouseEntered(ofMouseEventArgs& mouse)
@@ -338,12 +361,12 @@ void MTWindow::touchCancelled(ofTouchEventArgs& touch)
 {
 }
 
-void MTWindow::setFocusedView(std::shared_ptr<MTView> view)
+void MTWindow::setFocusedView(MTView* view)
 {
 	if (!view->wantsFocus)
 		return;   // Exit if the view doesn't want focus
 
-	auto fv = focusedView.lock();
+	auto fv = focusedView;
 	if (fv)
 	{
 		if (fv != view)
@@ -355,9 +378,9 @@ void MTWindow::setFocusedView(std::shared_ptr<MTView> view)
 	}
 }
 
-std::shared_ptr<MTView> MTWindow::getFocusedView()
+MTView* MTWindow::getFocusedView()
 {
-	auto fv = focusedView.lock();
+	auto fv = focusedView;
 	if (fv)
 	{
 		return fv;

@@ -41,7 +41,29 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 
 	ofParameter<std::string> name;
 
+private:
     std::shared_ptr<MTView> contentView;
+
+public:
+	/**
+	 * @brief Adds a subview to the root view
+	 * @param subview
+	 */
+	void addSubview(std::shared_ptr<MTView> subview);
+
+	/**
+	 * @brief Removes all subviews from the root view.
+	 */
+	void removeAllSubviews();
+	/**
+	 * @brief Get the frame size of the root view
+	 * @return
+	 */
+	glm::vec2 getFrameSize();
+
+	const MTView* getRootView();
+
+	ofColor backgroundColor = ofColor::gray;
 
 	//TODO: mouseX and mouseY in MTWindow
 	int mouseX, mouseY;   // for processing heads
@@ -110,14 +132,14 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 	std::function<void()> onClose = [](){};
 
 
-	void setFocusedView(std::shared_ptr<MTView> view);
+	void setFocusedView(MTView* view);
 
     /**
      * @return A shared pointer to the focused view if there is one,
      * or nullptr if there is no focused view. Given that this pointer is derived
      * from a weak_ptr, it is not recommended to retain this shared_ptr.
      */
-    std::shared_ptr<MTView> getFocusedView();
+    MTView* getFocusedView();
 
 	//------------------------------------------------------//
 	// OP QUEUES
@@ -190,7 +212,7 @@ protected:
 	 * @brief Recursively calls drawGui() on this view and all of its subviews
 	 * @param view
 	 */
-	void drawImGuiForView(std::shared_ptr<MTView> view);
+	void drawImGuiForView(MTView* view);
 	bool isImGuiEnabled = false;
 	ImGuiContext* imCtx;
 	std::shared_ptr<ofxImGui::Gui> gui;
@@ -216,8 +238,8 @@ protected:
     std::queue<std::function<void()>> updateOpQueue;
     std::queue<std::function<void()>> drawOpQueue;
 
-	std::weak_ptr<MTView> focusedView;
-	std::weak_ptr<MTView> mouseOverView;
+	MTView* focusedView;
+	MTView* mouseOverView;
 
 	bool isMouseDown = false;
 	bool isMouseDragging = false;

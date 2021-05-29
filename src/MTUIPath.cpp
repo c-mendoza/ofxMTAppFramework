@@ -32,13 +32,13 @@ MTUIPath::~MTUIPath()
 }
 
 void MTUIPath::setup(std::shared_ptr<ofPath> p,
-					 std::shared_ptr<MTView> view)
+					 MTView* view)
 {
 	setup(p, view, (unsigned int) pathOptionFlags.to_ulong());
 }
 
 void MTUIPath::setup(std::shared_ptr<ofPath> p,
-					 std::shared_ptr<MTView> view,
+					 MTView* view,
 					 unsigned int options)
 {
 	path = p;
@@ -307,7 +307,7 @@ void MTUIPath::keyReleased(ofKeyEventArgs& args)
 //DATA HANDLING
 /////////////////////////////////
 
-bool MTUIPath::deleteHandle(std::shared_ptr<MTUIPathVertexHandle> handle)
+bool MTUIPath::deleteHandle(const std::shared_ptr<MTUIPathVertexHandle>& handle)
 {
 
 	auto iter = std::find(pathHandles.begin(), pathHandles.end(), handle);
@@ -383,7 +383,7 @@ MTUIPath::Midpoint& MTUIPath::getClosestMidpoint(glm::vec3& point)
 	return midpoints[closestIndex];
 }
 
-void MTUIPath::addHandle(std::shared_ptr<MTUIPathVertexHandle> handle)
+void MTUIPath::addHandle(const std::shared_ptr<MTUIPathVertexHandle>& handle)
 {
 	if (!pathOptionFlags.test(CanAddPoints)) return;
 	pathHandles.push_back(handle);
@@ -396,7 +396,7 @@ void MTUIPath::addHandle(std::shared_ptr<MTUIPathVertexHandle> handle)
 	}
 }
 
-void MTUIPath::addHandle(glm::vec3 point)
+void MTUIPath::addHandle(const glm::vec3& point)
 {
 	auto handle = std::make_shared<MTUIPathVertexHandle>();
 	ofPath::Command com = ofPath::Command(ofPath::Command::lineTo, point);
@@ -414,7 +414,7 @@ void MTUIPath::addHandle(glm::vec3 point)
 	addHandle(handle);
 }
 
-void MTUIPath::insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsigned int index)
+void MTUIPath::insertHandle(const std::shared_ptr<MTUIPathVertexHandle>& handle, unsigned int index)
 {
 	if (!pathOptionFlags.test(CanAddPoints)) return;
 	if (index >= pathHandles.size())
@@ -434,7 +434,7 @@ void MTUIPath::insertHandle(std::shared_ptr<MTUIPathVertexHandle> handle, unsign
 	}
 }
 
-void MTUIPath::insertHandle(glm::vec3 point, unsigned int index)
+void MTUIPath::insertHandle(const glm::vec3& point, unsigned int index)
 {
 	auto handle = std::make_shared<MTUIPathVertexHandle>();
 	if (pathHandles.size() > 0)
@@ -508,7 +508,7 @@ unsigned int MTUIPath::getIndexForHandle(std::shared_ptr<MTUIPathVertexHandle> h
 	return pathHandles.size() - 1;
 }
 
-const std::vector<std::shared_ptr<MTUIPathVertexHandle>> MTUIPath::getSelection()
+vector<shared_ptr<MTUIPathVertexHandle>> MTUIPath::getSelection()
 {
 	return selectedHandles;
 }
@@ -873,7 +873,7 @@ void MTUIHandle::superviewContentChanged()
  */
 void MTUIHandle::scaleToScreen()
 {
-	auto su = superview.lock();
+	auto su = superview;
 	auto invMatrix = getInvFrameMatrix();
 	/*
 	 * http://www.c-jump.com/bcc/common/Talk3/Math/GLM/W01_0100_scaling_matrix_exampl.htm

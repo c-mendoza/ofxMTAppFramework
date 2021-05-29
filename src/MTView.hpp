@@ -34,17 +34,34 @@ enum MTViewResizePolicy
 
 
 class MTModel;
+
 class MTWindow;
+
 class MTAppModeChangeArgs;
+
 class MTViewMode;
 
-class MTView : public MTEventListenerStore,
-			   public std::enable_shared_from_this<MTView>
+class MTView : public MTEventListenerStore
 {
 
-public:
+protected:
 	MTView(std::string _name);
+public:
 	virtual ~MTView();
+
+	template<typename T = MTView, typename std::enable_if<std::is_base_of<MTView, T>::value>::type* = nullptr, typename ...Args>
+	static std::shared_ptr<T> CreateView(Args&... args)
+	{
+		return std::shared_ptr<T>(new T(args...));
+	}
+
+	template<typename T = MTView, typename std::enable_if<std::is_base_of<MTView, T>::value>::type* = nullptr, typename ...Args>
+	static std::shared_ptr<T> CreateView(T* pointerRef, Args&... args)
+	{
+		auto ptr = std::shared_ptr<T>(new T(args...));
+		pointerRef = ptr.get();
+		return ptr;
+	}
 
 	//-----------------------------//
 	// PARAMETERS                  //
@@ -61,7 +78,7 @@ public:
 
 protected:
 	std::weak_ptr<MTWindow> window;
-	std::weak_ptr<MTView> superview;
+	MTView* superview = nullptr;
 	std::vector<std::shared_ptr<MTView>> subviews;
 
 public:
@@ -95,54 +112,88 @@ public:
  	 * @brief Called once the model is successfully loaded from file.
  	 * Default implementation does nothing.
  	*/
-	virtual void modelLoaded() {}
-	virtual void setup() {}
-	virtual void update() {}
-	virtual void draw() {}
-	virtual void exit() {}
-	virtual void windowResized(int w, int h) {}
-	virtual void superviewFrameChanged() {}
-	virtual void frameChanged() {}
-	virtual void contentChanged() {}
-	virtual void superviewContentChanged() {}
-	virtual void keyPressed(int key) {}
-	virtual void keyPressed(ofKeyEventArgs &keyArgs){}
-	virtual void keyReleased(int key) {}
-	virtual void keyReleased(ofKeyEventArgs &keyArgs){}
+	virtual void modelLoaded()
+	{}
+
+	virtual void setup()
+	{}
+
+	virtual void update()
+	{}
+
+	virtual void draw()
+	{}
+
+	virtual void exit()
+	{}
+
+	virtual void windowResized(int w, int h)
+	{}
+
+	virtual void superviewFrameChanged()
+	{}
+
+	virtual void frameChanged()
+	{}
+
+	virtual void contentChanged()
+	{}
+
+	virtual void superviewContentChanged()
+	{}
+
+	virtual void keyPressed(int key)
+	{}
+
+	virtual void keyPressed(ofKeyEventArgs& keyArgs)
+	{}
+
+	virtual void keyReleased(int key)
+	{}
+
+	virtual void keyReleased(ofKeyEventArgs& keyArgs)
+	{}
 
 
 	/**
 	 * @brief Called when this view's window property is set.
 	 */
-	virtual void addedToWindow(){}
+	virtual void addedToWindow()
+	{}
 
 	/**
 	 * @brief Called when this view's window property is invalidated.
 	 */
-	virtual void removedFromWindow(){}
+	virtual void removedFromWindow()
+	{}
 
 	/// \brief Called on the active view when the mouse is moved.
 	/// Position is given in frame coordinates.
-	virtual void mouseMoved(int x, int y) {}
+	virtual void mouseMoved(int x, int y)
+	{}
 
 	/// \brief Called on the active view when the mouse is dragged.
 	/// Position is given in frame coordinates.
-	virtual void mouseDragged(int x, int y, int button) {}
+	virtual void mouseDragged(int x, int y, int button)
+	{}
 
 	/// \brief Called on the active view when a mouse button is pressed.
 	///
 	/// Position is given in frame coordinates.
-	virtual void mousePressed(int x, int y, int button) {}
+	virtual void mousePressed(int x, int y, int button)
+	{}
 
 	/// \brief Called on the active view when a mouse button is released.
 	///
 	/// Position is given in frame coordinates.
-	virtual void mouseReleased(int x, int y, int button) {}
+	virtual void mouseReleased(int x, int y, int button)
+	{}
 
 	/// \brief Called on the active view when the mouse wheel is scrolled.
 	///
 	/// Position is given in frame coordinates.
-	virtual void mouseScrolled(int x, int y, float scrollX, float scrollY) {}
+	virtual void mouseScrolled(int x, int y, float scrollX, float scrollY)
+	{}
 
 	/// \brief Called on the active view when the mouse cursor enters the
 	/// window area
@@ -151,7 +202,8 @@ public:
 	/// event occurred, i.e. from the previous frame.
 	///
 	/// Position is given in frame coordinates.
-	virtual void mouseEntered(int x, int y) {}
+	virtual void mouseEntered(int x, int y)
+	{}
 
 	/// \brief Called on the active view when the mouse cursor leaves the
 	/// window area
@@ -160,16 +212,30 @@ public:
 	/// event occurred, i.e. from the previous frame.
 	///
 	/// Position is given in frame coordinates.
-	virtual void mouseExited(int x, int y) {}
-	virtual void dragEvent(ofDragInfo dragInfo) {}
-	virtual void gotMessage(ofMessage msg) {}
+	virtual void mouseExited(int x, int y)
+	{}
+
+	virtual void dragEvent(ofDragInfo dragInfo)
+	{}
+
+	virtual void gotMessage(ofMessage msg)
+	{}
 
 	// TODO: Touch Events
-	virtual void touchDown(int x, int y, int id) {}
-	virtual void touchMoved(int x, int y, int id) {}
-	virtual void touchUp(int x, int y, int id) {}
-	virtual void touchDoubleTap(int x, int y, int id) {}
-	virtual void touchCancelled(int x, int y, int id) {}
+	virtual void touchDown(int x, int y, int id)
+	{}
+
+	virtual void touchMoved(int x, int y, int id)
+	{}
+
+	virtual void touchUp(int x, int y, int id)
+	{}
+
+	virtual void touchDoubleTap(int x, int y, int id)
+	{}
+
+	virtual void touchCancelled(int x, int y, int id)
+	{}
 
 	//--------------------------------------------------//
 	// EVENTS: LAMBDAS
@@ -186,28 +252,46 @@ public:
 	//
 	//--------------------------------------------------//
 
-	std::function<void()> onModelLoaded = [] {};
-	std::function<void()> onSetup = [] {};
-	std::function<void()> onUpdate = [] {};
-	std::function<void()> onDraw = [] {};
-	std::function<void()> onExit = [] {};
-	std::function<void(int, int)> onWindowResized = [](int w, int h) {};
-	std::function<void()> onSuperviewFrameChanged = [] {};
-	std::function<void()> onFrameChanged = [] {};
-	std::function<void()> onSuperviewContentChanged = [] {};
-	std::function<void(int)> onKeyPressed = [](int key) {};
-	std::function<void(int)> onKeyReleased = [](int key) {};
-	std::function<void(int, int)> onMouseMoved = [](int x, int y) {};
-	std::function<void(int, int, int)> onMouseDragged =
-	  [](int x, int y, int button) {};
-	std::function<void(int, int, int)> onMousePressed =
-	  [](int x, int y, int button) {};
-	std::function<void(int, int, int)> onMouseReleased =
-	  [](int x, int y, int button) {};
-	std::function<void(int, int, float, float)> onMouseScrolled =
-	  [](int x, int y, float scrollX, float scrollY) {};
-	std::function<void(int, int)> onMouseEntered = [](int x, int y) {};
-	std::function<void(int, int)> onMouseExited = [](int x, int y) {};
+	std::function<void(MTView*)> onModelLoaded = [](MTView* view)
+	{};
+	std::function<void(MTView*)> onSetup = [](MTView* view)
+	{};
+	std::function<void(MTView*)> onUpdate = [](MTView* view)
+	{};
+	std::function<void(MTView*)> onDraw = [](MTView* view)
+	{};
+	std::function<void(MTView*)> onExit = [](MTView* view)
+	{};
+	std::function<void(MTView*, int, int)> onWindowResized = [](MTView* view, int w, int h)
+	{};
+	std::function<void(MTView*)> onSuperviewFrameChanged = [](MTView* view)
+	{};
+	std::function<void(MTView*)> onFrameChanged = [](MTView* view)
+	{};
+	std::function<void(MTView*)> onSuperviewContentChanged = [](MTView* view)
+	{};
+	std::function<void(MTView*, int)> onKeyPressed = [](MTView* view, int key)
+	{};
+	std::function<void(MTView*, int)> onKeyReleased = [](MTView* view, int key)
+	{};
+	std::function<void(MTView*, int, int)> onMouseMoved = [](MTView* view, int x, int y)
+	{};
+	std::function<void(MTView*, int, int, int)> onMouseDragged =
+			[](MTView* view, int x, int y, int button)
+			{};
+	std::function<void(MTView*, int, int, int)> onMousePressed =
+			[](MTView* view, int x, int y, int button)
+			{};
+	std::function<void(MTView*, int, int, int)> onMouseReleased =
+			[](MTView*, int x, int y, int button)
+			{};
+	std::function<void(MTView*, int, int, float, float)> onMouseScrolled =
+			[](MTView* view, int x, int y, float scrollX, float scrollY)
+			{};
+	std::function<void(MTView*, int, int)> onMouseEntered = [](MTView* view, int x, int y)
+	{};
+	std::function<void(MTView*, int, int)> onMouseExited = [](MTView* view, int x, int y)
+	{};
 
 
 #pragma mark FRAME AND CONTENT
@@ -221,21 +305,24 @@ public:
 	 * @brief getFrame returns a copy of the frame
 	 * @return ofRectangle
 	 */
-	ofRectangle getFrame() { return frame; }
+	ofRectangle getFrame()
+	{ return frame; }
 
-    /**
-     * @return Returns the width of the view's frame
-     */
-	float getWidth() { return frame.width; }
+	/**
+	 * @return Returns the width of the view's frame
+	 */
+	float getWidth()
+	{ return frame.width; }
 
-    /**
-     * @return Returns the height of the view's frame
-     */
-    float getHeight() { return frame.height; }
+	/**
+	 * @return Returns the height of the view's frame
+	 */
+	float getHeight()
+	{ return frame.height; }
 
 	void setFrameOrigin(float x, float y);
-	void setFrameOrigin(const glm::vec2 &pos);
-	void shiftFrameOrigin(const glm::vec2 &shiftAmount);
+	void setFrameOrigin(const glm::vec2& pos);
+	void shiftFrameOrigin(const glm::vec2& shiftAmount);
 	const glm::vec3& getFrameOrigin();
 
 	void setFrameSize(const glm::vec2& size);
@@ -288,14 +375,14 @@ public:
 	{ return screenFrame; }
 
 	/// \brief Sets the size of both the frame and the content
-	void setSize(const glm::vec2 &size);
+	void setSize(const glm::vec2& size);
 
 	/// \brief Sets the size of both the frame and the content
 	void setSize(float width, float height);
 
 	/// \brief Returns the deepest subview that occupies the specified
 	/// window coordinate.
-	virtual std::shared_ptr<MTView> hitTest(glm::vec2& windowCoord);
+	virtual MTView* hitTest(glm::vec2& windowCoord);
 
 
 #pragma mark MOUSE
@@ -348,7 +435,7 @@ public:
 
 	/// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
-	glm::vec2 transformPoint(glm::vec2& coords, std::shared_ptr<MTView> toView);
+	glm::vec2 transformPoint(glm::vec2& coords, MTView* toView);
 
 	/// \brief Transforms the passed point from frame
 	/// coordinates to content coordinates.
@@ -382,22 +469,25 @@ public:
 	 * @brief
 	 * @return Returns this view's superview, or @code nullptr @endcode if there isn't one.
 	 */
-	std::shared_ptr<MTView> getSuperview();
+	MTView* getSuperview();
 
 	/// \brief Adds a subview.
 	void addSubview(std::shared_ptr<MTView> subview);
 
-	std::vector<std::shared_ptr<MTView>>& getSubviews();
+	const std::vector<std::shared_ptr<MTView>>& getSubviews() const;
 
-	void setSuperview(std::shared_ptr<MTView> view);
+protected:
+	void setSuperview(MTView* view);
 
+public:
 	/// \returns True if successful.
-	bool removeFromSuperview();
+	std::shared_ptr<MTView> removeFromSuperview();
 
 	/// \returns True if there was a view to be removed.
-	bool removeLastSubview();
-	bool removeSubview(std::shared_ptr<MTView> view);
-	void removeAllSubviews();
+	std::shared_ptr<MTView> removeLastSubview();
+	std::shared_ptr<MTView> removeSubview(MTView* view);
+
+	void removeAllSubviews(bool recursive = true);
 
 	std::weak_ptr<MTWindow> getWindow();
 
@@ -419,12 +509,14 @@ public:
 	 *
 	 * The default implementation does nothing.
 	 */
-	virtual void layout(){}
+	virtual void layout()
+	{}
 
 	/**
 	  * @brief lambda flavor of layout()
 	  */
-	std::function<void()> onLayout = [](){};
+	std::function<void()> onLayout = []()
+	{};
 
 	MTViewResizePolicy resizePolicy = ResizePolicyNone;
 
@@ -452,7 +544,8 @@ private:
 public:
 	virtual void drawGui()
 	{};
-	std::function<void()> onDrawGui = [] {};
+	std::function<void()> onDrawGui = []
+	{};
 
 
 	bool isRenderingEnabled = true;
@@ -461,7 +554,8 @@ public:
 	// APP MODES                                            //
 	//------------------------------------------------------//
 
-	virtual void appModeChanged(MTAppModeChangeArgs &modeChange) {}
+	virtual void appModeChanged(MTAppModeChangeArgs& modeChange)
+	{}
 
 //#pragma mark FULL SCREEN
 //private:
@@ -485,8 +579,8 @@ public:
 
 	void windowResized(ofResizeEventArgs& resize);
 
-	void keyPressedInternal(ofKeyEventArgs &key);
-	void keyReleasedInternal(ofKeyEventArgs &key);
+	void keyPressedInternal(ofKeyEventArgs& key);
+	void keyReleasedInternal(ofKeyEventArgs& key);
 	void mouseMoved(ofMouseEventArgs& mouse);
 	void mouseDragged(ofMouseEventArgs& mouse);
 	void mousePressed(ofMouseEventArgs& mouse);
@@ -582,7 +676,7 @@ public:
 	{ updateOpQueue.push(f); }
 
 
-	#pragma mark VIEW AND MATRICES
+#pragma mark VIEW AND MATRICES
 
 protected:
 	/**
@@ -613,7 +707,6 @@ protected:
 	 * to make use of it, and counter.getFPS() to obtain the measured framerate.
 	 */
 	ofFpsCounter counter;
-
 
 
 private:
