@@ -18,7 +18,8 @@
 
 #ifndef TARGET_RASPBERRY_PI
 
-#include "MTOffscreenWindow.hpp"
+#include "MTWindow.hpp"
+#include "MTModel.hpp"
 
 #endif
 
@@ -119,7 +120,7 @@ MTApp::MTApp()
 void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings)
 {
 	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
-	AppPtr = app;
+//	AppPtr = app;
 	app->createAppPreferencesFilePath();
 	app->loadAppPreferences();
 	ofRunApp(std::move(app));
@@ -283,57 +284,57 @@ MTAppModeName MTApp::getAppMode()
 
 #ifndef TARGET_RASPBERRY_PI
 
-std::shared_ptr<MTOffscreenWindow>
-MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle)
-{
-	if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
-		ofGetTargetPlatform() == OF_TARGET_IOS ||
-		ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
-		ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
-		ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
-	{
-		ofLogError("MTApp") << "createOffscreenWindow() is not compatible with the current platform";
-		return nullptr;
-	}
-
-	if (!ofAppInitialized)
-	{
-		glVersionMajor = settings.glVersionMajor;
-		glVersionMinor = settings.glVersionMinor;
-	}
-	else
-	{
-		settings.glVersionMajor = glVersionMajor;
-		settings.glVersionMinor = glVersionMinor;
-	}
-
-	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName, useTextureRectangle);
-//	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
-	offscreenWindow->setup(settings);
-	addAllEvents(offscreenWindow.get());
-	ofGetMainLoop()->addWindow(offscreenWindow);
-	windows.push_back(offscreenWindow);
-
-	glfwHideWindow(offscreenWindow->getGLFWWindow());
-
-	// The ofApp system only notifies setup for the first window it creates,
-	// the rest are on their own apparently. So we check if we have initialized
-	// the ofApp system, and if we have, then
-	// that means that we need to notify setup for the window we are creating
-
-	if (!ofAppInitialized)
-	{
-		ofAppInitialized = true;
-	}
-	else
-	{
-		// Note that MTView::setup is not called from this event, only the
-		// MTWindow's setup
-		offscreenWindow->events().notifySetup();
-	}
-
-	return offscreenWindow;
-}
+//std::shared_ptr<MTOffscreenWindow>
+//MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle)
+//{
+//	if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
+//		ofGetTargetPlatform() == OF_TARGET_IOS ||
+//		ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
+//		ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
+//		ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
+//	{
+//		ofLogError("MTApp") << "createOffscreenWindow() is not compatible with the current platform";
+//		return nullptr;
+//	}
+//
+//	if (!ofAppInitialized)
+//	{
+//		glVersionMajor = settings.glVersionMajor;
+//		glVersionMinor = settings.glVersionMinor;
+//	}
+//	else
+//	{
+//		settings.glVersionMajor = glVersionMajor;
+//		settings.glVersionMinor = glVersionMinor;
+//	}
+//
+//	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName, useTextureRectangle);
+////	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
+//	offscreenWindow->setup(settings);
+//	addAllEvents(offscreenWindow.get());
+//	ofGetMainLoop()->addWindow(offscreenWindow);
+//	windows.push_back(offscreenWindow);
+//
+//	glfwHideWindow(offscreenWindow->getGLFWWindow());
+//
+//	// The ofApp system only notifies setup for the first window it creates,
+//	// the rest are on their own apparently. So we check if we have initialized
+//	// the ofApp system, and if we have, then
+//	// that means that we need to notify setup for the window we are creating
+//
+//	if (!ofAppInitialized)
+//	{
+//		ofAppInitialized = true;
+//	}
+//	else
+//	{
+//		// Note that MTView::setup is not called from this event, only the
+//		// MTWindow's setup
+//		offscreenWindow->events().notifySetup();
+//	}
+//
+//	return offscreenWindow;
+//}
 
 #endif
 
@@ -463,14 +464,14 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 {
 
 #ifndef TARGET_RASPBERRY_PI
-	auto offscreenWindow = std::dynamic_pointer_cast<MTOffscreenWindow>(window);
+//	auto offscreenWindow = std::dynamic_pointer_cast<MTOffscreenWindow>(window);
 #else
 	std::shared_ptr<MTWindow> offscreenWindow = nullptr;
 #endif
 	// 	Update the Window Parameters Map if the window is not an offscreen
 	// 	window
-	if (!offscreenWindow)
-	{
+//	if (!offscreenWindow)
+//	{
 		auto it = wpMap.find(window->name.get());
 		if (it != wpMap.end())
 		{
@@ -479,7 +480,7 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 			wp.size = window->getWindowSize();
 			saveAppPreferences();
 		}
-	}
+//	}
 
 	auto wIter = std::find(windows.begin(), windows.end(), window);
 	if (wIter != windows.end())

@@ -41,7 +41,29 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
 
 	ofParameter<std::string> name;
 
-    std::unique_ptr<MTView> contentView;
+private:
+    std::shared_ptr<MTView> contentView;
+
+public:
+	/**
+	 * @brief Adds a subview to the root view
+	 * @param subview
+	 */
+	void addSubview(std::shared_ptr<MTView> subview);
+
+	/**
+	 * @brief Removes all subviews from the root view.
+	 */
+	void removeAllSubviews();
+	/**
+	 * @brief Get the frame size of the root view
+	 * @return
+	 */
+	glm::vec2 getFrameSize();
+
+	const MTView* getRootView();
+
+	ofColor backgroundColor = ofColor::gray;
 
 	//TODO: mouseX and mouseY in MTWindow
 	int mouseX, mouseY;   // for processing heads

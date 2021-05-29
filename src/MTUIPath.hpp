@@ -315,9 +315,9 @@ class MTUIPathVertexHandle : public MTEventListenerStore
 	unsigned int index;
 	std::weak_ptr<MTUIPathVertexHandle> nextVertex;
 	std::weak_ptr<MTUIPathVertexHandle> prevVertex;
-	MTUIHandle* toHandle;
-	MTUIHandle* cp1Handle;
-	MTUIHandle* cp2Handle;
+	std::shared_ptr<MTUIHandle> toHandle;
+	std::shared_ptr<MTUIHandle> cp1Handle;
+	std::shared_ptr<MTUIHandle> cp2Handle;
 	ofStyle currentStyle;
 
 	bool mirroredControlPoints = false;
@@ -350,13 +350,13 @@ public:
 
 	void draw();
 
-	MTUIHandle* getPointHandle()
+	std::shared_ptr<MTUIHandle> getPointHandle()
 	{ return toHandle; }
 
-	MTUIHandle* getCP1Handle()
+	std::shared_ptr<MTUIHandle> getCP1Handle()
 	{ return cp1Handle; }
 
-	MTUIHandle* getCP2Handle()
+	std::shared_ptr<MTUIHandle> getCP2Handle()
 	{ return cp2Handle; }
 
 	std::shared_ptr<ofPath> getPath()

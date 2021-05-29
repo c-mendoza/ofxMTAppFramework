@@ -41,8 +41,7 @@ class MTAppModeChangeArgs;
 
 class MTViewMode;
 
-class MTView : public MTEventListenerStore,
-			   public std::enable_shared_from_this<MTView>
+class MTView : public MTEventListenerStore
 {
 
 protected:
@@ -51,17 +50,17 @@ public:
 	virtual ~MTView();
 
 	template<typename T = MTView, typename std::enable_if<std::is_base_of<MTView, T>::value>::type* = nullptr, typename ...Args>
-	static std::unique_ptr<T> CreateView(Args&... args)
+	static std::shared_ptr<T> CreateView(Args&... args)
 	{
-		return std::unique_ptr<T>(new T(args...));
+		return std::shared_ptr<T>(new T(args...));
 	}
 
 	template<typename T = MTView, typename std::enable_if<std::is_base_of<MTView, T>::value>::type* = nullptr, typename ...Args>
-	static std::unique_ptr<T> CreateView(T* pointerRef, Args&... args)
+	static std::shared_ptr<T> CreateView(T* pointerRef, Args&... args)
 	{
-		auto up = std::unique_ptr<T>(new T(args...));
-		pointerRef = up.get();
-		return std::move(up);
+		auto ptr = std::shared_ptr<T>(new T(args...));
+		pointerRef = ptr.get();
+		return ptr;
 	}
 
 	//-----------------------------//
@@ -80,7 +79,7 @@ public:
 protected:
 	std::weak_ptr<MTWindow> window;
 	MTView* superview = nullptr;
-	std::vector<std::unique_ptr<MTView>> subviews;
+	std::vector<std::shared_ptr<MTView>> subviews;
 
 public:
 	/**
@@ -473,21 +472,22 @@ public:
 	MTView* getSuperview();
 
 	/// \brief Adds a subview.
-	void addSubview(std::unique_ptr<MTView>&& subview);
+	void addSubview(std::shared_ptr<MTView> subview);
 
-	std::vector<std::unique_ptr<MTView>>& getSubviews();
+	const std::vector<std::shared_ptr<MTView>>& getSubviews() const;
 
 protected:
 	void setSuperview(MTView* view);
 
 public:
 	/// \returns True if successful.
-	std::unique_ptr<MTView> removeFromSuperview();
+	std::shared_ptr<MTView> removeFromSuperview();
 
 	/// \returns True if there was a view to be removed.
-	std::unique_ptr<MTView> removeLastSubview();
-	std::unique_ptr<MTView> removeSubview(MTView* view);
-	void removeAllSubviews();
+	std::shared_ptr<MTView> removeLastSubview();
+	std::shared_ptr<MTView> removeSubview(MTView* view);
+
+	void removeAllSubviews(bool recursive = true);
 
 	std::weak_ptr<MTWindow> getWindow();
 

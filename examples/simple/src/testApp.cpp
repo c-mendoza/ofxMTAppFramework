@@ -97,15 +97,15 @@ void testApp::createAppViews()
 	view1->addSubview(std::move(view1_2));
 
 	auto mainWindow = getMainWindow().lock();
-	mainWindow->contentView->addSubview(std::move(view1));
+	mainWindow->addSubview(std::move(view1));
 
-	mainWindow->contentView->addSubview(std::move(view2));
+	mainWindow->addSubview(std::move(view2));
 
-	mainWindow->contentView->backgroundColor = ofColor::white;
+	mainWindow->backgroundColor = ofColor::white;
 
-	mainWindow->contentView->onMousePressed = [this](MTView* view, int x, int y, int b) {
-		ofLogVerbose() << getMainWindow().lock()->contentView->name;
-	};
+//	mainWindow->contentView->onMousePressed = [this](MTView* view, int x, int y, int b) {
+//		ofLogVerbose() << getMainWindow().lock()->contentView->name;
+//	};
 
 
 }

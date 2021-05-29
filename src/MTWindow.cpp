@@ -40,8 +40,12 @@ MTWindow::~MTWindow()
 
 void MTWindow::close()
 {
-	contentView->removeAllSubviews();
-	contentView.reset();
+	if (contentView)
+	{
+		contentView->removeAllSubviews();
+		contentView.reset();
+	}
+
 	MTApp::Instance()->closeWindow(shared_from_this());
 	onClose();
 //	if(auto windowP = getGLFWWindow()){
@@ -156,8 +160,7 @@ void MTWindow::draw(ofEventArgs& args)
 	ofSetupScreenPerspective(ofAppEGLWindow::getWidth(),
 						 ofAppEGLWindow::getHeight());
 #endif
-	ofBackground(0, 0, 0, 1);
-
+	ofBackground(backgroundColor);
 	while (!drawOpQueue.empty())
 	{
 		auto op = drawOpQueue.front();
@@ -165,6 +168,7 @@ void MTWindow::draw(ofEventArgs& args)
 		drawOpQueue.pop();
 	}
 
+	contentView->backgroundColor = backgroundColor;
 	contentView->draw(args);
 
 	if (isImGuiEnabled)
@@ -188,6 +192,26 @@ void MTWindow::drawImGuiForView(MTView* view)
 	}
 
 	view->drawGuiInternal();
+}
+
+void MTWindow::addSubview(std::shared_ptr<MTView> subview)
+{
+	contentView->addSubview(subview);
+}
+
+void MTWindow::removeAllSubviews()
+{
+	contentView->removeAllSubviews();
+}
+
+glm::vec2 MTWindow::getFrameSize()
+{
+	return contentView->getFrameSize();
+}
+
+const MTView* MTWindow::getRootView()
+{
+	return contentView.get();
 }
 
 //void MTWindow::exit(ofEventArgs& args)

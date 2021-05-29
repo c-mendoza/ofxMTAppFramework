@@ -89,6 +89,7 @@ public:
 //		if (!ofGetMainLoop()->getCurrentApp())
 //		{
 		auto app = std::make_shared<AppType>();
+		AppPtr = app;
 		app->model = std::make_unique<ModelType>();
 		app->appPreferencesFilename = settings.appPreferencesFileName;
 		app->fileExtension = settings.fileExtension;
@@ -206,8 +207,8 @@ public:
 	std::weak_ptr<MTWindow> getMainWindow();
 
 #ifndef TARGET_RASPBERRY_PI
-	std::shared_ptr<MTOffscreenWindow>
-	createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle = true);
+//	std::shared_ptr<MTOffscreenWindow>
+//	createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle = true);
 #endif
 
 #ifdef TARGET_OPENGLES

@@ -321,7 +321,7 @@ void MTView::setSuperview(MTView* view)
 }
 /// \brief Adds a subview.
 
-void MTView::addSubview(std::unique_ptr<MTView>&& subview)
+void MTView::addSubview(std::shared_ptr<MTView> subview)
 {
 	//	subview->window = window; // window for the subview is set in setSuperview
 	subview->setSuperview(this);
@@ -329,23 +329,23 @@ void MTView::addSubview(std::unique_ptr<MTView>&& subview)
 	{
 		// Enqueue it in update() so that we may call setup() under the right
 		// OpenGL context.
-		auto subviewPtr = subview.get();
-		enqueueUpdateOperation([subviewPtr]()
+//		MTView* subviewPtr = subview.get();
+		enqueueUpdateOperation([subview]()
 							   {
 								   auto args = ofEventArgs();
-								   subviewPtr->setup(args);
+								   subview->setup(args);
 							   });
 	}
-	subviews.push_back(std::move(subview));
+	subviews.push_back(subview);
 }
 
-std::vector<std::unique_ptr<MTView>> &MTView::getSubviews()
+const std::vector<std::shared_ptr<MTView>> &MTView::getSubviews() const
 {
 	return subviews;
 }
 
 /// \returns True if successful.
-std::unique_ptr<MTView> MTView::removeFromSuperview()
+std::shared_ptr<MTView> MTView::removeFromSuperview()
 {
 	if (superview)
 	{
@@ -353,7 +353,7 @@ std::unique_ptr<MTView> MTView::removeFromSuperview()
 		{
 			ofEventArgs voidArgs;
 			removedFromSuperviewEvent.notify(voidArgs);
-			return std::move(view);
+			return view;
 		}
 	}
 
@@ -364,7 +364,7 @@ std::unique_ptr<MTView> MTView::removeFromSuperview()
  * @brief
  * returns true if there was a view to be removed.
  */
-std::unique_ptr<MTView> MTView::removeLastSubview()
+std::shared_ptr<MTView> MTView::removeLastSubview()
 {
 	if (!subviews.empty())
 	{
@@ -388,29 +388,28 @@ void MTView::resetWindowPointer()
 	}
 }
 
-std::unique_ptr<MTView> MTView::removeSubview(MTView* view)
+std::shared_ptr<MTView> MTView::removeSubview(MTView* view)
 {
-	auto iter = std::find_if(subviews.begin(), subviews.end(), [&](std::unique_ptr<MTView>& p) { return p.get() == view;});
+	auto iter = std::find_if(subviews.begin(), subviews.end(), [&](std::shared_ptr<MTView>& p) { return p.get() == view;});
 	if (iter < subviews.end())
 	{
 		view->superview = nullptr;
 		view->resetWindowPointer();
 		subviews.erase(iter);
-		return std::move(*iter);
+		return *iter;
 	}
 
 	return nullptr;
 }
 
-void MTView::removeAllSubviews()
+void MTView::removeAllSubviews(bool recursive)
 {
 	for (auto &view : subviews)
 	{
-		view->removeAllSubviews();
+		if (recursive) view->removeAllSubviews();
 		view->superview = nullptr;
 		view->resetWindowPointer();
 	}
-
 	subviews.clear();
 }
 

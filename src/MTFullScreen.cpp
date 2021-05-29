@@ -66,7 +66,7 @@ void MTFullScreen::updatePerspectiveTransforms()
 {
 	for (auto win : fullScreenWindows)
 	{
-		auto& view = win->contentView->getSubviews()[0];
+		auto& view = win->getRootView()->getSubviews()[0];
 		auto* fsView = dynamic_cast<MTFullScreenView*>(view.get());
 		fsView->updatePerspectiveTransform();
 	}
@@ -148,8 +148,8 @@ void priv::enterFullScreen()
 		window->setWindowPosition(frame.position.x, frame.position.y);
 //		window->events().setFrameRate(frameRate);
 //		window->setVerticalSync(false);
-		fsView->setSize(window->contentView->getFrameSize());
-		window->contentView->addSubview(std::move(fsView));
+		fsView->setSize(window->getFrameSize());
+		window->addSubview(std::move(fsView));
 		fullScreenWindows.push_back(window);
 		count++;
 	}
