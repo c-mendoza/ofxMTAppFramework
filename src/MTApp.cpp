@@ -774,7 +774,7 @@ void MTApp::createAppPreferencesFilePath()
 			break;
 		case OF_TARGET_WINVS:
 		case OF_TARGET_MINGW:
-			prefix = home + "\\Roaming\\";
+			prefix = home + "\\AppData\\Roaming\\";
 			break;
 		default:
 			ofLogError("MTApp", "Target platform is not supported");
