@@ -189,11 +189,11 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 
 	if (key.hasModifier(commandModifier))
 	{
-		if (key.codepoint == 'o')
+		if (key.keycode == 'o')
 		{
 			open();
 		}
-		else if (key.codepoint == 's')
+		else if (key.keycode == 's')
 		{
 			if (key.hasModifier(OF_KEY_SHIFT))
 			{
