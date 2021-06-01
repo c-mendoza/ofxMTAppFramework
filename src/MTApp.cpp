@@ -31,8 +31,8 @@ MTApp::MTApp()
 
 	// Set the basic preferences
 	MTPrefLastFile.set("MTPrefLastFile", "");
-	MTPrefAutoloadLastFile.set("MTPrefAutoloadLastFile", true);
-	MTPrefLaunchInFullScreen.set("MTPrefLaunchInFullScreen", false);
+	MTPrefAutoloadLastFile.set("Automatically Load Last File", true);
+	MTPrefLaunchInFullScreen.set("Launch in Full Screen", false);
 	appPreferences.setName("App Preferences");
 	appPreferences.add(MTPrefLaunchInFullScreen, MTPrefLastFile, MTPrefAutoloadLastFile);
 
