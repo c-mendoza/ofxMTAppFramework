@@ -150,6 +150,7 @@ void priv::enterFullScreen()
 //		window->setVerticalSync(false);
 		fsView->setSize(window->getFrameSize());
 		window->addSubview(std::move(fsView));
+		window->hideCursor();
 		fullScreenWindows.push_back(window);
 		count++;
 	}
