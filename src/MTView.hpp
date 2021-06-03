@@ -435,7 +435,7 @@ public:
 
 	/// \brief Transforms the passed point from its local (frame)
 	/// coordinates to the frame coordinate system of a given MTView.
-	glm::vec2 transformPoint(glm::vec2& coords, MTView* toView);
+	//glm::vec2 transformPoint(glm::vec2& coords, MTView* toView);
 
 	/// \brief Transforms the passed point from frame
 	/// coordinates to content coordinates.

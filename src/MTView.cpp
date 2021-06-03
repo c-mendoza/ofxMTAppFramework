@@ -276,11 +276,11 @@ glm::vec2 MTView::transformPoint(glm::vec2 &coords,
 	return toView->invFrameMatrix*windowCoords;
 }
 
-glm::vec2 MTView::transformPoint(glm::vec2 &coords,
-								 MTView* toView)
-{
-	return transformPoint(coords, toView);
-}
+//glm::vec2 MTView::transformPoint(glm::vec2 &coords,
+//								 MTView* toView)
+//{
+//	return transformPoint(coords, toView);
+//}
 
 glm::vec2 MTView::transformFramePointToContent(glm::vec2 &coords)
 {
@@ -347,7 +347,7 @@ const std::vector<std::shared_ptr<MTView>> &MTView::getSubviews() const
 /// \returns True if successful.
 std::shared_ptr<MTView> MTView::removeFromSuperview()
 {
-	if (superview)
+	if (superview != NULL)
 	{
 		if (auto view = superview->removeSubview(this))
 		{
@@ -391,12 +391,13 @@ void MTView::resetWindowPointer()
 std::shared_ptr<MTView> MTView::removeSubview(MTView* view)
 {
 	auto iter = std::find_if(subviews.begin(), subviews.end(), [&](std::shared_ptr<MTView>& p) { return p.get() == view;});
-	if (iter < subviews.end())
+	if (iter <= subviews.end())
 	{
 		view->superview = nullptr;
 		view->resetWindowPointer();
+		auto res = *iter;
 		subviews.erase(iter);
-		return *iter;
+		return res;
 	}
 
 	return nullptr;
