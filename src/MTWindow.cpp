@@ -46,6 +46,9 @@ void MTWindow::close()
 		contentView.reset();
 	}
 
+    glfwSetCursorPosCallback(getGLFWWindow(), NULL);
+    glfwSetWindowFocusCallback(getGLFWWindow(), NULL);
+
 	MTApp::Instance()->closeWindow(shared_from_this());
 	onClose();
 //	if(auto windowP = getGLFWWindow()){
@@ -94,14 +97,14 @@ void MTWindow::setup(ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
 	contentView->setWindow(shared_from_this());
-	addEventListener(ofEvents().exit.newListener([this](ofEventArgs& args)
-												 {
-													 if (contentView)
-													 {
-														 contentView->removeAllSubviews();
-														 contentView.reset();
-													 }
-												 }));
+//	addEventListener(ofEvents().exit.newListener([this](ofEventArgs& args)
+//												 {
+//													 if (contentView)
+//													 {
+//														 contentView->removeAllSubviews();
+//														 contentView.reset();
+//													 }
+//												 }));
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
 	glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);

@@ -223,6 +223,12 @@ void MTApp::exit(ofEventArgs& args)
 	}
 
 	saveAppPreferences();
+
+	for (auto& w : windows)
+    {
+        removeAllEvents(w.get());
+        w->setWindowShouldClose();
+    }
 	// Remove all windows to avoid dangling references
 	releasePointers();
 	exit();
