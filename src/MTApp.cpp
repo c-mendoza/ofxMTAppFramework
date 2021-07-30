@@ -211,6 +211,7 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 
 void MTApp::exit(ofEventArgs& args)
 {
+    exit();
 	// Last chance to store the size and position of windows:
 	for (auto& w : windows)
 	{
@@ -224,22 +225,15 @@ void MTApp::exit(ofEventArgs& args)
 
 	saveAppPreferences();
 
-	for (auto& w : windows)
-    {
-        removeAllEvents(w.get());
-        w->setWindowShouldClose();
-    }
-	// Remove all windows to avoid dangling references
-	releasePointers();
-	exit();
+    eventListeners.unsubscribeAll();
 }
 
 void MTApp::releasePointers()
 {
 	windows.clear();
 	mainWindow.reset();
-	AppPtr.reset();
 	eventListeners.unsubscribeAll();
+    AppPtr.reset();
 }
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
