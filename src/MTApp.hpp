@@ -94,6 +94,7 @@ public:
 		app->appPreferencesFilename = settings.appPreferencesFileName;
 		app->fileExtension = settings.fileExtension;
 		RunApp(std::move(app), settings.mainWindowSettings);
+		AppPtr.reset();
 //		}
 	}
 
