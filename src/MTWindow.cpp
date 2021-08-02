@@ -551,12 +551,19 @@ void MTWindow::mt_focus_callback(GLFWwindow* glfWwindow, int isFocused)
 			static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(glfWwindow));
 
 	MTWindow* mtWindow = static_cast<MTWindow*>(instance);
-
-	if (isFocused == true)
+	if (mtWindow)
 	{
 		MTWindowEventArgs focusArgs;
 		focusArgs.window = mtWindow->shared_from_this();
-		mtWindow->windowDidBecomeActiveEvent.notify(focusArgs);
+
+		if (isFocused == GLFW_TRUE)
+		{
+			mtWindow->windowFocusGainedEvent.notify(focusArgs);
+		}
+		else
+		{
+			mtWindow->windowFocusLostEvent.notify(focusArgs);
+		}
 	}
 
 }

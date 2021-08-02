@@ -106,7 +106,9 @@ public:
 	void touchDoubleTap(ofTouchEventArgs& touch);
 	void touchCancelled(ofTouchEventArgs& touch);
 
-    ofEvent<MTWindowEventArgs> windowDidBecomeActiveEvent;
+    ofEvent<MTWindowEventArgs> windowFocusGainedEvent;
+    ofEvent<MTWindowEventArgs> windowFocusLostEvent;
+
 	//------------------------------------------------------//
 	// EVENTS / OVERRIDABLE
 	// //
