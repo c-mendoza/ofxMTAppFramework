@@ -89,9 +89,9 @@ MTApp::MTApp()
 						createAppViews();
 
 						runOncePostLoop([this]()
-						{
-							appWillRun();
-						});
+										{
+											appWillRun();
+										});
 
 						if (MTPrefAutoloadLastFile)
 						{
@@ -211,7 +211,7 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 
 void MTApp::exit(ofEventArgs& args)
 {
-    exit();
+	exit();
 	// Last chance to store the size and position of windows:
 	for (auto& w : windows)
 	{
@@ -225,7 +225,7 @@ void MTApp::exit(ofEventArgs& args)
 
 	saveAppPreferences();
 
-    eventListeners.unsubscribeAll();
+	eventListeners.unsubscribeAll();
 }
 
 void MTApp::releasePointers()
@@ -233,7 +233,7 @@ void MTApp::releasePointers()
 	windows.clear();
 	mainWindow.reset();
 	eventListeners.unsubscribeAll();
-    AppPtr.reset();
+	AppPtr.reset();
 }
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
@@ -472,14 +472,14 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 	// 	window
 //	if (!offscreenWindow)
 //	{
-		auto it = wpMap.find(window->name.get());
-		if (it != wpMap.end())
-		{
-			auto& wp = it->second;
-			wp.position = window->getWindowPosition();
-			wp.size = window->getWindowSize();
-			saveAppPreferences();
-		}
+	auto it = wpMap.find(window->name.get());
+	if (it != wpMap.end())
+	{
+		auto& wp = it->second;
+		wp.position = window->getWindowPosition();
+		wp.size = window->getWindowSize();
+		saveAppPreferences();
+	}
 //	}
 
 	auto wIter = std::find(windows.begin(), windows.end(), window);
