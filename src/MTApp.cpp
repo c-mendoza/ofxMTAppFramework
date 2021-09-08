@@ -523,9 +523,14 @@ void MTApp::addAllEvents(MTWindow* w)
 	ofAddListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
 	ofAddListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
 	ofAddListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
-//	ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
-//	ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
 
+	// We only add these for the windows that are created after the mainWindow, so we test
+	// whether mainWindow is set:
+	if (mainWindow)
+	{
+		ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
+		ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+	}
 	// clang-format on
 }
 
@@ -555,8 +560,11 @@ void MTApp::removeAllEvents(MTWindow* w)
 	ofRemoveListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
 	ofRemoveListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
 	ofRemoveListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
-//	ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
-//	ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+	if (mainWindow)
+	{
+		ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
+		ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+	}
 	// clang-format on
 }
 
