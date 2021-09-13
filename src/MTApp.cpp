@@ -119,10 +119,10 @@ MTApp::MTApp()
 
 void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings)
 {
-	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
 	AppPtr = app;
 	app->createAppPreferencesFilePath();
 	app->loadAppPreferences();
+	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
 	ofRunApp(std::move(app));
 }
 
