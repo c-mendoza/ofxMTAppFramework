@@ -46,6 +46,9 @@ void MTWindow::close()
 		contentView.reset();
 	}
 
+    glfwSetCursorPosCallback(getGLFWWindow(), NULL);
+    glfwSetWindowFocusCallback(getGLFWWindow(), NULL);
+
 	if (MTApp::Instance()) 
 	{
 		MTApp::Instance()->closeWindow(shared_from_this());
@@ -98,14 +101,14 @@ void MTWindow::setup(ofGLFWWindowSettings& settings)
 {
 	ofAppGLFWWindow::setup(settings);
 	contentView->setWindow(shared_from_this());
-	addEventListener(ofEvents().exit.newListener([this](ofEventArgs& args)
-												 {
-													 if (contentView)
-													 {
-														 contentView->removeAllSubviews();
-														 contentView.reset();
-													 }
-												 }));
+//	addEventListener(ofEvents().exit.newListener([this](ofEventArgs& args)
+//												 {
+//													 if (contentView)
+//													 {
+//														 contentView->removeAllSubviews();
+//														 contentView.reset();
+//													 }
+//												 }));
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
 	glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
@@ -562,12 +565,19 @@ void MTWindow::mt_focus_callback(GLFWwindow* glfWwindow, int isFocused)
 			static_cast<ofAppGLFWWindow*>(glfwGetWindowUserPointer(glfWwindow));
 
 	MTWindow* mtWindow = static_cast<MTWindow*>(instance);
-
-	if (isFocused == true)
+	if (mtWindow)
 	{
 		MTWindowEventArgs focusArgs;
 		focusArgs.window = mtWindow->shared_from_this();
-		mtWindow->windowDidBecomeActiveEvent.notify(focusArgs);
+
+		if (isFocused == GLFW_TRUE)
+		{
+			mtWindow->windowFocusGainedEvent.notify(focusArgs);
+		}
+		else
+		{
+			mtWindow->windowFocusLostEvent.notify(focusArgs);
+		}
 	}
 
 }

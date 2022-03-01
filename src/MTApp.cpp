@@ -106,9 +106,9 @@ MTApp::MTApp()
                                                   
 						}
 						runOncePostLoop([this]()
-						{
-							appWillRun();
-						});
+										{
+											appWillRun();
+										});
 
 						if (MTPrefAutoloadLastFile)
 						{
@@ -228,6 +228,7 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
 
 void MTApp::exit(ofEventArgs& args)
 {
+	exit();
 	// Last chance to store the size and position of windows:
 	for (auto& w : windows)
 	{
@@ -240,17 +241,16 @@ void MTApp::exit(ofEventArgs& args)
 	}
 
 	saveAppPreferences();
-	// Remove all windows to avoid dangling references
-	releasePointers();
-	exit();
+
+	eventListeners.unsubscribeAll();
 }
 
 void MTApp::releasePointers()
 {
 	windows.clear();
 	mainWindow.reset();
-	AppPtr.reset();
 	eventListeners.unsubscribeAll();
+	AppPtr.reset();
 }
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
@@ -492,14 +492,14 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 	// 	window
 //	if (!offscreenWindow)
 //	{
-		auto it = wpMap.find(window->name.get());
-		if (it != wpMap.end())
-		{
-			auto& wp = it->second;
-			wp.position = window->getWindowPosition();
-			wp.size = window->getWindowSize();
-			saveAppPreferences();
-		}
+	auto it = wpMap.find(window->name.get());
+	if (it != wpMap.end())
+	{
+		auto& wp = it->second;
+		wp.position = window->getWindowPosition();
+		wp.size = window->getWindowSize();
+		saveAppPreferences();
+	}
 //	}
 
 	auto wIter = std::find(windows.begin(), windows.end(), window);
@@ -543,8 +543,6 @@ void MTApp::addAllEvents(MTWindow* w)
 	ofAddListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
 	ofAddListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
 	ofAddListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
 
 	w->getGLFWWindow();
 
@@ -568,6 +566,13 @@ void MTApp::addAllEvents(MTWindow* w)
 			saveAppPreferences();
 		}
 	}));
+	// We only add these for the windows that are created after the mainWindow, so we test
+	// whether mainWindow is set:
+	if (mainWindow)
+	{
+		ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
+		ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+	}
 	// clang-format on
 }
 
@@ -609,8 +614,11 @@ void MTApp::removeAllEvents(MTWindow* w)
 	ofRemoveListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
 	ofRemoveListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
 	ofRemoveListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+	if (mainWindow)
+	{
+		ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
+		ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+	}
 	// clang-format on
 }
 
