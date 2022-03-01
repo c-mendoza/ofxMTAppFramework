@@ -441,8 +441,8 @@ void MTWindow::setImGuiEnabled(bool doGui)
 
 	if (doGui)
 	{
-		enqueueUpdateOperation([this, doGui]()
-							   {
+		//enqueueUpdateOperation([this, doGui]()
+		//					   {
 								   isImGuiEnabled = doGui;
 								   // Attempting a workaround for ImGUI to work on multiple windows but it just
 								   // doesn't work
@@ -450,17 +450,17 @@ void MTWindow::setImGuiEnabled(bool doGui)
 								   gui = std::make_shared<ofxImGui::Gui>();
 								   gui->setup();
 								   imCtx = ImGui::GetCurrentContext();
-							   });
+							   //});
 	}
 	else
 	{
-		enqueueUpdateOperation([this, doGui]()
-							   {
+		//enqueueUpdateOperation([this, doGui]()
+							   //{
 								   isImGuiEnabled = doGui;
 								   ImGui::SetCurrentContext(imCtx);
 								   gui.reset();
 								   imCtx = nullptr;
-							   });
+							   //});
 	}
 }
 
