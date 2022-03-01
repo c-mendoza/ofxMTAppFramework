@@ -160,6 +160,12 @@ void MTView::setSize(float width, float height)
 //	updateMatrices(); //?
 }
 
+void MTView::setPosition(float x, float y)
+{
+	setFrameOrigin(x, y);
+	setContentOrigin({0, 0});
+}
+
 void MTView::setSize(const glm::vec2 &size)
 {
 	setSize(size.x, size.y);

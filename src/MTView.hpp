@@ -379,6 +379,7 @@ public:
 
 	/// \brief Sets the size of both the frame and the content
 	void setSize(float width, float height);
+	void setPosition(float x, float y);
 
 	/// \brief Returns the deepest subview that occupies the specified
 	/// window coordinate.
