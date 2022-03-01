@@ -46,7 +46,11 @@ void MTWindow::close()
 		contentView.reset();
 	}
 
-	MTApp::Instance()->closeWindow(shared_from_this());
+	if (MTApp::Instance()) 
+	{
+		MTApp::Instance()->closeWindow(shared_from_this());
+	}
+
 	onClose();
 //	if(auto windowP = getGLFWWindow()){
 //		MTApp::Instance()->closeWindow(shared_from_this());
@@ -105,6 +109,15 @@ void MTWindow::setup(ofGLFWWindowSettings& settings)
 	glfwSetCursorPosCallback(getGLFWWindow(), nullptr);
 	glfwSetCursorPosCallback(getGLFWWindow(), &MTWindow::mt_motion_cb);
 	glfwSetWindowFocusCallback(getGLFWWindow(), &MTWindow::mt_focus_callback);
+
+	//
+	//addEventListener(events().windowMoved.newListener(
+ //           [this](ofWindowPosEventArgs& args) {
+ //           	if (MTApp::Instance())
+	//			{
+	//				MTApp::Instance()->saveAppPreferences();
+	//			}
+	//}));
 }
 
 #else
@@ -173,7 +186,7 @@ void MTWindow::draw(ofEventArgs& args)
 
 	if (isImGuiEnabled)
 	{
-		if (ofGetLastFrameTime() != 0)
+		if (ofGetLastFrameTime() != 0.0)
 		{
 			bindImGuiContext();
 			getGui()->begin();
@@ -225,6 +238,7 @@ void MTWindow::windowResized(ofResizeEventArgs& resize)
 	ofViewport(0, 0, size.x, size.y);
 	contentView->setFrameSize(resize.width, resize.height);
 	contentView->windowResized(resize);
+	MTApp::Instance()->saveAppPreferences();
 	onWindowResized();
 }
 

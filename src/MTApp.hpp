@@ -86,15 +86,12 @@ public:
 	template<class AppType = MTApp, class ModelType = MTModel>
 	static void CreateApp(MTAppSettings settings)
 	{
-//		if (!ofGetMainLoop()->getCurrentApp())
-//		{
 		auto app = std::make_shared<AppType>();
 		AppPtr = app;
 		app->model = std::make_unique<ModelType>();
 		app->appPreferencesFilename = settings.appPreferencesFileName;
 		app->fileExtension = settings.fileExtension;
 		RunApp(std::move(app), settings.mainWindowSettings);
-//		}
 	}
 
 	template<class AppType = MTApp, class ModelType = MTModel>
@@ -120,7 +117,7 @@ public:
 	}
 
 	MTApp();
-	virtual ~MTApp();
+	~MTApp() override;
 
 
 	/**
@@ -432,6 +429,9 @@ protected:
  	 * 	need to call this method.
  	 */
 	void removeAllEvents(MTWindow* w);
+
+private:
+	static void windowPosCb(GLFWwindow* w, int x, int y);
 
 public:
 

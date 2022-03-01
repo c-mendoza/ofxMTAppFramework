@@ -88,6 +88,23 @@ MTApp::MTApp()
 #endif
 						createAppViews();
 
+						// Is this for loop still necessary?
+						for (auto& win : windows)
+						{
+                                                    auto wp =
+                                                        wpMap.find(win->name);
+                                                    if (wp != wpMap.end()) {
+                                                      win->setWindowShape(
+                                                          wp->second.size.x,
+                                                          wp->second.size.y);
+                                                      win->setWindowPosition(
+                                                          wp->second.position.x,
+                                                          wp->second.position
+                                                              .y);
+                                                      win->setWindowTitle(win->name);
+                                                    }
+                                                  
+						}
 						runOncePostLoop([this]()
 						{
 							appWillRun();
@@ -119,10 +136,10 @@ MTApp::MTApp()
 
 void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings)
 {
-	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
-	AppPtr = app;
 	app->createAppPreferencesFilePath();
 	app->loadAppPreferences();
+	app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
+	AppPtr = app;
 	ofRunApp(std::move(app));
 }
 
@@ -423,8 +440,11 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWind
 	auto wp = wpMap.find(windowName);
 	if (wp != wpMap.end())
 	{
-		window->setWindowShape(wp->second.size.x, wp->second.size.y);
-		window->setWindowPosition(wp->second.position.x, wp->second.position.y);
+		// Need to make a copy here because calling setWindowShape will change the value
+		// of the stored windowParam.
+		WindowParams paramsCopy = wp->second;
+		window->setWindowShape(paramsCopy.size.x, paramsCopy.size.y);
+		window->setWindowPosition(paramsCopy.position.x, paramsCopy.position.y);
 		window->setWindowTitle(windowName);
 	}
 	else
@@ -526,7 +546,41 @@ void MTApp::addAllEvents(MTWindow* w)
 	ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
 	ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
 
+	w->getGLFWWindow();
+
+	glfwSetWindowPosCallback(w->getGLFWWindow(), &MTApp::windowPosCb);
+
+	addEventListener(w->events().windowMoved.newListener([this, w](ofWindowPosEventArgs& args)
+	{
+		if (wpMap.count(w->name.get()) > 0)
+		{
+			wpMap[w->name].size = w->getWindowSize();
+			wpMap[w->name].position = w->getWindowPosition();
+			saveAppPreferences();
+		}
+	}));
+	addEventListener(w->events().windowResized.newListener([this, w](ofResizeEventArgs& args)
+	{
+		if (wpMap.count(w->name.get()) > 0)
+		{
+			wpMap[w->name].size = w->getWindowSize();
+			wpMap[w->name].position = w->getWindowPosition();
+			saveAppPreferences();
+		}
+	}));
 	// clang-format on
+}
+
+void MTApp::windowPosCb(GLFWwindow* w, int x, int y)
+{
+	if (auto app = MTApp::Instance())
+	{
+		if (app->isInitialized) 
+		{
+			auto ofw = dynamic_pointer_cast<MTWindow>(ofGetCurrentWindow());
+			if (ofw) ofw->events().notifyWindowMoved(x, y);
+		}
+	}
 }
 
 void MTApp::removeAllEvents(MTWindow* w)
@@ -725,6 +779,10 @@ bool MTApp::revert()
 /// Saves!
 bool MTApp::saveAppPreferences()
 {
+	// Return if the app has not yet initialized
+	// Prevents bogus window prefs from being saved
+  if (!isInitialized) return false;
+
 	appPrefsXml.removeChild("App_Preferences");
 	ofSerialize(appPrefsXml, appPreferences);
 
