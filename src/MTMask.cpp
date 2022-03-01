@@ -9,64 +9,63 @@
 
 MTMask::MTMask()
 {
-
 }
 
 void MTMask::setup(int width, int height)
 {
-	this->width = width;
-	this->height = height;
-	buffer.allocate(width, height);
-	buffer.begin();
-	ofClear(0);
-	buffer.end();
+   this->width = width;
+   this->height = height;
+   buffer.allocate(width, height);
+   buffer.begin();
+   ofClear(0);
+   buffer.end();
 
-	if (ofIsGLProgrammableRenderer())
-	{
-		std::string vertexShaderSource = generateVertexShader();
-		maskShader.setupShaderFromSource(GL_VERTEX_SHADER, vertexShaderSource);
-	}
+   if (ofIsGLProgrammableRenderer())
+   {
+      std::string vertexShaderSource = generateVertexShader();
+      maskShader.setupShaderFromSource(GL_VERTEX_SHADER, vertexShaderSource);
+   }
 
-	std::string fragmentShaderSource = generateFragmentShader();
-	maskShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShaderSource);
+   std::string fragmentShaderSource = generateFragmentShader();
+   maskShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-	if (ofIsGLProgrammableRenderer())
-	{
-		maskShader.bindDefaults();
-	}
+   if (ofIsGLProgrammableRenderer())
+   {
+      maskShader.bindDefaults();
+   }
 
-	maskShader.linkProgram();
+   maskShader.linkProgram();
 }
 
 
 void MTMask::update(ofTexture& mask, ofTexture& image)
 {
-	ofPushStyle();
-	ofSetColor(255);
+   ofPushStyle();
+   ofSetColor(255);
 
-	buffer.begin();
-	ofClear(0);
-	maskShader.begin();
-	maskShader.setUniformTexture("maskTex", mask, 1);
-	image.draw(0, 0);
-	maskShader.end();
-	buffer.end();
+   buffer.begin();
+   ofClear(0);
+   maskShader.begin();
+   maskShader.setUniformTexture("maskTex", mask, 1);
+   image.draw(0, 0);
+   maskShader.end();
+   buffer.end();
 
-	ofPopStyle();
+   ofPopStyle();
 }
 
 ofTexture& MTMask::getTexture()
 {
-	return buffer.getTexture();
+   return buffer.getTexture();
 }
 
 std::string MTMask::generateFragmentShader()
 {
-	std::string source;
+   std::string source;
 
-	if (ofIsGLProgrammableRenderer())
-	{
-		source = "#version 150\n\
+   if (ofIsGLProgrammableRenderer())
+   {
+      source = "#version 150\n\
 		\n\
 		uniform sampler2DRect tex0;\
 		uniform sampler2DRect maskTex;\
@@ -81,10 +80,10 @@ std::string MTMask::generateFragmentShader()
 		\
 		fragColor = vec4( src , mask);\
 		}";
-	}
-	else
-	{
-		source = "#version 120\n \
+   }
+   else
+   {
+      source = "#version 120\n \
 		#extension GL_ARB_texture_rectangle : enable\n \
 		\
 		uniform sampler2DRect tex0;\
@@ -98,24 +97,24 @@ std::string MTMask::generateFragmentShader()
 		\
 		gl_FragColor = vec4( src , mask);\
 		}";
-	}
+   }
 
-	return source;
+   return source;
 }
 
 std::string MTMask::generateVertexShader()
 {
-	std::stringstream src;
+   std::stringstream src;
 
-	src <<"#version 150\n";
-	src <<"uniform mat4 modelViewProjectionMatrix;\n";
-	src <<"in vec4 position;\n";
-	src <<"in vec2 texcoord;\n";
-	src <<"out vec2 vTexCoord;\n";
-	src <<"void main() {;\n";
-	src <<"\tvTexCoord = texcoord;\n";
-	src <<"\tgl_Position = modelViewProjectionMatrix * position;\n";
-	src <<"}\n";
+   src << "#version 150\n";
+   src << "uniform mat4 modelViewProjectionMatrix;\n";
+   src << "in vec4 position;\n";
+   src << "in vec2 texcoord;\n";
+   src << "out vec2 vTexCoord;\n";
+   src << "void main() {;\n";
+   src << "\tvTexCoord = texcoord;\n";
+   src << "\tgl_Position = modelViewProjectionMatrix * position;\n";
+   src << "}\n";
 
-	return src.str();
+   return src.str();
 }

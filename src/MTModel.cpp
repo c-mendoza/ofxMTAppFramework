@@ -11,38 +11,38 @@
 
 MTModel::MTModel(std::string _name)
 {
-    name = _name;
-    parameters.setName(name);
+   name = _name;
+   parameters.setName(name);
 }
 
 std::string MTModel::getName()
 {
-    return name;
+   return name;
 }
 
 void MTModel::setName(std::string n)
 {
-    name = n;
-    parameters.setName(n);
+   name = n;
+   parameters.setName(n);
 }
 
 ofParameterGroup& MTModel::getParameters()
 {
-    return parameters;
+   return parameters;
 }
 
 void MTModel::serialize(ofXml& serializer)
 {
-    ofSerialize(serializer, parameters);
+   ofSerialize(serializer, parameters);
 }
 
-void MTModel::deserialize(ofXml &serializer)
+void MTModel::deserialize(ofXml& serializer)
 {
-    ofDeserialize(serializer, parameters);
+   ofDeserialize(serializer, parameters);
 }
 
 void MTModel::addChildModel(std::shared_ptr<MTModel> childModel)
 {
-	children.push_back(childModel);
-	parameters.add(childModel->getParameters());
+   children.push_back(childModel);
+   parameters.add(childModel->getParameters());
 }

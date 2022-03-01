@@ -10,24 +10,23 @@
 
 class MTMask
 {
-public:
-	MTMask();
+ public:
+   MTMask();
 
-	void setup(int width, int height);
-	void update(ofTexture& mask, ofTexture& image);
-	ofTexture& getTexture();
+   void setup(int width, int height);
+   void update(ofTexture& mask, ofTexture& image);
+   ofTexture& getTexture();
 
 
-protected:
-	ofFbo buffer;
-	ofShader maskShader;
-	int width;
-	int height;
+ protected:
+   ofFbo buffer;
+   ofShader maskShader;
+   int width;
+   int height;
 
-	std::string generateFragmentShader();
-	std::string generateVertexShader();
-
+   std::string generateFragmentShader();
+   std::string generateVertexShader();
 };
 
 
-#endif //MTMASK_HPP
+#endif  //MTMASK_HPP

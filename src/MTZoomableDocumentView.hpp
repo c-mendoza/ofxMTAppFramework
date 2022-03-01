@@ -25,20 +25,20 @@
  */
 class MTZoomableDocumentView : public MTView
 {
-public:
-	explicit MTZoomableDocumentView(const string& _name);
-	void draw() override;
-	void mouseDragged(int x, int y, int button) override;
-	void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
-	void setupDocumentRect(float width,
-						   float height,
-						   const ofColor& backgroundColor = ofColor::black,
-						   const ofColor& lineColor = ofColor::white,
-						   float strokeWidth = 1);
-private:
-	ofRectangle documentRect;
-	ofPath documentRectPath;
+ public:
+   explicit MTZoomableDocumentView(const string& _name);
+   void draw() override;
+   void mouseDragged(int x, int y, int button) override;
+   void mouseScrolled(int x, int y, float scrollX, float scrollY) override;
+   void setupDocumentRect(float width,
+                          float height,
+                          const ofColor& backgroundColor = ofColor::black,
+                          const ofColor& lineColor = ofColor::white,
+                          float strokeWidth = 1);
+ private:
+   ofRectangle documentRect;
+   ofPath documentRectPath;
 };
 
 
-#endif //OFXMTAPPFRAMEWORK_MTZOOMABLEDOCUMENTVIEW_HPP
+#endif  //OFXMTAPPFRAMEWORK_MTZOOMABLEDOCUMENTVIEW_HPP
