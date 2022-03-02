@@ -36,7 +36,17 @@ void MTModel::serialize(ofXml& serializer)
    ofSerialize(serializer, parameters);
 }
 
+void MTModel::serialize(ofJson& serializer)
+{
+   ofSerialize(serializer, parameters);
+}
+
 void MTModel::deserialize(ofXml& serializer)
+{
+   ofDeserialize(serializer, parameters);
+}
+
+void MTModel::deserialize(ofJson& serializer)
 {
    ofDeserialize(serializer, parameters);
 }

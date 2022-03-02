@@ -75,11 +75,18 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 {
 
  public:
+   enum SerializerType
+   {
+      XML,
+      JSON
+   };
+
    struct MTAppSettings
    {
       std::string fileExtension = "xml";
       std::string appPreferencesFileName = "com.yourName.yourApp";
       ofGLFWWindowSettings mainWindowSettings;
+      SerializerType serializerType = XML;
    };
 
    template<class AppType = MTApp, class ModelType = MTModel>
@@ -90,6 +97,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
       app->model = std::make_unique<ModelType>();
       app->appPreferencesFilename = settings.appPreferencesFileName;
       app->fileExtension = settings.fileExtension;
+      app->serializerType = settings.serializerType;
       RunApp(std::move(app), settings.mainWindowSettings);
    }
 
@@ -343,18 +351,19 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    ofEvent<ofEventArgs> modelLoadedEvent;
 
  protected:
-   ofXml serializer;
+   //ofXml serializer;
    ofXml appPrefsXml;
 
+   SerializerType serializerType = XML;
    /// The name of the current file.
    std::string fileName;
 
    /// Full path of the file
    std::string filePath;
 
-   /// The file extension you want your documents to have. Defaults to ".xml",
+   /// The file extension you want your documents to have. Defaults to ".settings",
    /// but it can be anything you want.
-   std::string fileExtension = "xml";
+   std::string fileExtension = "settings";
 
  private:
    std::shared_ptr<MTWindow> mainWindow;
@@ -385,7 +394,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    virtual void keyPressed(ofKeyEventArgs& key);
    /**
 	 * @brief Event handler. You should not have to call this method.
- 	 */
+	 */
    virtual void keyReleased(ofKeyEventArgs& key);
 
    /**
@@ -431,9 +440,9 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    void addAllEvents(MTWindow* w);
 
    /**
- 	 * 	Removes the standard event listeners to a window. You probably won't
- 	 * 	need to call this method.
- 	 */
+	 * 	Removes the standard event listeners to a window. You probably won't
+	 * 	need to call this method.
+	 */
    void removeAllEvents(MTWindow* w);
 
  private:

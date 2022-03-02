@@ -679,16 +679,30 @@ bool MTApp::saveAsImpl(std::string filePath)
 
 bool MTApp::saveImpl()
 {
-   serializer = ofXml();
-   model->serialize(serializer);
-
-   if (!serializer.save(MTPrefLastFile.get()))
+   if (serializerType == XML)
    {
-      ofLog(OF_LOG_ERROR, "Encountered an error while saving the file");
-      ofSystemAlertDialog("Encountered an error while saving the file");
-      return false;
-   }
+      auto serializer = ofXml();
+      model->serialize(serializer);
 
+      if (!serializer.save(MTPrefLastFile.get()))
+      {
+         ofLog(OF_LOG_ERROR, "Encountered an error while saving the file");
+         ofSystemAlertDialog("Encountered an error while saving the file");
+         return false;
+      }
+   }
+   else
+   {
+      ofJson serializer;
+      model->serialize(serializer);
+
+      if (!ofSavePrettyJson(MTPrefLastFile.get(), serializer))
+      {
+         ofLog(OF_LOG_ERROR, "Encountered an error while saving the file");
+         ofSystemAlertDialog("Encountered an error while saving the file");
+         return false;
+      }
+   }
    saveAppPreferences();
    return true;
 }
@@ -701,35 +715,60 @@ bool MTApp::openImpl(std::string filePath)
       newFile();
       return true;
    }
+   bool success = false;
+   ofJson json;
+   ofXml xml;
 
-   if (!serializer.load(filePath))
+   if (serializerType == XML)
+   {
+      success = xml.load(filePath);
+   }
+   else
+   {
+      try
+      {
+         json = ofLoadJson(filePath);
+         success = true;
+      }
+      catch (std::exception& e)
+      {
+         success = false;
+      }
+   }
+
+   if (!success)
    {
       ofLogError("MTApp::openImpl") << "Failed loading file " << filePath;
       return false;
    }
+   ofLogVerbose("MTApp::openImpl") << "Opening file: " << filePath;
+   if (serializerType == XML)
+   {
+      model->deserialize(xml);
+   }
    else
    {
-      ofLogVerbose("MTApp::openImpl") << "Opening file: " << filePath;
-      model->deserialize(serializer);
-      if (model == nullptr)
-      {
-         ofLogError("MTApp", "Failed Loading Model");
-         ofSystemAlertDialog("Failed Loading Model");
-      }
-      else
-      {
-         MTPrefLastFile = filePath;
-         fileName = ofFilePath::getFileName(filePath);
-         isInitialized = true;
-         mainWindow->setWindowTitle(fileName);
-         //            saveAppPreferences();
-         auto args = ofEventArgs();
-         modelLoadedEvent.notify(args);
-         ofLogVerbose("MTApp", "File loaded.");
-         return true;
-      }  // End load model
-   }     // End loadLastFile
-   return false;
+      model->deserialize(json);
+   }
+
+   if (model == nullptr)
+   {
+      ofLogError("MTApp", "Failed Loading Model");
+      ofSystemAlertDialog("Failed Loading Model");
+   }
+   else
+   {
+      MTPrefLastFile = filePath;
+      fileName = ofFilePath::getFileName(filePath);
+      isInitialized = true;
+      mainWindow->setWindowTitle(fileName);
+      //            saveAppPreferences();
+      auto args = ofEventArgs();
+      modelLoadedEvent.notify(args);
+      ofLogVerbose("MTApp", "File loaded.");
+      return true;
+   }  // End load model
+      //return false;
 }
 
 void MTApp::newFile()

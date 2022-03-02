@@ -10,6 +10,7 @@
 #define ofxMTModel_hpp
 
 #include "MTAppFrameworkUtils.hpp"
+#include "ofJson.h"
 
 class ofXml;
 class ofParameterGroup;
@@ -35,7 +36,7 @@ class MTModel : public MTEventListenerStore
 	 * @param serializer. This is provided by the Framework.
 	 */
    virtual void serialize(ofXml& serializer);
-
+   virtual void serialize(ofJson& serializer);
    /**
 	 * @brief Deserializes the ofParameterGroup of the Model. Override this method
 	 * if you need to deserialize data that the ofParameter system can't handle on
@@ -45,6 +46,7 @@ class MTModel : public MTEventListenerStore
 	 * @param serializer. This is provided by the Framework.
 	 */
    virtual void deserialize(ofXml& serializer);
+   virtual void deserialize(ofJson& json);
 
    void addChildModel(std::shared_ptr<MTModel> childModel);
 
