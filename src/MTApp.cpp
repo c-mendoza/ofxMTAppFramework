@@ -728,7 +728,7 @@ bool MTApp::openImpl(std::string filePath)
       try
       {
          json = ofLoadJson(filePath);
-         success = true;
+         success = json.empty() ? false : true;
       }
       catch (std::exception& e)
       {
