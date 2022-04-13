@@ -172,7 +172,7 @@ void MTWindow::draw(ofEventArgs& args)
 #else
    ofSetupScreenPerspective(ofAppEGLWindow::getWidth(), ofAppEGLWindow::getHeight());
 #endif
-   ofBackground(backgroundColor);
+   //ofBackground(backgroundColor);
    while (!drawOpQueue.empty())
    {
       auto op = drawOpQueue.front();
