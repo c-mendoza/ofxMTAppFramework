@@ -783,7 +783,7 @@ void MTApp::newFile()
    isInitialized = true;
    //	mainWindow->setWindowTitle(fileName);
 
-   setAppMode(defaultMode);
+   //setAppMode(defaultMode);
 
    auto args = ofEventArgs();
    modelLoadedEvent.notify(args);
