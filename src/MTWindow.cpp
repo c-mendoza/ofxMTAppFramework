@@ -34,6 +34,8 @@ MTWindow::~MTWindow()
       gui.reset();
    }
    //	contentView->removeAllSubviews();
+   glfwSetCursorPosCallback(getGLFWWindow(), NULL);
+   glfwSetWindowFocusCallback(getGLFWWindow(), NULL);
    ofLogVerbose("MTWindow") << name.get() << " destroyed";
 }
 
