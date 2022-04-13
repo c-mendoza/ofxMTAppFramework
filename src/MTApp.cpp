@@ -816,6 +816,11 @@ bool MTApp::saveAppPreferences()
       {
          continue;  // Don't store FS windows
       }
+      // TODO: Avoid saving prefs of ofWindowMode::OF_FULLSCREEN windows
+      // Constrain window pos and size to something reasonable to avoid NaNs and weird values
+
+      wp.second.position = glm::max(wp.second.position, {-10000, -10000});
+      wp.second.size = glm::max(wp.second.size, {200, 200});
       auto winXml = windowsXml.appendChild("Window");
       winXml.appendChild("Name").set(wp.first);
       winXml.appendChild("Position").set(wp.second.position);
