@@ -167,6 +167,7 @@ void MTWindow::update(ofEventArgs& args)
 
 void MTWindow::draw(ofEventArgs& args)
 {
+   ofDisableDepthTest();
 #ifndef TARGET_RASPBERRY_PI
    ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(), ofAppGLFWWindow::getHeight());
 #else
