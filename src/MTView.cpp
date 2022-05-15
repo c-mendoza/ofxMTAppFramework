@@ -506,7 +506,6 @@ void MTView::draw(ofEventArgs &args)
    }
    ofPushMatrix();
    ofSetMatrixMode(ofMatrixMode::OF_MATRIX_MODELVIEW);
-
    // Draw the background
    if (isDrawingBackground)
    {
@@ -515,6 +514,7 @@ void MTView::draw(ofEventArgs &args)
       ofMultMatrix(frameMatrix);
       ofFill();
       ofSetColor(backgroundColor.get());
+      ofSetRectMode(OF_RECTMODE_CORNER);
       ofDrawRectangle(0, 0, frame.width, frame.height);
       ofPopMatrix();
    }
