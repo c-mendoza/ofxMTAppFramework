@@ -122,6 +122,25 @@ bool MTAppFramework::ofPathImGuiEditor(
    return didChange;
 }
 
+void MTAppFramework::RemoveAllParameters(ofParameterGroup& group)
+{
+   while (group.size() > 0) group.remove(group.size() - 1);
+}
+
+std::string MTAppFramework::PathToString(ofPath& path)
+{
+   std::vector<ofPath::Command> commands = path.getCommands();
+
+   std::string out = "";
+
+   for (auto c : commands)
+   {
+      out += "{ " + ofToString(c.type) + "; " + ofToString(c.to) + "; " + ofToString(c.cp1) + "; " + ofToString(c.cp2) + "; } ";
+   }
+
+   return out;
+}
+
 std::string MTAppFramework::PathToString2(const ofPath& path)
 {
    ofXml root;
@@ -208,6 +227,48 @@ ofPath MTAppFramework::PathFromString2(std::string s)
    path.setStrokeWidth(stroke.getAttribute("strokeWidth").getDoubleValue());
    path.setStrokeColor(ofFromString<ofColor>(stroke.getAttribute("color").getValue()));
    return path;
+}
+
+ofPath MTAppFramework::PathFromString(std::string s)
+{
+   std::vector<std::string> commandStrings = ofSplitString(s, "{", true, true);
+   ofPath thePath;
+   thePath.setFilled(false);
+   thePath.setStrokeColor(ofColor::chocolate);
+   thePath.setStrokeWidth(2);
+   for (auto cs : commandStrings)
+   {
+      std::vector<std::string> commandStringElements = ofSplitString(cs, ";", true, true);
+
+      int commandType = ofToInt(commandStringElements[0]);
+      ofPoint p, cp1, cp2;
+      switch (commandType)
+      {
+      case ofPath::Command::moveTo:
+         p = ofFromString<ofPoint>(commandStringElements[1]);
+         thePath.moveTo(p);
+         break;
+      case ofPath::Command::lineTo:
+         p = ofFromString<ofPoint>(commandStringElements[1]);
+         thePath.lineTo(p);
+         break;
+      case ofPath::Command::curveTo: p = ofFromString<ofPoint>(commandStringElements[1]); thePath.curveTo(p);
+      case ofPath::Command::bezierTo:
+         p = ofFromString<ofPoint>(commandStringElements[1]);
+         cp1 = ofFromString<ofPoint>(commandStringElements[2]);
+         cp2 = ofFromString<ofPoint>(commandStringElements[3]);
+         thePath.bezierTo(cp1, cp2, p);
+         break;
+      case ofPath::Command::close: thePath.close(); break;
+      default:
+         ofLog(OF_LOG_WARNING,
+               "MTApp::pathFromString: A Path Command "
+               "supplied is not implemented");
+         break;
+      }
+   }
+
+   return thePath;
 }
 
 MTProcedureStep MTProcedure::getCurrentStep()

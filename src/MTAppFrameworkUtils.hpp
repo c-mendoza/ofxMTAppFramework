@@ -119,10 +119,6 @@ class MTAppFramework
  private:
    static bool fromBinding;
 
-   MTAppFramework(){};
-
-   ~MTAppFramework(){};
-
  public:
    /**
 	 * @brief Synchronizes the values of two distinct parameters.
@@ -132,59 +128,12 @@ class MTAppFramework
 	 * @param bParam
 	 */
    template<typename ParamTypeA, typename ParamTypeB>
-   static void BindParameters(ofParameter<ParamTypeA>& aParam, ofParameter<ParamTypeB>& bParam)
-   {
-      aParam.newListener(
-          [&](ParamTypeA& aValue)
-          {
-             if (!fromBinding)
-             {
-                // Flag that the changed came from the binding so that the bound eventListener
-                // doesn't attempt to change aParam in an infinite loop:
-                fromBinding = true;
-
-                // Set bParam to aValue:
-                bParam = aValue;
-             }
-             else
-             {
-                // "Consume" the fromBinding flag
-                fromBinding = false;
-             }
-          });
-
-      bParam.newListener(
-          [&](ParamTypeB& bValue)
-          {
-             if (!fromBinding)
-             {
-                fromBinding = true;
-                aParam = bValue;
-             }
-             else
-             {
-                fromBinding = false;
-             }
-          });
-   }
+   static void BindParameters(ofParameter<ParamTypeA>& aParam, ofParameter<ParamTypeB>& bParam);
 
    /**
 	 * @brief Stringifies an ofPath.
 	 */
-   static std::string PathToString(ofPath& path)
-   {
-      std::vector<ofPath::Command> commands = path.getCommands();
-
-      std::string out = "";
-
-      for (auto c : commands)
-      {
-         out +=
-             "{ " + ofToString(c.type) + "; " + ofToString(c.to) + "; " + ofToString(c.cp1) + "; " + ofToString(c.cp2) + "; } ";
-      }
-
-      return out;
-   }
+   static std::string PathToString(ofPath& path);
 
    static std::string PathToString2(const ofPath& path);
 
@@ -196,66 +145,62 @@ class MTAppFramework
 	 * @return an ofPath. If the string parsing fails the path will
 	 * be empty. TODO: Catching parsing errors.
 	 */
-   static ofPath PathFromString(std::string s)
-   {
-      std::vector<std::string> commandStrings = ofSplitString(s, "{", true, true);
-      ofPath thePath;
-      thePath.setFilled(false);
-      thePath.setStrokeColor(ofColor::chocolate);
-      thePath.setStrokeWidth(2);
-      for (auto cs : commandStrings)
-      {
-         std::vector<std::string> commandStringElements = ofSplitString(cs, ";", true, true);
-
-         ofPath::Command* thisCommand;
-         int commandType = ofToInt(commandStringElements[0]);
-         ofPoint p, cp1, cp2;
-         switch (commandType)
-         {
-         case ofPath::Command::moveTo:
-            p = ofFromString<ofPoint>(commandStringElements[1]);
-            thePath.moveTo(p);
-            break;
-         case ofPath::Command::lineTo:
-            p = ofFromString<ofPoint>(commandStringElements[1]);
-            thePath.lineTo(p);
-            break;
-         case ofPath::Command::curveTo: p = ofFromString<ofPoint>(commandStringElements[1]); thePath.curveTo(p);
-         case ofPath::Command::bezierTo:
-            p = ofFromString<ofPoint>(commandStringElements[1]);
-            cp1 = ofFromString<ofPoint>(commandStringElements[2]);
-            cp2 = ofFromString<ofPoint>(commandStringElements[3]);
-            thePath.bezierTo(cp1, cp2, p);
-            break;
-         case ofPath::Command::close: thePath.close(); break;
-         default:
-            ofLog(OF_LOG_WARNING,
-                  "MTApp::pathFromString: A Path Command "
-                  "supplied is not implemented");
-            break;
-         }
-      }
-
-      return thePath;
-   }
+   static ofPath PathFromString(std::string s);
 
    template<typename T>
-   static void FlushThreadChannel(ofThreadChannel<T>& channel)
-   {
-      T data;
-      while (channel.tryReceive(data))
-      {
-      }
-   }
+   static void FlushThreadChannel(ofThreadChannel<T>& channel);
 
    static bool ofPathImGuiEditor(
        const char* id, ofPath& originalPath, ofPath& resultPath, ImVec2& widgetSize, ImVec2& realSize, float handleRadius);
 
-   static void RemoveAllParameters(ofParameterGroup& group)
-   {
-      while (group.size() > 0) group.remove(group.size() - 1);
-   }
+   static void RemoveAllParameters(ofParameterGroup& group);
 };
+
+template<typename ParamTypeA, typename ParamTypeB>
+void MTAppFramework::BindParameters(ofParameter<ParamTypeA>& aParam, ofParameter<ParamTypeB>& bParam)
+{
+   aParam.newListener(
+       [&](ParamTypeA& aValue)
+       {
+          if (!fromBinding)
+          {
+             // Flag that the changed came from the binding so that the bound eventListener
+             // doesn't attempt to change aParam in an infinite loop:
+             fromBinding = true;
+
+             // Set bParam to aValue:
+             bParam = aValue;
+          }
+          else
+          {
+             // "Consume" the fromBinding flag
+             fromBinding = false;
+          }
+       });
+
+   bParam.newListener(
+       [&](ParamTypeB& bValue)
+       {
+          if (!fromBinding)
+          {
+             fromBinding = true;
+             aParam = bValue;
+          }
+          else
+          {
+             fromBinding = false;
+          }
+       });
+}
+
+template<typename T>
+void MTAppFramework::FlushThreadChannel(ofThreadChannel<T>& channel)
+{
+   T data;
+   while (channel.tryReceive(data))
+   {
+   }
+}
 
 namespace ofxImGui
 {
