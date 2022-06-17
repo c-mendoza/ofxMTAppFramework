@@ -753,22 +753,20 @@ bool MTApp::openImpl(std::string filePath)
 
    if (model == nullptr)
    {
-      ofLogError("MTApp", "Failed Loading Model");
+      ofLogError("MTApp") << "Failed Loading Model";
       ofSystemAlertDialog("Failed Loading Model");
+      return false;
    }
-   else
-   {
-      MTPrefLastFile = filePath;
-      fileName = ofFilePath::getFileName(filePath);
-      isInitialized = true;
-      mainWindow->setWindowTitle(fileName);
-      //            saveAppPreferences();
-      auto args = ofEventArgs();
-      modelLoadedEvent.notify(args);
-      ofLogVerbose("MTApp", "File loaded.");
-      return true;
-   }  // End load model
-      //return false;
+
+   MTPrefLastFile = filePath;
+   fileName = ofFilePath::getFileName(filePath);
+   isInitialized = true;
+   mainWindow->setWindowTitle(fileName);
+   //            saveAppPreferences();
+   auto args = ofEventArgs();
+   modelLoadedEvent.notify(args);
+   ofLogVerbose("MTApp") << "File loaded.";
+   return true;
 }
 
 void MTApp::newFile()
