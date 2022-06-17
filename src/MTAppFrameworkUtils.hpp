@@ -8,11 +8,9 @@
 #include "ofConstants.h"
 #include <events/ofEvent.h>
 #include <types/ofRectangle.h>
-#include <glm/mat4x4.hpp>
 #include <ofParameter.h>
 #include <graphics/ofPath.h>
 #include <utils/ofThreadChannel.h>
-
 
 //------------------------------------------------------//
 // MT-PROCEDURE     									//
