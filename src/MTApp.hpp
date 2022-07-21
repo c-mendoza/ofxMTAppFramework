@@ -272,6 +272,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    bool revert();
    bool saveAppPreferences();
    void newFile();
+   void saveCopy(std::string filename);
 
    /**
 	 * @brief Override this if you need to do anything when creating a new, empty

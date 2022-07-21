@@ -659,6 +659,15 @@ void MTApp::saveAs()
 #endif
 }
 
+void MTApp::saveCopy(std::string filepath)
+{
+   std::string temp = MTPrefLastFile.get();
+   MTPrefLastFile.setWithoutEventNotifications(filepath);
+   saveImpl();
+   MTPrefLastFile.setWithoutEventNotifications(temp);
+}
+
+
 bool MTApp::saveAsImpl(std::string filePath)
 {
    std::string temp = MTPrefLastFile;
