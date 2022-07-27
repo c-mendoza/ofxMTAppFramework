@@ -13,7 +13,7 @@
 bool MTAppFramework::fromBinding = false;
 
 bool MTAppFramework::ofPathImGuiEditor(
-    const char* id, ofPath& originalPath, ofPath& resultPath, ImVec2& widgetSize, ImVec2& realSize, float handleRadius)
+    const char* id, const ofPath& originalPath, ofPath& resultPath, ImVec2& widgetSize, ImVec2& realSize, float handleRadius)
 {
    bool didChange = false;
    static std::string selectedId = "";

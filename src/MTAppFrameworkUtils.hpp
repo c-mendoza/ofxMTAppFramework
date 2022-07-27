@@ -149,7 +149,7 @@ class MTAppFramework
    static void FlushThreadChannel(ofThreadChannel<T>& channel);
 
    static bool ofPathImGuiEditor(
-       const char* id, ofPath& originalPath, ofPath& resultPath, ImVec2& widgetSize, ImVec2& realSize, float handleRadius);
+       const char* id, const ofPath& originalPath, ofPath& resultPath, ImVec2& widgetSize, ImVec2& realSize, float handleRadius);
 
    static void RemoveAllParameters(ofParameterGroup& group);
 };
