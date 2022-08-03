@@ -492,7 +492,6 @@ void MTView::draw(ofEventArgs &args)
    //	ofPushView();
    //	ofViewport(screenFrame);
    if (!isRenderingEnabled) return;
-   ofSetBackgroundAuto(true);
 
    auto w = window.lock();
    //					glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
