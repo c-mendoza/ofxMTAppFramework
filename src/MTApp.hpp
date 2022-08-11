@@ -87,6 +87,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
       std::string appPreferencesFileName = "com.yourName.yourApp";
       ofGLFWWindowSettings mainWindowSettings;
       SerializerType serializerType = XML;
+      bool appPreferencesFileInHomeDir = false;
    };
 
    template<class AppType = MTApp, class ModelType = MTModel>
@@ -98,6 +99,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
       app->appPreferencesFilename = settings.appPreferencesFileName;
       app->fileExtension = settings.fileExtension;
       app->serializerType = settings.serializerType;
+      app->saveAppPreferencesInHomeDir = settings.appPreferencesFileInHomeDir;
       RunApp(std::move(app), settings.mainWindowSettings);
    }
 
@@ -379,6 +381,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 	 * Where this file is written to depends on the target OS.
 	 */
    std::string appPreferencesFilename = "com.yourGroup.yourApp.prefs";
+   bool saveAppPreferencesInHomeDir = false;
    bool isInitialized;
 
    /**

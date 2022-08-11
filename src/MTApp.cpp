@@ -850,28 +850,35 @@ bool MTApp::saveAppPreferences()
 
 /**
  * ~/.local/share/filename
- * ~/Library/Preferences/filename
+ * ~/Library/Preferences/filename`
  * %systemdrive%%homepath%\Roaming\filename
  *
  */
 void MTApp::createAppPreferencesFilePath()
 {
-   std::string prefix;
-   std::string home = ofFilePath::getUserHomeDir();
-
-   switch (ofGetTargetPlatform())
+   if (!saveAppPreferencesInHomeDir)
    {
-   case OF_TARGET_LINUX:
-   case OF_TARGET_LINUX64:
-   case OF_TARGET_LINUXARMV7L:
-   case OF_TARGET_LINUXARMV6L: prefix = home + "/.local/share/"; break;
-   case OF_TARGET_OSX: prefix = home + "/Library/Preferences/"; break;
-   case OF_TARGET_WINVS:
-   case OF_TARGET_MINGW: prefix = home + "\\AppData\\Roaming\\"; break;
-   default: ofLogError("MTApp", "Target platform is not supported");
+      appPreferencesPath = ofToDataPath(appPreferencesFilename);
    }
+   else
+   {
+      std::string prefix;
+      std::string home = ofFilePath::getUserHomeDir();
 
-   appPreferencesPath = prefix + appPreferencesFilename;
+      switch (ofGetTargetPlatform())
+      {
+      case OF_TARGET_LINUX:
+      case OF_TARGET_LINUX64:
+      case OF_TARGET_LINUXARMV7L:
+      case OF_TARGET_LINUXARMV6L: prefix = home + "/.local/share/"; break;
+      case OF_TARGET_OSX: prefix = home + "/Library/Preferences/"; break;
+      case OF_TARGET_WINVS:
+      case OF_TARGET_MINGW: prefix = home + "\\AppData\\Roaming\\"; break;
+      default: ofLogError("MTApp") << "Target platform is not supported";
+      }
+
+      appPreferencesPath = prefix + appPreferencesFilename;
+   }
 }
 //int MTApp::getLocalMouseX()
 //{
