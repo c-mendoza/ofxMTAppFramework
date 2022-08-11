@@ -827,7 +827,16 @@ bool MTApp::saveAppPreferences()
       // Constrain window pos and size to something reasonable to avoid NaNs and weird values
 
       wp.second.position = glm::max(wp.second.position, {-10000, -10000});
-      wp.second.size = glm::max(wp.second.size, {200, 200});
+      auto sizeNan = glm::isnan(wp.second.size);
+      if (sizeNan.x || sizeNan.y)
+      {
+         ofLogNotice("MTApp::saveAppPreferences") << "Window size was invalid, setting default values instead";
+         wp.second.size = {1024, 768};
+      }
+      else
+      {
+         wp.second.size = glm::max(wp.second.size, {200, 200});
+      }
       auto winXml = windowsXml.appendChild("Window");
       winXml.appendChild("Name").set(wp.first);
       winXml.appendChild("Position").set(wp.second.position);
