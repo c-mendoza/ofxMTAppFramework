@@ -774,6 +774,7 @@ bool MTApp::openImpl(std::string filePath)
    //            saveAppPreferences();
    auto args = ofEventArgs();
    modelLoadedEvent.notify(args);
+   saveAppPreferences();
    ofLogVerbose("MTApp") << "File loaded.";
    return true;
 }
