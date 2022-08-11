@@ -167,6 +167,7 @@ void MTWindow::update(ofEventArgs& args)
 
 void MTWindow::draw(ofEventArgs& args)
 {
+   ofClear(backgroundColor);
    ofDisableDepthTest();
 #ifndef TARGET_RASPBERRY_PI
    ofSetupScreenPerspective(ofAppGLFWWindow::getWidth(), ofAppGLFWWindow::getHeight());
@@ -193,6 +194,7 @@ void MTWindow::draw(ofEventArgs& args)
 
          drawImGuiForView(contentView.get());
          getGui()->end();
+         getGui()->draw();
       }
    }
 }
@@ -459,7 +461,7 @@ void MTWindow::setImGuiEnabled(bool doGui)
       // doesn't work
       ImGui::SetCurrentContext(NULL);
       gui = std::make_shared<ofxImGui::Gui>();
-      gui->setup();
+      gui->setup(nullptr, false, ImGuiConfigFlags_None, true, false);
       imCtx = ImGui::GetCurrentContext();
       //});
    }
