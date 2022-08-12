@@ -74,7 +74,7 @@ MTApp::MTApp()
        [this]()
        {
           initialize();
-
+          loadAppPreferences();
           // Only the first window gets notified of setup when ofRunApp is called
           // so we need to do that ourselves:
           for (auto iter = windows.begin() + 1; iter < windows.end(); iter++)
