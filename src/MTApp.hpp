@@ -269,7 +269,13 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
    /////// FILE HANDLING
    void saveAs();
-   void open();
+   /**
+    * @brief Opens a file. If the optional filepath is not passed, or if the filepath is empty,
+    * a file system dialog box is shown to select a file to open.
+    * @param filepath The optional path to open.
+    * @return True if the open operation succeeds.
+   */
+   bool open(std::string filepath = "");
    void save();
    bool revert();
    bool saveAppPreferences();

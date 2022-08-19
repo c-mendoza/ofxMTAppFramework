@@ -605,20 +605,40 @@ std::weak_ptr<MTWindow> MTApp::getMainWindow()
 
 //// FILE HANDLING
 
-void MTApp::open()
+bool MTApp::open(std::string filepath)
 {
    if (ofGetTargetPlatform() == OF_TARGET_ANDROID || ofGetTargetPlatform() == OF_TARGET_IOS ||
        ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L || ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
        ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
    {
       ofLogError("MTApp") << "open() is not compatible with the current platform";
-      return;
+      return false;
    }
 
-   ofFileDialogResult result = ofSystemLoadDialog();
-   if (result.bSuccess)
+   if (filepath.empty())
    {
-      openImpl(result.filePath);
+      ofFileDialogResult result = ofSystemLoadDialog();
+      if (result.bSuccess)
+      {
+         return openImpl(result.filePath);
+      }
+      else
+      {
+         ofLogError("MTApp::open") << "Could not open file: " << filepath;
+         return false;
+      }
+   }
+   else
+   {
+      if (!std::filesystem::exists(filepath))
+      {
+         ofLogError("MTApp::open") << "Tried opening file that does not exist: " << filepath;
+         return false;
+      }
+      else
+      {
+         return openImpl(filepath);
+      }
    }
 }
 
@@ -717,26 +737,38 @@ bool MTApp::saveImpl()
 }
 
 /// Open sesame.
-bool MTApp::openImpl(std::string filePath)
+bool MTApp::openImpl(std::string path)
 {
-   if (filePath == "")
+   if (path.empty())
    {
       newFile();
       return true;
    }
+   std::string filepath = path;
+   if (ofFilePath::isAbsolute(path))
+   {
+      auto exePath = ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(), false);
+      auto rPath = ofFilePath::makeRelative(exePath, path);
+      ofLogNotice("MTApp::openImpl") << "Document path: " << rPath;
+      if (!rPath.empty())
+      {
+         filepath = rPath;
+      }
+   }
+
    bool success = false;
    ofJson json;
    ofXml xml;
 
    if (serializerType == XML)
    {
-      success = xml.load(filePath);
+      success = xml.load(filepath);
    }
    else
    {
       try
       {
-         json = ofLoadJson(filePath);
+         json = ofLoadJson(filepath);
          success = json.empty() ? false : true;
       }
       catch (std::exception& e)
@@ -747,10 +779,10 @@ bool MTApp::openImpl(std::string filePath)
 
    if (!success)
    {
-      ofLogError("MTApp::openImpl") << "Failed loading file " << filePath;
+      ofLogError("MTApp::openImpl") << "Failed loading file " << filepath;
       return false;
    }
-   ofLogVerbose("MTApp::openImpl") << "Opening file: " << filePath;
+   ofLogVerbose("MTApp::openImpl") << "Opening file: " << filepath;
    if (serializerType == XML)
    {
       model->deserialize(xml);
@@ -762,13 +794,13 @@ bool MTApp::openImpl(std::string filePath)
 
    if (model == nullptr)
    {
-      ofLogError("MTApp") << "Failed Loading Model";
-      ofSystemAlertDialog("Failed Loading Model");
+      ofLogError("MTApp::openImpl") << "Failed to load Model";
+      //ofSystemAlertDialog("Failed Loading Model");
       return false;
    }
 
-   MTPrefLastFile = filePath;
-   fileName = ofFilePath::getFileName(filePath);
+   MTPrefLastFile = filepath;
+   fileName = ofFilePath::getFileName(filepath);
    isInitialized = true;
    mainWindow->setWindowTitle(fileName);
    //            saveAppPreferences();
