@@ -420,6 +420,29 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWind
       // of the stored windowParam.
       WindowParams paramsCopy = wp->second;
       window->setWindowShape(paramsCopy.size.x, paramsCopy.size.y);
+
+      // Windows sets the window position without considering the chrome, so we need to address that:
+      //if (ofGetTargetPlatform() == OF_TARGET_MINGW || ofGetTargetPlatform() == OF_TARGET_WINVS)
+      //{
+      //   if (paramsCopy.position.y < 1.0f)
+      //   {
+      //      paramsCopy.position.y = 50.0f;
+      //   }
+      //}
+      // Make sure the window is within any of the monitors:
+      bool inside = false;
+      for (auto& d : displays)
+      {
+         if (d->getFrame().inside(paramsCopy.position + glm::vec2(1.0, 1.0)))
+         {
+            inside = true;
+            break;
+         }
+      }
+      if (!inside)
+      {
+         paramsCopy.position = {100, 100};
+      }
       window->setWindowPosition(paramsCopy.position.x, paramsCopy.position.y);
       window->setWindowTitle(windowName);
    }
