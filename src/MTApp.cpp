@@ -109,8 +109,8 @@ MTApp::MTApp()
              if (!isInitialized)
              {
                 std::string msg = "Tried to open " + MTPrefLastFile.get() + " but could not find it";
-                ofLogNotice("MTApp") << msg;
-                ofSystemAlertDialog(msg);
+                ofLogError("MTApp") << msg;
+                //ofSystemAlertDialog(msg);
                 isInitialized = true;
                 newFile();
              }
@@ -715,8 +715,8 @@ bool MTApp::saveImpl()
 
       if (!serializer.save(MTPrefLastFile.get()))
       {
-         ofLog(OF_LOG_ERROR, "Encountered an error while saving the file");
-         ofSystemAlertDialog("Encountered an error while saving the file");
+         ofLogError("MTApp::saveImpl") << "Encountered an error while saving the file";
+         //ofSystemAlertDialog("Encountered an error while saving the file");
          return false;
       }
    }
@@ -727,8 +727,8 @@ bool MTApp::saveImpl()
 
       if (!ofSavePrettyJson(MTPrefLastFile.get(), serializer))
       {
-         ofLog(OF_LOG_ERROR, "Encountered an error while saving the file");
-         ofSystemAlertDialog("Encountered an error while saving the file");
+         ofLogError("MTApp::saveImpl") << "Encountered an error while saving the file";
+         //ofSystemAlertDialog("Encountered an error while saving the file");
          return false;
       }
    }
