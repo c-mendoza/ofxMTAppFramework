@@ -55,22 +55,6 @@ class MTDisplay
    }
 };
 
-//template<typename T>
-//class MTModelStore
-//{
-//	std::shared_ptr<T> model;
-//
-//	void setModel(std::shared_ptr<T> _model)
-//	{
-//		model = _model;
-//	}
-//
-//	std::shared_ptr<T> getModel()
-//	{
-//		return model;
-//	}
-//};
-
 class MTApp : public ofBaseApp, public MTEventListenerStore
 {
 
@@ -362,9 +346,6 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    ofEvent<ofEventArgs> modelLoadedEvent;
 
  protected:
-   //ofXml serializer;
-   //ofXml appPrefsXml;
-
    SerializerType serializerType = XML;
    /// The name of the current file.
    std::string fileName;
