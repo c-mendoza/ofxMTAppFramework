@@ -100,7 +100,8 @@ MTApp::MTApp()
                 win->setWindowTitle(win->name);
              }
           }
-          runOncePostLoop([this]() { appWillRun(); });
+          appWillRun();
+          //runOncePostLoop([this]() { ; });
 
           if (MTPrefAutoloadLastFile)
           {

@@ -130,10 +130,10 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
 
    /**
-	 * @brief initialize  Override this method to instantiate your model,
-	 * register custom preferences and other general app setup. Called before
-	 * createAppViews, so unless you create a Window in this method there will
-	 * be no available GPU Contexts. Default implementation does nothing.
+	 * @brief initialize  Override this method to register custom preferences and
+	 * perform other general app setup. Called before 
+	 * createAppViews, so there will be no Windows created yet.
+	 * Default implementation does nothing.
 	 */
    virtual void initialize();
 
@@ -146,10 +146,12 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    virtual void createAppViews();
 
    /**
-	 * @brief appWillRun is called after all of the views and windows 
-	 * have been created and immediately prior to the main loop running.
+	 * @brief Called by the framework after all of the views and windows 
+	 * have been created, and prior to any model file loaded automatically.
 	 * Anything created in createAppViews should have had its setup() method
 	 * called by now.
+	 * Useful for any general setup that requires an existing OpenGL context,
+	 * or for anything that isn't view/window related.
 	 * Default implementation does nothing.
 	 */
    virtual void appWillRun()
