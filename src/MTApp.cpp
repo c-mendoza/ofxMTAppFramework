@@ -143,6 +143,7 @@ MTApp::~MTApp()
 
 void MTApp::loadAppPreferences()
 {
+   ofXml appPrefsXml;
    if (!appPrefsXml.load(appPreferencesPath))
    {
       ofLog(OF_LOG_NOTICE, "App preferences not found, creating a new file.");
@@ -865,8 +866,8 @@ bool MTApp::saveAppPreferences()
    // Return if the app has not yet initialized
    // Prevents bogus window prefs from being saved
    if (!isInitialized) return false;
-
-   appPrefsXml.removeChild("App_Preferences");
+   ofXml appPrefsXml;
+   //appPrefsXml.removeChild("App_Preferences");
    ofSerialize(appPrefsXml, appPreferences);
 
    auto root = appPrefsXml.getChild("App_Preferences");

@@ -363,7 +363,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
  protected:
    //ofXml serializer;
-   ofXml appPrefsXml;
+   //ofXml appPrefsXml;
 
    SerializerType serializerType = XML;
    /// The name of the current file.
