@@ -65,8 +65,8 @@ MTApp::MTApp()
    addEventListener(ofGetMainLoop()->exitEvent.newListener(
        [this]()
        {
-          saveAppPreferences();
-          exit();
+          //saveAppPreferences();
+          //exit();
        }));
 
 
@@ -138,6 +138,8 @@ void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindow
 
 MTApp::~MTApp()
 {
+   exit();
+   saveAppPreferences();
    releasePointers();
 }
 
