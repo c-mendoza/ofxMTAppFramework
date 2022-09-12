@@ -54,9 +54,15 @@ class MTTimer
 	 */
    void stop();
 
+   uint64_t getRemaining()
+   {
+      return remaining;
+   }
+
  private:
    ofEventListener eventListener;
    uint64_t interval;
+   uint64_t remaining = 0;
    bool repeating;
    int ticks;
    uint64_t startTime;

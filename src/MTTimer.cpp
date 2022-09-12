@@ -38,6 +38,7 @@ void MTTimer::update()
 {
    ticks++;
    auto now = ofGetCurrentTime().getAsMilliseconds();
+   remaining = (startTime + interval) - now;
    if (now >= startTime + interval)
    {
       TimerResult result;
