@@ -281,7 +281,14 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 	 * automatically prior to the app closing.
 	 * @param preference An ofParameter
 	 */
-   void registerAppPreference(ofAbstractParameter& preference);
+   //void registerAppPreference(ofAbstractParameter& preference);
+
+   template<typename T>
+   void registerAppPreference(ofParameter<T>& preference)
+   {
+      appPreferences.add(preference);
+      prefEventListeners.push(preference.newListener([this](T&) { saveAppPreferences(); }));
+   }
 
    /////// UTILITY
    /**
@@ -477,6 +484,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    bool openImpl(std::string file);
 
    void loadAppPreferences();
+   ofEventListeners prefEventListeners;
 
    struct WindowParams
    {

@@ -171,10 +171,10 @@ void MTApp::loadAppPreferences()
    }
 }
 
-void MTApp::registerAppPreference(ofAbstractParameter& preference)
-{
-   appPreferences.add(preference);
-}
+//void MTApp::registerAppPreference(ofAbstractParameter& preference)
+//{
+//   appPreferences.add(preference);
+//}
 
 void MTApp::keyPressed(ofKeyEventArgs& key)
 {
