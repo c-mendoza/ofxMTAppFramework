@@ -100,30 +100,34 @@ MTApp::MTApp()
                 win->setWindowTitle(win->name);
              }
           }
-          appWillRun();
-          //runOncePostLoop([this]() { ; });
 
-          if (MTPrefAutoloadLastFile)
+          if (!filePathFromAppSettings.empty())
           {
-             isInitialized = openImpl(MTPrefLastFile);
-
-             if (!isInitialized)
+             if (!openImpl(filePathFromAppSettings))
              {
-                std::string msg = "Tried to open " + MTPrefLastFile.get() + " but could not find it";
-                ofLogError("MTApp") << msg;
-                //ofSystemAlertDialog(msg);
-                isInitialized = true;
+                ofLogError("MTApp") << "Could not open file: " << filePathFromAppSettings;
+                isInitialized = true;  // Probably unnecessary
+                newFile();
+             }
+          }
+          else if (MTPrefAutoloadLastFile)
+          {
+             if (!openImpl(MTPrefLastFile))
+             {
+                ofLogError("MTApp") << "Could not open file: " << MTPrefLastFile.get();
+                isInitialized = true;  // Probably unnecessary
                 newFile();
              }
           }
           else
           {
-             isInitialized = true;
+             isInitialized = true;  // Probably unnecessary
              newFile();
           }
 
+          appWillRun();
 
-          ofLogVerbose("MTApp") << "Running Main Loop";
+          ofLogVerbose("MTApp") << "Initialization Complete";
        });
 }
 

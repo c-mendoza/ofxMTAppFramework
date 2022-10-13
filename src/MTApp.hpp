@@ -72,6 +72,11 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
       ofGLFWWindowSettings mainWindowSettings;
       SerializerType serializerType = XML;
       bool appPreferencesFileInHomeDir = false;
+      /**
+       * @brief Specifies a file to open, typically used from the command line. If this string is set, it will override MTPrefAutoloadLastFile
+      */
+      std::string fileToOpen;
+      std::tuple<int, char**> commandLineArgs;
    };
 
    template<class AppType = MTApp, class ModelType = MTModel>
@@ -84,6 +89,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
       app->fileExtension = settings.fileExtension;
       app->serializerType = settings.serializerType;
       app->saveAppPreferencesInHomeDir = settings.appPreferencesFileInHomeDir;
+      app->filePathFromAppSettings = settings.fileToOpen;
+      app->commandLineArgs = settings.commandLineArgs;
       RunApp(std::move(app), settings.mainWindowSettings);
    }
 
@@ -131,11 +138,10 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
    /**
 	 * @brief Called by the framework after all of the views and windows 
-	 * have been created, and prior to any model file loaded automatically.
+	 * have been created, and after any model file loaded automatically.
 	 * Anything created in createAppViews should have had its setup() method
 	 * called by now.
-	 * Useful for any general setup that requires an existing OpenGL context,
-	 * or for anything that isn't view/window related.
+	 * Useful for any general setup that requires an existing OpenGL context.
 	 * Default implementation does nothing.
 	 */
    virtual void appWillRun()
@@ -363,7 +369,10 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    /// The file extension you want your documents to have. Defaults to ".settings",
    /// but it can be anything you want.
    std::string fileExtension = "settings";
+   std::tuple<int, char**> commandLineArgs;
 
+ private:
+   std::string filePathFromAppSettings;
  private:
    std::shared_ptr<MTWindow> mainWindow;
    std::shared_ptr<MTModel> model;
@@ -494,6 +503,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    };
 
    std::unordered_map<std::string, WindowParams> wpMap;
+
+   GLFWmonitor* getMonitorForWindow(MTWindow* w);
 
    /**
 	 * ~/.local/share/filename
