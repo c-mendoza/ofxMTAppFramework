@@ -825,6 +825,7 @@ bool MTApp::openImpl(std::string path)
       ofLogError("MTApp::openImpl") << "Failed loading file " << filepath;
       return false;
    }
+   newFile();
    ofLogVerbose("MTApp::openImpl") << "Opening file: " << filepath;
    if (serializerType == XML)
    {
@@ -863,6 +864,7 @@ void MTApp::newFile()
    newFileSetup();
    MTPrefLastFile = "";
    fileName = "";
+   model->newFile();
    isInitialized = true;
    //	mainWindow->setWindowTitle(fileName);
 

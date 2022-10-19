@@ -68,6 +68,10 @@ class MTModel : public MTEventListenerStore
       this->parameters.add(param);
    }
 
+   virtual void newFile()
+   {
+   }
+
  protected:
    ofParameterGroup parameters;
 
