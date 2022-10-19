@@ -904,7 +904,7 @@ bool MTApp::saveAppPreferences()
       // TODO: Avoid saving prefs of ofWindowMode::OF_FULLSCREEN windows
       // Constrain window pos and size to something reasonable to avoid NaNs and weird values
 
-      wp.second.position = glm::max(wp.second.position, {-10000, -10000});
+      //wp.second.position = glm::max(wp.second.position, {-10000, -10000});
       auto sizeNan = glm::isnan(wp.second.size);
       if (sizeNan.x || sizeNan.y)
       {
@@ -915,6 +915,18 @@ bool MTApp::saveAppPreferences()
       {
          wp.second.size = glm::max(wp.second.size, {200, 200});
       }
+
+      auto winCenter = wp.second.position + (wp.second.size * 0.5);
+
+      auto w = getWindowWithName(wp.first);
+      if (w)
+      {
+         auto monitor = getMonitorForWindow(w.get());
+         int xpos, ypos;
+         glfwGetMonitorPos(monitor, &xpos, &ypos);
+         wp.second.position.y = glm::max(wp.second.position.y, ypos + 80.0f);
+      }
+
       auto winXml = windowsXml.appendChild("Window");
       winXml.appendChild("Name").set(wp.first);
       winXml.appendChild("Position").set(wp.second.position);
@@ -925,6 +937,29 @@ bool MTApp::saveAppPreferences()
    ofEnableDataPath();
    return success;
 }
+
+GLFWmonitor* MTApp::getMonitorForWindow(MTWindow* w)
+{
+   int monitorCount;
+   auto monitors = glfwGetMonitors(&monitorCount);
+
+   GLFWmonitor* resultMonitor;
+   auto winCenter = w->getWindowPosition() + (w->getWindowSize() * 0.5);
+   for (int i = 0; i < monitorCount; i++)
+   {
+      auto m = monitors[i];
+      int xpos, ypos;
+      glfwGetMonitorPos(m, &xpos, &ypos);
+      const GLFWvidmode* mode = glfwGetVideoMode(m);
+      auto mr = ofRectangle(xpos, ypos, mode->width, mode->height);
+      if (mr.inside(winCenter))
+      {
+         return m;
+      }
+   }
+   return nullptr;
+}
+
 
 /**
  * ~/.local/share/filename
