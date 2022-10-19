@@ -252,6 +252,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
    //	/// Returns the mouse y-position in local coordinates of the current window
    //	int getLocalMouseY();
 
+   std::shared_ptr<MTWindow> getWindowWithName(std::string windowName);
    /**
 	 * @brief You should not have to call this method.
 	 * Event handler for the windowClosing event.

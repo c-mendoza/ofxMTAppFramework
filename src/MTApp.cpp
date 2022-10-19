@@ -522,6 +522,18 @@ void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
    window->setWindowShouldClose();
 }
 
+std::shared_ptr<MTWindow> MTApp::getWindowWithName(std::string windowName)
+{
+   for (auto w : windows)
+   {
+      if (w->name.get() == windowName)
+      {
+         return w;
+      }
+   }
+   return nullptr;
+}
+
 void MTApp::addAllEvents(MTWindow* w)
 {
    // clang-format off
