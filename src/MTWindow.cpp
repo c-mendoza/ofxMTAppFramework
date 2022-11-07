@@ -55,7 +55,7 @@ void MTWindow::close()
       MTApp::Instance()->closeWindow(shared_from_this());
    }
 
-   onClose();
+   //onClose();
    //	if(auto windowP = getGLFWWindow()){
    //		MTApp::Instance()->closeWindow(shared_from_this());
    //		glfwSetMouseButtonCallback( windowP, nullptr );
@@ -241,7 +241,7 @@ void MTWindow::windowResized(ofResizeEventArgs& resize)
    contentView->setFrameSize(resize.width, resize.height);
    contentView->windowResized(resize);
    MTApp::Instance()->saveAppPreferences();
-   onWindowResized();
+   //onWindowResized();
 }
 
 void MTWindow::keyPressed(ofKeyEventArgs& key)
@@ -250,8 +250,8 @@ void MTWindow::keyPressed(ofKeyEventArgs& key)
    {
       focusedView->keyPressedInternal(key);
    }
-   this->keyPressed(key.key);
-   onKeyPressed(key);
+   //this->keyPressed(key.key);
+   //onKeyPressed(key);
 }
 
 void MTWindow::keyReleased(ofKeyEventArgs& key)
@@ -260,8 +260,8 @@ void MTWindow::keyReleased(ofKeyEventArgs& key)
    {
       focusedView->keyReleasedInternal(key);
    }
-   this->keyReleased(key.key);
-   onKeyReleased(key);
+   //this->keyReleased(key.key);
+   //onKeyReleased(key);
 }
 
 void MTWindow::mouseMoved(ofMouseEventArgs& mouse)
@@ -345,12 +345,12 @@ void MTWindow::messageReceived(ofMessage& message)
 
 void MTWindow::modelLoaded(ofEventArgs& args)
 {
-   enqueueUpdateOperation(
-       [this]()
-       {
-          modelLoaded();
-          onModelLoaded();
-       });
+   //enqueueUpdateOperation(
+   //    [this]()
+   //    {
+   //       modelLoaded();
+   //       onModelLoaded();
+   //    });
 
    contentView->modelLoaded(args);
 }
@@ -374,6 +374,13 @@ void MTWindow::touchDoubleTap(ofTouchEventArgs& touch)
 
 void MTWindow::touchCancelled(ofTouchEventArgs& touch)
 {
+}
+
+void MTWindow::setFullscreen(bool fullscreen)
+{
+	ofAppGLFWWindow::setFullscreen(fullscreen);
+	fullScreenActive = fullscreen;
+	ofLogVerbose("MTWindow") << "Full screen status changed to: " << fullScreenActive;
 }
 
 void MTWindow::setFocusedView(MTView* view)

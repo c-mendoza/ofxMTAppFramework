@@ -114,31 +114,41 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
    /// \brief Called when the model is loaded by the app.
    /// The call occurs in the update() method of the MTWindow,
    /// so it is safe to call any GL functions from this method
-   virtual void modelLoaded()
+   //virtual void modelLoaded()
+   //{
+   //}
+   //virtual void windowResized(int w, int h)
+   //{
+   //}
+   //virtual void keyPressed(int key)
+   //{
+   //}
+   //virtual void keyReleased(int key)
+   //{
+   //}
+
+   void setFullscreen(bool fullscreen) override;
+   bool isFullScreen() const
    {
-   }
-   virtual void windowResized(int w, int h)
-   {
-   }
-   virtual void keyPressed(int key)
-   {
-   }
-   virtual void keyReleased(int key)
-   {
+      return fullScreenActive;
    }
 
+private:
+   bool fullScreenActive = false;
+
+public:
    /// \brief Called when the app mode has been changed.
    /// Default implementation does nothing. Override this
    /// method if you want to respond to mode changes.
-   virtual void appModeChanged(MTAppModeChangeArgs& modeChange)
-   {
-   }
+   //virtual void appModeChanged(MTAppModeChangeArgs& modeChange)
+   //{
+   //}
 
-   std::function<void()> onModelLoaded = []() {};
-   std::function<void()> onWindowResized = []() {};
-   std::function<void(ofKeyEventArgs&)> onKeyPressed = [](ofKeyEventArgs& args) {};
-   std::function<void(ofKeyEventArgs&)> onKeyReleased = [](ofKeyEventArgs& args) {};
-   std::function<void()> onClose = []() {};
+   //std::function<void()> onModelLoaded = []() {};
+   //std::function<void()> onWindowResized = []() {};
+   //std::function<void(ofKeyEventArgs&)> onKeyPressed = [](ofKeyEventArgs& args) {};
+   //std::function<void(ofKeyEventArgs&)> onKeyReleased = [](ofKeyEventArgs& args) {};
+   //std::function<void()> onClose = []() {};
 
 
    void setFocusedView(MTView* view);
@@ -241,7 +251,7 @@ class MTWindow : public ofAppEGLWindow, public MTEventListenerStore, public std:
    /// has been loaded from a file. You don't need to call it.
    void modelLoadedInternal()
    {
-      enqueueUpdateOperation([this]() { modelLoaded(); });
+      //enqueueUpdateOperation([this]() { modelLoaded(); });
    }
 
    ofMatrix4x4 transMatrix;
