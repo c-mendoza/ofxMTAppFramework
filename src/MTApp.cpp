@@ -90,16 +90,16 @@ MTApp::MTApp()
           createAppViews();
 
           // Is this for loop still necessary?
-          for (auto& win : windows)
-          {
-             auto wp = wpMap.find(win->name);
-             if (wp != wpMap.end())
-             {
-                win->setWindowShape(wp->second.size.x, wp->second.size.y);
-                win->setWindowPosition(wp->second.position.x, wp->second.position.y);
-                win->setWindowTitle(win->name);
-             }
-          }
+          //for (auto& win : windows)
+          //{
+          //   auto wp = wpMap.find(win->name);
+          //   if (wp != wpMap.end())
+          //   {
+          //      win->setWindowShape(wp->second.size.x, wp->second.size.y);
+          //      win->setWindowPosition(wp->second.position.x, wp->second.position.y);
+          //      win->setWindowTitle(win->name);
+          //   }
+          //}
 
           if (!filePathFromAppSettings.empty())
           {
