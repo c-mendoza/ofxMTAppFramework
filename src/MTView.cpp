@@ -18,6 +18,16 @@ MTView::MTView(std::string _name)
    backgroundColor.set("Background Color", ofFloatColor(1.0, 1.0, 1.0, 1.0));
    //	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
    setFrameSize(200, 200);
+   addEventListener(MTApp::GetApp()->appModeChangedEvent.newListener(
+       [this](MTAppModeChangeArgs &args)
+       {
+          if (currentViewMode)
+          {
+             currentViewMode->exit();
+          }
+          appModeChanged(args);
+       },
+       -100));
 }
 
 MTView::~MTView()
@@ -446,17 +456,8 @@ int MTView::getWindowHeight()
 void MTView::setup(ofEventArgs &args)
 {
    currentViewMode = std::make_shared<MTViewModeVoid>(this);
-   eventListeners.unsubscribeAll();
-   addEventListener(MTApp::GetApp()->appModeChangedEvent.newListener(
-       [this](MTAppModeChangeArgs &args)
-       {
-          if (currentViewMode)
-          {
-             currentViewMode->exit();
-          }
-          appModeChanged(args);
-       },
-       -100));
+   //eventListeners.unsubscribeAll();
+
    setup();
    onSetup(this);
    isSetUp = true;
