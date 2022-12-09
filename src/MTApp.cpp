@@ -922,9 +922,13 @@ bool MTApp::saveAppPreferences()
       if (w)
       {
          auto monitor = getMonitorForWindow(w.get());
-         int xpos, ypos;
-         glfwGetMonitorPos(monitor, &xpos, &ypos);
-         wp.second.position.y = glm::max(wp.second.position.y, ypos + 80.0f);
+         // TODO: This is a temp bug fix for a crash when moving the window across monitors
+         if (monitor)
+         {
+            int xpos, ypos;
+            glfwGetMonitorPos(monitor, &xpos, &ypos);
+            wp.second.position.y = glm::max(wp.second.position.y, ypos + 80.0f);
+         }
       }
 
       auto winXml = windowsXml.appendChild("Window");
