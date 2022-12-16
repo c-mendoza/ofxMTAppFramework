@@ -455,7 +455,7 @@ shared_ptr<ofxImGui::Gui> MTWindow::getGui()
    return gui;
 }
 
-void MTWindow::setImGuiEnabled(bool doGui)
+void MTWindow::setImGuiEnabled(bool doGui, ImGuiConfigFlags customFlags)
 {
    if (isImGuiEnabled == doGui) return;
 
@@ -468,7 +468,7 @@ void MTWindow::setImGuiEnabled(bool doGui)
       // doesn't work
       ImGui::SetCurrentContext(NULL);
       gui = std::make_shared<ofxImGui::Gui>();
-      gui->setup(nullptr, false, ImGuiConfigFlags_None, true, false);
+      gui->setup(nullptr, false, customFlags, true, false);
       imCtx = ImGui::GetCurrentContext();
       //});
    }

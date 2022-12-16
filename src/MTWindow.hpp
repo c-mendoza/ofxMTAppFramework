@@ -216,7 +216,7 @@ public:
 	 * however.
 	 * @param doGui
 	 */
-   void setImGuiEnabled(bool doGui);
+   void setImGuiEnabled(bool doGui, ImGuiConfigFlags customFlags = ImGuiConfigFlags_None);
    shared_ptr<ofxImGui::Gui> getGui();
 
    /**
