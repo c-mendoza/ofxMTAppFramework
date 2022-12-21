@@ -85,6 +85,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
       auto app = std::make_shared<AppType>();
       AppPtr = app;
       app->model = std::make_unique<ModelType>();
+      app->model->newFile();
       app->appPreferencesFilename = settings.appPreferencesFileName;
       app->fileExtension = settings.fileExtension;
       app->serializerType = settings.serializerType;
