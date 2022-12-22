@@ -113,6 +113,17 @@ bool MTAppFramework::ofPathImGuiEditor(
       }
    }
 
+   for (int i = 0; i < resultPath.getCommands().size(); i++)
+   {
+      auto& command = resultPath.getCommands()[i];
+      auto clamped = glm::clamp(command.to, glm::vec3(0, 0, 0), glm::vec3(realSize.x, realSize.y, 0));
+      if (clamped != command.to)
+      {
+         command.to = clamped;
+         didChange = true;
+      }
+   }
+
    DrawList->AddPolyline(scaledPoints.data(), scaledPoints.size(), IM_COL32(255, 255, 255, 255), true, 2);
    for (auto& p : scaledPoints)
    {
