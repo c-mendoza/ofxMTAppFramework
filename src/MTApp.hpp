@@ -360,6 +360,11 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 	 */
    ofEvent<ofEventArgs> modelLoadedEvent;
 
+	/**
+	 * @brief Fires when a new file is created
+	*/
+	ofEvent<void> newFileEvent;
+
  protected:
    SerializerType serializerType = XML;
    /// The name of the current file.

@@ -865,6 +865,8 @@ void MTApp::newFile()
    MTPrefLastFile = "";
    fileName = "";
    model->newFile();
+   ofEventArgs fooArgs;
+   newFileEvent.notify();
    isInitialized = true;
    //	mainWindow->setWindowTitle(fileName);
 
