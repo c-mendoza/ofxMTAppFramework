@@ -927,7 +927,9 @@ bool MTApp::saveAppPreferences()
          {
             int xpos, ypos;
             glfwGetMonitorPos(monitor, &xpos, &ypos);
-            wp.second.position.y = glm::max(wp.second.position.y, ypos + 80.0f);
+            //wp.second.position.y = glm::max(wp.second.position.y, ypos + 80.0f);
+            wp.second.position.x = xpos;
+            wp.second.position.y = ypos;
          }
       }
 
