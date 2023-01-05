@@ -600,7 +600,7 @@ void MTApp::windowPosCb(GLFWwindow* w, int x, int y)
    {
       if (app->isInitialized)
       {
-         auto ofw = dynamic_pointer_cast<MTWindow>(ofGetCurrentWindow());
+         auto ofw = std::dynamic_pointer_cast<MTWindow>(ofGetCurrentWindow());
          if (ofw) ofw->events().notifyWindowMoved(x, y);
       }
    }
@@ -929,9 +929,9 @@ bool MTApp::saveAppPreferences()
          {
             int xpos, ypos;
             glfwGetMonitorPos(monitor, &xpos, &ypos);
-            //wp.second.position.y = glm::max(wp.second.position.y, ypos + 80.0f);
-            wp.second.position.x = xpos;
-            wp.second.position.y = ypos;
+            wp.second.position.y = glm::max(wp.second.position.y, (float)ypos);
+            //wp.second.position.x = xpos;
+            //wp.second.position.y = ypos;
          }
       }
 

@@ -10,7 +10,7 @@
 #define MTWindow_hpp
 
 #include "ofxMTAppFramework.h"
-#include "glm/fwd.hpp"
+//#include "glm/fwd.hpp"
 
 #ifndef TARGET_RASPBERRY_PI
 #include "ofAppGLFWWindow.h"
@@ -217,7 +217,7 @@ public:
 	 * @param doGui
 	 */
    void setImGuiEnabled(bool doGui, ImGuiConfigFlags customFlags = ImGuiConfigFlags_None);
-   shared_ptr<ofxImGui::Gui> getGui();
+   std::shared_ptr<ofxImGui::Gui> getGui();
 
    /**
 	 * @brief Sets the Window's ImGuiContext as the current global ImGuiContext.

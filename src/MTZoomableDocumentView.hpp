@@ -26,7 +26,7 @@
 class MTZoomableDocumentView : public MTView
 {
  public:
-   explicit MTZoomableDocumentView(const string& _name);
+   explicit MTZoomableDocumentView(const std::string& _name);
    void draw() override;
    void mouseDragged(int x, int y, int button) override;
    void mouseScrolled(int x, int y, float scrollX, float scrollY) override;

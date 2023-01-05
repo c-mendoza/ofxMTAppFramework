@@ -450,7 +450,7 @@ void MTWindow::addAllEvents()
 
 #pragma mark ImGui
 
-shared_ptr<ofxImGui::Gui> MTWindow::getGui()
+std::shared_ptr<ofxImGui::Gui> MTWindow::getGui()
 {
    return gui;
 }

@@ -1,13 +1,11 @@
 #pragma once
 //#include "ofMain.h"
 //#include "ofxMTAppFramework.h"
-#include <cstdint>
 #include <functional>
 #include <string>
 #include <queue>
 #include "ofConstants.h"
 #include <events/ofEvent.h>
-#include <types/ofRectangle.h>
 #include <ofParameter.h>
 #include <graphics/ofPath.h>
 #include <utils/ofThreadChannel.h>

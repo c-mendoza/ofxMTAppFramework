@@ -4,7 +4,6 @@
 #include "ofxImGui.h"
 #include <imgui_internal.h>
 #include <utils/ofXml.h>
-#include "MTApp.hpp"
 
 ///////////////////////////////////////////
 /// MTProcedure
@@ -113,6 +112,39 @@ bool MTAppFramework::ofPathImGuiEditor(
       }
    }
 
+
+   DrawList->AddPolyline(scaledPoints.data(), scaledPoints.size(), IM_COL32(255, 255, 255, 255), true, 2);
+   for (auto& p : scaledPoints)
+   {
+      DrawList->AddCircleFilled(p, handleRadius, IM_COL32(40, 40, 40, 255));
+      DrawList->AddCircle(p, handleRadius, IM_COL32(255, 255, 255, 255), 12, 2);
+   }
+
+	Dummy({0, GetStyle().ItemSpacing.y});
+
+   for (int i = 0; i < resultPath.getCommands().size(); i++)
+   {
+
+      auto* command = &resultPath.getCommands()[i];
+      if (command->type == ofPath::Command::close) continue;
+
+   	  PushID(i);      
+      auto label = "Point " + ofToString(i);
+      PushItemWidth(GetContentRegionAvail().x * 0.3);
+      AlignTextToFramePadding();
+      Text(label.c_str());
+      SameLine();
+      Text("x: ");
+      SameLine();
+      didChange |= InputFloat("##X", &command->to.x, 1.0f, 10.0f, "%.0f");
+      SameLine();
+      Text("y: ");
+      SameLine();
+      didChange |= InputFloat("##Y", &command->to.y, 1.0f, 10.0f, "%.0f");
+      PopID();
+      PopItemWidth();
+   }
+
    for (int i = 0; i < resultPath.getCommands().size(); i++)
    {
       auto& command = resultPath.getCommands()[i];
@@ -124,12 +156,6 @@ bool MTAppFramework::ofPathImGuiEditor(
       }
    }
 
-   DrawList->AddPolyline(scaledPoints.data(), scaledPoints.size(), IM_COL32(255, 255, 255, 255), true, 2);
-   for (auto& p : scaledPoints)
-   {
-      DrawList->AddCircleFilled(p, handleRadius, IM_COL32(40, 40, 40, 255));
-      DrawList->AddCircle(p, handleRadius, IM_COL32(255, 255, 255, 255), 12, 2);
-   }
 
    return didChange;
 }

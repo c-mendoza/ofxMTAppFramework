@@ -11,7 +11,6 @@
 
 
 #include "ofxMTAppFramework.h"
-#include <gl/ofFbo.h>
 #include "ofxImGui.h"
 
 enum MTViewResizePolicy

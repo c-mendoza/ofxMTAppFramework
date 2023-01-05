@@ -490,7 +490,7 @@ unsigned int MTUIPath::getIndexForHandle(std::shared_ptr<MTUIPathVertexHandle> h
    return pathHandles.size() - 1;
 }
 
-vector<shared_ptr<MTUIPathVertexHandle>> MTUIPath::getSelection()
+std::vector<std::shared_ptr<MTUIPathVertexHandle>> MTUIPath::getSelection()
 {
    return selectedHandles;
 }

@@ -1,12 +1,12 @@
 #ifndef ofxMTApp_hpp
 #define ofxMTApp_hpp
 
-#include <ofMain.h>
 #include <utils/ofXml.h>
 #include <unordered_map>
 #include "GLFW/glfw3.h"
 #include "MTAppFrameworkUtils.hpp"
 #include "ofxImGui.h"
+#include "ofAppGLFWWindow.h"
 #include "ofBaseApp.h"
 
 class MTView;
@@ -39,7 +39,7 @@ class MTDisplay
       this->id = id;
    }
 
-   const string& getName() const
+   const std::string& getName() const
    {
       return name;
    }
