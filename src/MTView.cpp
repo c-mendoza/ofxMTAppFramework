@@ -333,12 +333,12 @@ void MTView::addSubview(std::shared_ptr<MTView> subview)
       // Enqueue it in update() so that we may call setup() under the right
       // OpenGL context.
       //		MTView* subviewPtr = subview.get();
-      enqueueUpdateOperation(
-          [subview]()
-          {
+      //enqueueUpdateOperation(
+      //    [subview]()
+      //    {
              auto args = ofEventArgs();
              subview->setup(args);
-          });
+          //});
    }
    subviews.push_back(subview);
 }
@@ -456,14 +456,15 @@ int MTView::getWindowHeight()
 void MTView::setup(ofEventArgs &args)
 {
    currentViewMode = std::make_shared<MTViewModeVoid>(this);
-   //eventListeners.unsubscribeAll();
-
-   setup();
-   onSetup(this);
-   isSetUp = true;
-   for (const auto &sv : subviews)
+   if (!isSetUp)
    {
-      sv->setup(args);
+      setup();
+      onSetup(this);
+      isSetUp = true;
+      for (const auto &sv : subviews)
+      {
+         sv->setup(args);
+      }
    }
 }
 
