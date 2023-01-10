@@ -17,9 +17,9 @@
 meta:
 	ADDON_NAME = ofxMTAppFramework
 	ADDON_DESCRIPTION = App framework by Cuppetelli + Mendoza
-	ADDON_AUTHOR = cmendoza
-	ADDON_TAGS = "app"
-	ADDON_URL =
+	ADDON_AUTHOR = Cristobal Mendoza
+	ADDON_TAGS = "Utilities"
+	ADDON_URL = "https://github.com/c-mendoza/ofxMTAppFramework"
 
 common:
 	# dependencies with other addons, a list of them separated by spaces
@@ -62,7 +62,7 @@ common:
 
 	# when parsing the file system looking for sources exclude this for all or
 	# a specific platform
-	# ADDON_SOURCES_EXCLUDE = libs/oscpack/src/ip/win32/%
+	ADDON_SOURCES_EXCLUDE = src/.clang-format
 
 	# when parsing the file system looking for include paths exclude this for all or
 	# a specific platform
