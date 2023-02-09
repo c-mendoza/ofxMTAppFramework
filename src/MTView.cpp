@@ -28,6 +28,11 @@ MTView::MTView(std::string _name)
           appModeChanged(args);
        },
        -100));
+	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
+	{
+		ofEventArgs args;
+		exit(args);
+	}));
 }
 
 MTView::~MTView()
@@ -567,13 +572,16 @@ void MTView::drawGuiInternal()
 
 void MTView::exit(ofEventArgs &args)
 {
-   currentViewMode->exit();
+   if (currentViewMode)
+   {
+      currentViewMode->exit();
+   }
    exit();
    onExit(this);
-   for (const auto &sv : subviews)
-   {
-      sv->exit(args);
-   }
+   //for (const auto &sv : subviews)
+   //{
+   //   sv->exit(args);
+   //}
 }
 
 void MTView::windowResized(ofResizeEventArgs &resize)
