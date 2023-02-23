@@ -353,6 +353,20 @@ const std::vector<std::shared_ptr<MTView>> &MTView::getSubviews() const
    return subviews;
 }
 
+std::weak_ptr<MTView> MTView::getSubviewWithName(const std::string viewName) const
+{
+   std::shared_ptr<MTView> view = nullptr;
+   for (auto sv : subviews)
+   {
+             if (sv->name.get() == viewName)
+             {
+                view = sv;
+                break;
+             }
+   }
+   return view;
+}
+
 /// \returns True if successful.
 std::shared_ptr<MTView> MTView::removeFromSuperview()
 {

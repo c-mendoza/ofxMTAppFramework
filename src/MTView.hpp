@@ -521,6 +521,11 @@ class MTView : public MTEventListenerStore
 
    const std::vector<std::shared_ptr<MTView>>& getSubviews() const;
 
+   /**
+    * @brief Returns the named view, or nullptr if none is found
+    */
+   std::weak_ptr<MTView> getSubviewWithName(std::string viewName) const;
+
  protected:
    void setSuperview(MTView* view);
 
