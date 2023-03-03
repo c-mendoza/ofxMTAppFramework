@@ -868,7 +868,7 @@ void MTApp::newFile()
    ofEventArgs fooArgs;
    newFileEvent.notify();
    isInitialized = true;
-   //	mainWindow->setWindowTitle(fileName);
+   mainWindow->setWindowTitle(fileName);
 
    //setAppMode(defaultMode);
 
