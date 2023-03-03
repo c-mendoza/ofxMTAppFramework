@@ -526,7 +526,7 @@ class MTView : public MTEventListenerStore
     */
    std::weak_ptr<MTView> getSubviewWithName(std::string viewName) const;
 
- protected:
+ private:
    void setSuperview(MTView* view);
 
  public:
