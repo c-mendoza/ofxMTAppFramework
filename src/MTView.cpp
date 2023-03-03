@@ -332,6 +332,14 @@ void MTView::setSuperview(MTView *view)
 void MTView::addSubview(std::shared_ptr<MTView> subview)
 {
    //	subview->window = window; // window for the subview is set in setSuperview
+   if (subview->superview)
+   {
+      ofLogNotice("MTView") << "addSubview: "
+                            << "You are trying to add a subview that already has superview. Remove the subview from its "
+                               "superview before adding it. \nSubview you are trying to add: "
+                            << subview->name << "\nView you are adding to: " << name;
+      return;
+   }
    subview->setSuperview(this);
    if (this->isSetUp)  // If setupInternal has run already, then call the subview's setup
    {
