@@ -3,6 +3,11 @@
 //#include <ofMain.h>
 #include "ofAppRunner.h"
 
+//// Because the definition of ofMainLoop::addWindow was moved to the cpp file, this
+//// horrid thing needs to be done.
+//// See: https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
+//#include "ofMainLoop.cpp"
+
 #ifndef TARGET_OPENGLES
 
 #include "ofAppGLFWWindow.h"
@@ -25,6 +30,13 @@
 
 std::vector<std::shared_ptr<MTDisplay>> MTApp::displays;
 std::weak_ptr<MTApp> MTApp::AppPtr;
+
+
+//// Because the definition of ofMainLoop::addWindow was moved to the cpp file, this
+//// horrid thing needs to be done.
+//// See: https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
+//template void ofMainLoop::addWindow<MTWindow>(const std::shared_ptr<MTWindow>&);
+
 
 MTApp::MTApp()
 {
@@ -391,6 +403,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName)
    settings.shareContextWith = mainWindow;
    return createWindow(windowName, settings);
 }
+
 
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWindowSettings settings)
 {
