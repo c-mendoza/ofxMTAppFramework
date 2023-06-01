@@ -18,7 +18,7 @@ MTView::MTView(std::string _name)
    backgroundColor.set("Background Color", ofFloatColor(1.0, 1.0, 1.0, 1.0));
    //	currentViewMode = std::make_shared<MTViewModeVoid>(nullptr);
    setFrameSize(200, 200);
-   addEventListener(MTApp::GetApp()->appModeChangedEvent.newListener(
+   appModeChangedListener = MTApp::GetApp()->appModeChangedEvent.newListener(
        [this](MTAppModeChangeArgs &args)
        {
           if (currentViewMode)
@@ -27,12 +27,12 @@ MTView::MTView(std::string _name)
           }
           appModeChanged(args);
        },
-       -100));
-	addEventListener(ofGetMainLoop()->exitEvent.newListener([this]()
+       -100);
+	exitEventListener = ofGetMainLoop()->exitEvent.newListener([this]()
 	{
 		ofEventArgs args;
 		exit(args);
-	}));
+	});
 }
 
 MTView::~MTView()

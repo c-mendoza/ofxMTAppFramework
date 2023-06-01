@@ -57,8 +57,8 @@ MTApp::MTApp()
    MTApp::updateDisplays();
    //		ofSetLogLevel(OF_LOG_NOTICE);
 
-   addEventListener(modelLoadedEvent.newListener([this](ofEventArgs& args) { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
-   addEventListener(ofGetMainLoop()->loopEvent.newListener(
+   internalEventListeners.push(modelLoadedEvent.newListener([this](ofEventArgs& args) { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
+   internalEventListeners.push(ofGetMainLoop()->loopEvent.newListener(
        [this]()
        {
           // We only iterate until size so that if a
@@ -74,7 +74,7 @@ MTApp::MTApp()
           }
        }));
 
-   addEventListener(ofGetMainLoop()->exitEvent.newListener(
+   internalEventListeners.push(ofGetMainLoop()->exitEvent.newListener(
        [this]()
        {
           //saveAppPreferences();
@@ -579,7 +579,7 @@ void MTApp::addAllEvents(MTWindow* w)
 
 	glfwSetWindowPosCallback(w->getGLFWWindow(), &MTApp::windowPosCb);
 
-	addEventListener(w->events().windowMoved.newListener([this, w](ofWindowPosEventArgs& args)
+	internalEventListeners.push(w->events().windowMoved.newListener([this, w](ofWindowPosEventArgs& args)
 	{
 		if (wpMap.count(w->name.get()) > 0)
 		{
@@ -588,7 +588,7 @@ void MTApp::addAllEvents(MTWindow* w)
 			saveAppPreferences();
 		}
 	}));
-	addEventListener(w->events().windowResized.newListener([this, w](ofResizeEventArgs& args)
+	internalEventListeners.push(w->events().windowResized.newListener([this, w](ofResizeEventArgs& args)
 	{
 		if (wpMap.count(w->name.get()) > 0)
 		{

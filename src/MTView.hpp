@@ -321,8 +321,8 @@ class MTView : public MTEventListenerStore
    }
 
    /**
-	 * @return Returns the width of the view's frame
-	 */
+    * @return Returns the width of the view's frame
+    */
    float getWidth()
    {
       return frame.width;
@@ -648,6 +648,8 @@ class MTView : public MTEventListenerStore
    void updateMousePositionsWithWindowCoordinate(glm::vec2 windowCoord);
    void updateMouseDownPositionsWithWindowCoordinate(glm::vec2 windowCoord);
    void updateMouseUpPositionsWithWindowCoordinate(glm::vec2 windowCoord);
+   ofEventListener appModeChangedListener;
+   ofEventListener exitEventListener;
 
  public:
 #pragma mark EVENTS

@@ -463,6 +463,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
  private:
    static void windowPosCb(GLFWwindow* w, int x, int y);
+   ofEventListeners internalEventListeners;
 
  public:
    /**
