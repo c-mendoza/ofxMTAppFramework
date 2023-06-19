@@ -1,29 +1,14 @@
 # Format Style Options - Created with Clang Power Tools
 ---
 AlignAfterOpenBracket: Align
-AlignOperands: DontAlign
 AllowAllArgumentsOnNextLine: false
-AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: WithoutElse
-AllowShortLoopsOnASingleLine: true
-AlwaysBreakTemplateDeclarations: Yes
-BasedOnStyle: LLVM
+AllowShortLambdasOnASingleLine: None
+AlwaysBreakAfterReturnType: None
+BasedOnStyle: Chromium
 BinPackArguments: false
-BinPackParameters: false
 BreakBeforeBraces: Allman
-ColumnLimit: 130
-ContinuationIndentWidth: 4
-DerivePointerAlignment: true
-EmptyLineBeforeAccessModifier: Leave
-IndentWidth: 3
-KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 2
-ReflowComments: false
+IndentWidth: 4
+IndentWrappedFunctionNames: true
+NamespaceIndentation: All
 SortIncludes: false
-SpaceAfterCStyleCast: true
-SpaceAfterTemplateKeyword: false
-SpacesBeforeTrailingComments: 2
-TabWidth: 20
-UseTab: ForIndentation
 ...

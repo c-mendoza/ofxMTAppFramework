@@ -842,10 +842,12 @@ bool MTApp::openImpl(std::string path)
    ofLogVerbose("MTApp::openImpl") << "Opening file: " << filepath;
    if (serializerType == XML)
    {
+      preDeserializeXMLEvent.notify(xml);
       model->deserialize(xml);
    }
    else
    {
+      preDeserializeJsonEvent.notify(json);
       model->deserialize(json);
    }
 
