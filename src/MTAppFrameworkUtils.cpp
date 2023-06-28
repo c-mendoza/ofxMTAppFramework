@@ -4,6 +4,7 @@
 #include "ofxImGui.h"
 #include <imgui_internal.h>
 #include <utils/ofXml.h>
+#include "ImHelpers.h"
 
 ///////////////////////////////////////////
 /// MTProcedure
