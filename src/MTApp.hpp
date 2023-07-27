@@ -61,6 +61,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     {
         std::string fileExtension = "xml";
         std::string appPreferencesFileName = "com.yourName.yourApp";
+        std::string modelName = "yourModel";
         ofGLFWWindowSettings mainWindowSettings;
         SerializerType serializerType = XML;
         bool appPreferencesFileInHomeDir = false;
@@ -77,7 +78,7 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     {
         auto app = std::make_shared<AppType>();
         AppPtr = app;
-        app->model = std::make_unique<ModelType>();
+        app->model = std::make_unique<ModelType>(settings.modelName);
         app->model->newFile();
         app->appPreferencesFilename = settings.appPreferencesFileName;
         app->fileExtension = settings.fileExtension;
