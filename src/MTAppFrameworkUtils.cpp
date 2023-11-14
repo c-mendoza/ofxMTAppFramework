@@ -2,6 +2,7 @@
 #include <graphics/ofPolyline.h>
 #include "MTAppFrameworkUtils.hpp"
 #include "ofxImGui.h"
+#include "ImHelpers.h"
 #include <imgui_internal.h>
 #include <utils/ofXml.h>
 
