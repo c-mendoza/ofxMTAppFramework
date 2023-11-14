@@ -356,7 +356,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     ofEvent<MTAppModeChangeArgs> appModeChangedEvent;
 
     /**
-     * Fires after a model is loaded from the file system.
+     * Fires after a model is loaded from the file system and deserialized. At this
+     * point, all parameters in the Model's parameterGroup should be set.
      */
     ofEvent<ofEventArgs> modelLoadedEvent;
 
