@@ -280,6 +280,24 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     virtual void newFileSetup() {}
 
     /**
+     * @brief Gets the current file name, without the path.
+     * @return A copy of the the file name.
+     */
+    std::string getFileName()
+    {
+        return fileName;
+    }
+
+    /**
+     * @brief Gets the full path of the current file. This should be the same as the value
+     * stored in MTPrefLastFile.
+     * @return A string copy of the full file path.
+     */
+    std::string getFilePath()
+    {
+        return filePath;
+    }
+    /**
      * @brief Registers a new app preference. App preferences are saved
      * automatically prior to the app closing.
      * @param preference An ofParameter
