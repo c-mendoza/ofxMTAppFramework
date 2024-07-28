@@ -150,6 +150,13 @@ class MTAppFramework
        const char* id, const ofPath& originalPath, ofPath& resultPath, ImVec2& widgetSize, ImVec2& realSize, float handleRadius);
 
    static void RemoveAllParameters(ofParameterGroup& group);
+
+    template <typename T>
+    static T GetRandomElement(std::vector<T>& v)
+    {
+      auto index = floor(ofRandom(0, v.size()));
+      return v.at(index);
+    }
 };
 
 template<typename ParamTypeA, typename ParamTypeB>
