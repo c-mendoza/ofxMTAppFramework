@@ -76,8 +76,10 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     template <class AppType = MTApp, class ModelType = MTModel>
     static void CreateApp(MTAppSettings settings)
     {
+        ofLogVerbose("MTApp") << "Creating App...";
         auto app = std::make_shared<AppType>();
         AppPtr = app;
+        ofLogVerbose("MTApp") << "Creating Model " << settings.modelName;
         app->model = std::make_unique<ModelType>(settings.modelName);
         app->model->newFile();
         app->appPreferencesFilename = settings.appPreferencesFileName;

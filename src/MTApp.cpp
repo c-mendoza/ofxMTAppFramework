@@ -145,6 +145,7 @@ MTApp::MTApp()
 
 void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings)
 {
+    ofLogVerbose("MTApp") << "Running app...";
    app->createAppPreferencesFilePath();
    app->loadAppPreferences();
    app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
@@ -407,6 +408,7 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName)
 
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWindowSettings settings)
 {
+    ofLogVerbose("MTApp") << "Creating window with name: " << windowName;
    for (auto& w : windows)
    {
       if (w->name.get() == windowName)
