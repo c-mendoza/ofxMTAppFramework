@@ -552,60 +552,60 @@ std::shared_ptr<MTWindow> MTApp::getWindowWithName(std::string windowName)
 void MTApp::addAllEvents(MTWindow* w)
 {
    // clang-format off
-	w->events().enable();
-	ofAddListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
+        w->events().enable();
+        ofAddListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
 //	ofAddListener(w->events().exit, w, &MTWindow::exit, OF_EVENT_ORDER_BEFORE_APP);
-	ofAddListener(w->events().keyPressed, w, &MTWindow::keyPressed, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().keyReleased, w, &MTWindow::keyReleased, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mouseMoved, w, &MTWindow::mouseMoved, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mouseDragged, w, &MTWindow::mouseDragged, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mousePressed, w, &MTWindow::mousePressed, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mouseReleased, w, &MTWindow::mouseReleased, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mouseScrolled, w, &MTWindow::mouseScrolled, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mouseEntered, w, &MTWindow::mouseEntered, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().mouseExited, w, &MTWindow::mouseExited, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().windowResized, w, &MTWindow::windowResized, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().messageEvent, w, &MTWindow::messageReceived, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().fileDragEvent, w, &MTWindow::dragged, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().touchCancelled, w, &MTWindow::touchCancelled, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().touchDoubleTap, w, &MTWindow::touchDoubleTap, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().touchDown, w, &MTWindow::touchDown, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().touchMoved, w, &MTWindow::touchMoved, OF_EVENT_ORDER_APP);
-	ofAddListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
-	//ofAddListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
-	ofAddListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().keyPressed, w, &MTWindow::keyPressed, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().keyReleased, w, &MTWindow::keyReleased, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mouseMoved, w, &MTWindow::mouseMoved, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mouseDragged, w, &MTWindow::mouseDragged, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mousePressed, w, &MTWindow::mousePressed, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mouseReleased, w, &MTWindow::mouseReleased, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mouseScrolled, w, &MTWindow::mouseScrolled, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mouseEntered, w, &MTWindow::mouseEntered, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().mouseExited, w, &MTWindow::mouseExited, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().windowResized, w, &MTWindow::windowResized, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().messageEvent, w, &MTWindow::messageReceived, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().fileDragEvent, w, &MTWindow::dragged, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().touchCancelled, w, &MTWindow::touchCancelled, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().touchDoubleTap, w, &MTWindow::touchDoubleTap, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().touchDown, w, &MTWindow::touchDown, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().touchMoved, w, &MTWindow::touchMoved, OF_EVENT_ORDER_APP);
+        ofAddListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
+        //ofAddListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
+        ofAddListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
 
-	w->getGLFWWindow();
+        w->getGLFWWindow();
 
-	glfwSetWindowPosCallback(w->getGLFWWindow(), &MTApp::windowPosCb);
+        glfwSetWindowPosCallback(w->getGLFWWindow(), &MTApp::windowPosCb);
 
-	internalEventListeners.push(w->events().windowMoved.newListener([this, w](ofWindowPosEventArgs& args)
-	{
-		if (wpMap.count(w->name.get()) > 0)
-		{
-			wpMap[w->name].size = w->getWindowSize();
-			wpMap[w->name].position = w->getWindowPosition();
-			saveAppPreferences();
-		}
-	}));
-	internalEventListeners.push(w->events().windowResized.newListener([this, w](ofResizeEventArgs& args)
-	{
-		if (wpMap.count(w->name.get()) > 0)
-		{
-			wpMap[w->name].size = w->getWindowSize();
-			wpMap[w->name].position = w->getWindowPosition();
-			saveAppPreferences();
-		}
-	}));
-	// We only add these for the windows that are created after the mainWindow, so we test
-	// whether mainWindow is set:
-	if (mainWindow)
-	{
-		ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
-		ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
-	}
+        internalEventListeners.push(w->events().windowMoved.newListener([this, w](ofWindowPosEventArgs& args)
+        {
+                if (wpMap.count(w->name.get()) > 0)
+                {
+                        wpMap[w->name].size = w->getWindowSize();
+                        wpMap[w->name].position = w->getWindowPosition();
+                        saveAppPreferences();
+                }
+        }));
+        internalEventListeners.push(w->events().windowResized.newListener([this, w](ofResizeEventArgs& args)
+        {
+                if (wpMap.count(w->name.get()) > 0)
+                {
+                        wpMap[w->name].size = w->getWindowSize();
+                        wpMap[w->name].position = w->getWindowPosition();
+                        saveAppPreferences();
+                }
+        }));
+        // We only add these for the windows that are created after the mainWindow, so we test
+        // whether mainWindow is set:
+        if (mainWindow)
+        {
+                ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
+                ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+        }
    // clang-format on
 }
 
@@ -624,34 +624,34 @@ void MTApp::windowPosCb(GLFWwindow* w, int x, int y)
 void MTApp::removeAllEvents(MTWindow* w)
 {
    // clang-format off
-	ofRemoveListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
 //	ofRemoveListener(w->events().exit, w, &MTWindow::exit, OF_EVENT_ORDER_BEFORE_APP);
-	ofRemoveListener(w->events().keyPressed, w, &MTWindow::keyPressed, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().keyReleased, w, &MTWindow::keyReleased, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mouseMoved, w, &MTWindow::mouseMoved, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mouseDragged, w, &MTWindow::mouseDragged, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mousePressed, w, &MTWindow::mousePressed, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mouseReleased, w, &MTWindow::mouseReleased, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mouseScrolled, w, &MTWindow::mouseScrolled, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mouseEntered, w, &MTWindow::mouseEntered, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().mouseExited, w, &MTWindow::mouseExited, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().windowResized, w, &MTWindow::windowResized, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().messageEvent, w, &MTWindow::messageReceived, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().fileDragEvent, w, &MTWindow::dragged, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().touchCancelled, w, &MTWindow::touchCancelled, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().touchDoubleTap, w, &MTWindow::touchDoubleTap, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().touchDown, w, &MTWindow::touchDown, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().touchMoved, w, &MTWindow::touchMoved, OF_EVENT_ORDER_APP);
-	ofRemoveListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
-	//ofRemoveListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
-	ofRemoveListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
-	if (mainWindow)
-	{
-		ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
-		ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
-	}
+        ofRemoveListener(w->events().keyPressed, w, &MTWindow::keyPressed, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().keyReleased, w, &MTWindow::keyReleased, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseMoved, w, &MTWindow::mouseMoved, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseDragged, w, &MTWindow::mouseDragged, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mousePressed, w, &MTWindow::mousePressed, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseReleased, w, &MTWindow::mouseReleased, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseScrolled, w, &MTWindow::mouseScrolled, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseEntered, w, &MTWindow::mouseEntered, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().mouseExited, w, &MTWindow::mouseExited, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().windowResized, w, &MTWindow::windowResized, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().messageEvent, w, &MTWindow::messageReceived, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().fileDragEvent, w, &MTWindow::dragged, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().touchCancelled, w, &MTWindow::touchCancelled, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().touchDoubleTap, w, &MTWindow::touchDoubleTap, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().touchDown, w, &MTWindow::touchDown, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().touchMoved, w, &MTWindow::touchMoved, OF_EVENT_ORDER_APP);
+        ofRemoveListener(w->events().touchUp, w, &MTWindow::touchUp, OF_EVENT_ORDER_APP);
+        //ofRemoveListener(MTApp::appModeChangedEvent, w, &MTWindow::appModeChanged, OF_EVENT_ORDER_AFTER_APP + 1000);
+        ofRemoveListener(MTApp::modelLoadedEvent, w, &MTWindow::modelLoaded, OF_EVENT_ORDER_APP);
+        if (mainWindow)
+        {
+                ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
+                ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
+        }
    // clang-format on
 }
 
@@ -759,6 +759,7 @@ void MTApp::saveCopy(std::string filepath)
 
 bool MTApp::saveAsImpl(std::string filePath)
 {
+    ofLogVerbose("MTApp") << "Saving as: " << filePath;
    std::string temp = MTPrefLastFile;
    MTPrefLastFile.setWithoutEventNotifications(filePath);
 
@@ -777,6 +778,8 @@ bool MTApp::saveAsImpl(std::string filePath)
 
 bool MTApp::saveImpl()
 {
+    ofLogVerbose("MTApp") << "Saving file";
+
    if (serializerType == XML)
    {
       auto serializer = ofXml();
@@ -784,7 +787,7 @@ bool MTApp::saveImpl()
 
       if (!serializer.save(MTPrefLastFile.get()))
       {
-         ofLogError("MTApp::saveImpl") << "Encountered an error while saving the file";
+         ofLogError("MTApp") << "Encountered an error while saving the XML file";
          //ofSystemAlertDialog("Encountered an error while saving the file");
          return false;
       }
@@ -796,7 +799,7 @@ bool MTApp::saveImpl()
 
       if (!ofSavePrettyJson(MTPrefLastFile.get(), serializer))
       {
-         ofLogError("MTApp::saveImpl") << "Encountered an error while saving the file";
+         ofLogError("MTApp") << "Encountered an error while saving the JSON file";
          //ofSystemAlertDialog("Encountered an error while saving the file");
          return false;
       }
@@ -818,7 +821,7 @@ bool MTApp::openImpl(std::string path)
    {
       auto exePath = ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(), false);
       auto rPath = ofFilePath::makeRelative(exePath, path);
-      ofLogNotice("MTApp::openImpl") << "Document path: " << rPath;
+      ofLogNotice("MTApp") << "Document path: " << rPath;
       if (!rPath.empty())
       {
          filepath = rPath;
@@ -848,11 +851,11 @@ bool MTApp::openImpl(std::string path)
 
    if (!success)
    {
-      ofLogError("MTApp::openImpl") << "Failed loading file " << filepath;
+      ofLogError("MTApp") << "Failed loading file " << filepath;
       return false;
    }
    newFile();
-   ofLogVerbose("MTApp::openImpl") << "Opening file: " << filepath;
+   ofLogVerbose("MTApp") << "Opening file: " << filepath;
    if (serializerType == XML)
    {
       preDeserializeXMLEvent.notify(xml);
@@ -866,7 +869,7 @@ bool MTApp::openImpl(std::string path)
 
    if (model == nullptr)
    {
-      ofLogError("MTApp::openImpl") << "Failed to load Model";
+      ofLogError("MTApp") << "Failed to load Model";
       //ofSystemAlertDialog("Failed Loading Model");
       return false;
    }
@@ -938,7 +941,7 @@ bool MTApp::saveAppPreferences()
       auto sizeNan = glm::isnan(wp.second.size);
       if (sizeNan.x || sizeNan.y)
       {
-         ofLogNotice("MTApp::saveAppPreferences") << "Window size was invalid, setting default values instead";
+         ofLogNotice("MTApp") << "Window size was invalid, setting default values instead";
          wp.second.size = {1024, 768};
       }
       else
@@ -1108,9 +1111,8 @@ ofPath MTApp::pathFromString(std::string s)
          break;
       case ofPath::Command::close: thePath.close(); break;
       default:
-         ofLog(OF_LOG_WARNING,
-               "MTApp::pathFromString: A Path Command "
-               "supplied is not implemented");
+          ofLogWarning("MTApp") << "pathFromString: A Path Command supplied is not implemented";
+
          break;
       }
    }
