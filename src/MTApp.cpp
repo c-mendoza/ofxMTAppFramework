@@ -675,7 +675,18 @@ bool MTApp::open(std::string filepath)
 
    if (filepath.empty())
    {
-      ofFileDialogResult result = ofSystemLoadDialog();
+       std::string fileChooserPath = "";
+       if (!MTPrefLastFile->empty())
+       {
+           fileChooserPath = ofFilePath::getEnclosingDirectory(MTPrefLastFile.get(), false);
+       }
+       else
+       {
+           fileChooserPath = ofToDataPath("", true);
+       }
+
+       ofFileDialogResult result = ofSystemLoadDialog("", false, fileChooserPath);
+
       if (result.bSuccess)
       {
          return openImpl(result.filePath);
