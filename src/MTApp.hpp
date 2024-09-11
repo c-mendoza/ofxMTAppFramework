@@ -556,6 +556,20 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     std::deque<std::function<void()>> loopFunctions;
 
     bool inLoop = false;
+
+private:
+    bool fileHandlingShortcutsEnabled = true;
+
+public:
+    void enableFileHandlingShortcuts()
+    {
+        fileHandlingShortcutsEnabled = true;
+    }
+
+    void disableFileHandlingShortcuts()
+    {
+        fileHandlingShortcutsEnabled = false;
+    }
 };
 
 class MTAppModeChangeArgs : public ofEventArgs

@@ -211,23 +211,26 @@ void MTApp::keyReleased(ofKeyEventArgs& key)
    default: ofLogError("MTApp", "Target platform is not supported"); commandModifier = OF_KEY_CONTROL;
    }
 
-   if (key.hasModifier(commandModifier))
+    if (fileHandlingShortcutsEnabled)
    {
-      if (key.keycode == GLFW_KEY_O)
-      {
-         open();
-      }
-      else if (key.keycode == GLFW_KEY_S)
-      {
-         if (key.hasModifier(OF_KEY_SHIFT))
-         {
-            saveAs();
-         }
-         else
-         {
-            save();
-         }
-      }
+       if (key.hasModifier(commandModifier))
+       {
+           if (key.keycode == GLFW_KEY_O)
+           {
+               open();
+           }
+           else if (key.keycode == GLFW_KEY_S)
+           {
+               if (key.hasModifier(OF_KEY_SHIFT))
+               {
+                   saveAs();
+               }
+               else
+               {
+                   save();
+               }
+           }
+       }
    }
    appKeyReleased(key);
 }
