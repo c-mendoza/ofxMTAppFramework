@@ -152,7 +152,7 @@ class MTAppFramework
    static void RemoveAllParameters(ofParameterGroup& group);
 
     template <typename T>
-    static T GetRandomElement(std::vector<T>& v)
+    static T GetRandomElement(const std::vector<T>& v)
     {
       auto index = floor(ofRandom(0, v.size()));
       return v.at(index);
