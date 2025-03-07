@@ -1,12 +1,12 @@
 
 
-//#include <ofMain.h>
+// #include <ofMain.h>
 #include "ofAppRunner.h"
 
-//// Because the definition of ofMainLoop::addWindow was moved to the cpp file, this
-//// horrid thing needs to be done.
-//// See: https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
-//#include "ofMainLoop.cpp"
+//// Because the definition of ofMainLoop::addWindow was moved to the cpp file,
+///this / horrid thing needs to be done. / See:
+///https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
+// #include "ofMainLoop.cpp"
 
 #ifndef TARGET_OPENGLES
 
@@ -31,286 +31,300 @@
 std::vector<std::shared_ptr<MTDisplay>> MTApp::displays;
 std::weak_ptr<MTApp> MTApp::AppPtr;
 
-
-//// Because the definition of ofMainLoop::addWindow was moved to the cpp file, this
-//// horrid thing needs to be done.
-//// See: https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
-//template void ofMainLoop::addWindow<MTWindow>(const std::shared_ptr<MTWindow>&);
-
+//// Because the definition of ofMainLoop::addWindow was moved to the cpp file,
+///this / horrid thing needs to be done. / See:
+///https://isocpp.org/wiki/faq/templates#separate-template-fn-defn-from-decl
+// template void ofMainLoop::addWindow<MTWindow>(const
+// std::shared_ptr<MTWindow>&);
 
 MTApp::MTApp()
 {
-   // Set the basic preferences
-   MTPrefLastFile.set("MTPrefLastFile", "");
-   MTPrefAutoloadLastFile.set("Automatically Load Last File", true);
-   MTPrefLaunchInFullScreen.set("Launch in Full Screen", false);
-   appPreferences.setName("App Preferences");
-   appPreferences.add(MTPrefLaunchInFullScreen, MTPrefLastFile, MTPrefAutoloadLastFile);
+    // Set the basic preferences
+    MTPrefLastFile.set("MTPrefLastFile", "");
+    MTPrefAutoloadLastFile.set("Automatically Load Last File", true);
+    MTPrefLaunchInFullScreen.set("Launch in Full Screen", false);
+    appPreferences.setName("App Preferences");
+    appPreferences.add(MTPrefLaunchInFullScreen,
+                       MTPrefLastFile,
+                       MTPrefAutoloadLastFile);
 
-   currentMode = defaultMode;
-   registerAppMode(defaultMode);
+    currentMode = defaultMode;
+    registerAppMode(defaultMode);
 
-   ofInit();
+    ofInit();
 #ifndef TARGET_OPENGLES
-   glfwInit();
+    glfwInit();
 #endif
-   MTApp::updateDisplays();
-   //		ofSetLogLevel(OF_LOG_NOTICE);
+    MTApp::updateDisplays();
+    //		ofSetLogLevel(OF_LOG_NOTICE);
 
-   internalEventListeners.push(modelLoadedEvent.newListener([this](ofEventArgs& args) { modelLoaded(); }, OF_EVENT_ORDER_BEFORE_APP));
-   internalEventListeners.push(ofGetMainLoop()->loopEvent.newListener(
-       [this]()
-       {
-          // We only iterate until size so that if a
-          // loopFunction adds another entry into the deque
-          // it won't get executed until the next loop
-          auto size = loopFunctions.size();
-          if (size == 0) return;
-          for (int i = 0; i < size; i++)
-          {
-             auto f = loopFunctions.front();
-             loopFunctions.pop_front();
-             f();
-          }
-       }));
+    internalEventListeners.push(modelLoadedEvent.newListener(
+        [this](ofEventArgs& args)
+        {
+            modelLoaded();
+        },
+        OF_EVENT_ORDER_BEFORE_APP));
+    internalEventListeners.push(ofGetMainLoop()->loopEvent.newListener(
+        [this]()
+        {
+            // We only iterate until size so that if a
+            // loopFunction adds another entry into the deque
+            // it won't get executed until the next loop
+            auto size = loopFunctions.size();
+            if (size == 0)
+                return;
+            for (int i = 0; i < size; i++)
+            {
+                auto f = loopFunctions.front();
+                loopFunctions.pop_front();
+                f();
+            }
+        }));
 
-   internalEventListeners.push(ofGetMainLoop()->exitEvent.newListener(
-       [this]()
-       {
-          //saveAppPreferences();
-          //exit();
-       }));
+    internalEventListeners.push(ofGetMainLoop()->exitEvent.newListener(
+        [this]()
+        {
+            // saveAppPreferences();
+            // exit();
+        }));
 
+    runOncePostLoop(
+        [this]()
+        {
+            initialize();
+            loadAppPreferences();
+            // Only the first window gets notified of setup when ofRunApp is
+            // called so we need to do that ourselves:
+            for (auto iter = windows.begin() + 1; iter < windows.end(); iter++)
+            {
+                (*iter)->events().notifySetup();
+            }
 
-   runOncePostLoop(
-       [this]()
-       {
-          initialize();
-          loadAppPreferences();
-          // Only the first window gets notified of setup when ofRunApp is called
-          // so we need to do that ourselves:
-          for (auto iter = windows.begin() + 1; iter < windows.end(); iter++)
-          {
-             (*iter)->events().notifySetup();
-          }
-
-          //	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
-          isInitialized = false;
+            //	ofAddListener(ofEvents().keyPressed, this, &MTApp::keyPressed);
+            isInitialized = false;
 #ifndef TARGET_RASPBERRY_PI
-          glfwSetMonitorCallback(&setMonitorCb);
+            glfwSetMonitorCallback(&setMonitorCb);
 #endif
-          createAppViews();
+            createAppViews();
 
-          // Is this for loop still necessary?
-          //for (auto& win : windows)
-          //{
-          //   auto wp = wpMap.find(win->name);
-          //   if (wp != wpMap.end())
-          //   {
-          //      win->setWindowShape(wp->second.size.x, wp->second.size.y);
-          //      win->setWindowPosition(wp->second.position.x, wp->second.position.y);
-          //      win->setWindowTitle(win->name);
-          //   }
-          //}
+            // Is this for loop still necessary?
+            // for (auto& win : windows)
+            //{
+            //   auto wp = wpMap.find(win->name);
+            //   if (wp != wpMap.end())
+            //   {
+            //      win->setWindowShape(wp->second.size.x, wp->second.size.y);
+            //      win->setWindowPosition(wp->second.position.x,
+            //      wp->second.position.y); win->setWindowTitle(win->name);
+            //   }
+            //}
 
-          if (!filePathFromAppSettings.empty())
-          {
-             if (!openImpl(filePathFromAppSettings))
-             {
-                ofLogError("MTApp") << "Could not open file: " << filePathFromAppSettings;
+            if (!filePathFromAppSettings.empty())
+            {
+                if (!openImpl(filePathFromAppSettings))
+                {
+                    ofLogError("MTApp")
+                        << "Could not open file: " << filePathFromAppSettings;
+                    isInitialized = true;  // Probably unnecessary
+                    newFile();
+                }
+            }
+            else if (MTPrefAutoloadLastFile)
+            {
+                if (!openImpl(MTPrefLastFile))
+                {
+                    ofLogError("MTApp")
+                        << "Could not open file: " << MTPrefLastFile.get();
+                    isInitialized = true;  // Probably unnecessary
+                    newFile();
+                }
+            }
+            else
+            {
                 isInitialized = true;  // Probably unnecessary
                 newFile();
-             }
-          }
-          else if (MTPrefAutoloadLastFile)
-          {
-             if (!openImpl(MTPrefLastFile))
-             {
-                ofLogError("MTApp") << "Could not open file: " << MTPrefLastFile.get();
-                isInitialized = true;  // Probably unnecessary
-                newFile();
-             }
-          }
-          else
-          {
-             isInitialized = true;  // Probably unnecessary
-             newFile();
-          }
+            }
 
-          appWillRun();
+            appWillRun();
 
-          ofLogVerbose("MTApp") << "Initialization Complete";
-       });
+            ofLogVerbose("MTApp") << "Initialization Complete";
+        });
 }
 
-void MTApp::RunApp(std::shared_ptr<MTApp>&& app, ofGLFWWindowSettings mainWindowSettings)
+void MTApp::RunApp(std::shared_ptr<MTApp>&& app,
+                   ofGLFWWindowSettings mainWindowSettings)
 {
     ofLogVerbose("MTApp") << "Running app...";
-   app->createAppPreferencesFilePath();
-   app->loadAppPreferences();
-   app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
-   AppPtr = app;
-   ofRunApp(std::move(app));
+    app->createAppPreferencesFilePath();
+    app->loadAppPreferences();
+    app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
+    AppPtr = app;
+    ofRunApp(std::move(app));
 }
 
 MTApp::~MTApp()
 {
-   exit();
-   saveAppPreferences();
-   releasePointers();
+    exit();
+    saveAppPreferences();
+    releasePointers();
 }
 
 void MTApp::loadAppPreferences()
 {
-   ofXml appPrefsXml;
-   if (!appPrefsXml.load(appPreferencesPath))
-   {
-      ofLog(OF_LOG_NOTICE, "App preferences not found, creating a new file.");
-      saveAppPreferences();
-   }
-   else
-   {
-      ofDeserialize(appPrefsXml, appPreferences);
+    ofXml appPrefsXml;
+    if (!appPrefsXml.load(appPreferencesPath))
+    {
+        ofLog(OF_LOG_NOTICE, "App preferences not found, creating a new file.");
+        saveAppPreferences();
+    }
+    else
+    {
+        ofDeserialize(appPrefsXml, appPreferences);
 
-      // Load the saved view positions:
-      auto windowsXml = appPrefsXml.find("//Windows/Window");
-      //			auto windowsXml =
-      // appPrefsXml.getChildren("windows");
+        // Load the saved view positions:
+        auto windowsXml = appPrefsXml.find("//Windows/Window");
+        //			auto windowsXml =
+        // appPrefsXml.getChildren("windows");
 
-      for (auto& winXml : windowsXml)
-      {
-         WindowParams wp;
-         wp.name = winXml.getChild("Name").getValue();
-         wp.position = winXml.getChild("Position").getValue<glm::vec2>();
-         wp.size = winXml.getChild("Size").getValue<glm::vec2>();
-         wpMap.insert({wp.name, wp});
-      }
-   }
+        for (auto& winXml : windowsXml)
+        {
+            WindowParams wp;
+            wp.name = winXml.getChild("Name").getValue();
+            wp.position = winXml.getChild("Position").getValue<glm::vec2>();
+            wp.size = winXml.getChild("Size").getValue<glm::vec2>();
+            wpMap.insert({wp.name, wp});
+        }
+    }
 }
 
-//void MTApp::registerAppPreference(ofAbstractParameter& preference)
+// void MTApp::registerAppPreference(ofAbstractParameter& preference)
 //{
-//   appPreferences.add(preference);
-//}
+//    appPreferences.add(preference);
+// }
 
 void MTApp::keyPressed(ofKeyEventArgs& key)
 {
-   appKeyPressed(key);
+    appKeyPressed(key);
 }
 
 void MTApp::keyReleased(ofKeyEventArgs& key)
 {
-   int commandModifier;
-   switch (ofGetTargetPlatform())
-   {
-   case OF_TARGET_LINUX:
-   case OF_TARGET_LINUX64:
-   case OF_TARGET_WINVS:
-   case OF_TARGET_MINGW: commandModifier = OF_KEY_CONTROL; break;
-   case OF_TARGET_OSX: commandModifier = OF_KEY_COMMAND; break;
-   default: ofLogError("MTApp", "Target platform is not supported"); commandModifier = OF_KEY_CONTROL;
-   }
+    int commandModifier;
+    switch (ofGetTargetPlatform())
+    {
+        case OF_TARGET_LINUX:
+        case OF_TARGET_LINUX64:
+        case OF_TARGET_WINVS:
+        case OF_TARGET_MINGW:
+            commandModifier = OF_KEY_CONTROL;
+            break;
+        case OF_TARGET_OSX:
+            commandModifier = OF_KEY_COMMAND;
+            break;
+        default:
+            ofLogError("MTApp", "Target platform is not supported");
+            commandModifier = OF_KEY_CONTROL;
+    }
 
     if (fileHandlingShortcutsEnabled)
-   {
-       if (key.hasModifier(commandModifier))
-       {
-           if (key.keycode == GLFW_KEY_O)
-           {
-               open();
-           }
-           else if (key.keycode == GLFW_KEY_S)
-           {
-               if (key.hasModifier(OF_KEY_SHIFT))
-               {
-                   saveAs();
-               }
-               else
-               {
-                   save();
-               }
-           }
-       }
-   }
-   appKeyReleased(key);
+    {
+        if (key.hasModifier(commandModifier))
+        {
+            if (key.keycode == GLFW_KEY_O)
+            {
+                open();
+            }
+            else if (key.keycode == GLFW_KEY_S)
+            {
+                if (key.hasModifier(OF_KEY_SHIFT))
+                {
+                    saveAs();
+                }
+                else
+                {
+                    save();
+                }
+            }
+        }
+    }
+    appKeyReleased(key);
 }
 
 void MTApp::exit(ofEventArgs& args)
 {
-   exit();
-   // Last chance to store the size and position of windows:
-   for (auto& w : windows)
-   {
-      auto iter = wpMap.find(w->name.get());
-      if (iter != wpMap.end())
-      {
-         iter->second.position = w->getWindowPosition();
-         iter->second.size = w->getWindowSize();
-      }
-   }
+    exit();
+    // Last chance to store the size and position of windows:
+    for (auto& w : windows)
+    {
+        auto iter = wpMap.find(w->name.get());
+        if (iter != wpMap.end())
+        {
+            iter->second.position = w->getWindowPosition();
+            iter->second.size = w->getWindowSize();
+        }
+    }
 
-   saveAppPreferences();
+    saveAppPreferences();
 
-   eventListeners.unsubscribeAll();
+    eventListeners.unsubscribeAll();
 }
 
 void MTApp::releasePointers()
 {
-   windows.clear();
-   mainWindow.reset();
-   eventListeners.unsubscribeAll();
-   AppPtr.reset();
+    windows.clear();
+    mainWindow.reset();
+    eventListeners.unsubscribeAll();
+    AppPtr.reset();
 }
 /// Method is called in the MTApp constructor, right before the app is run.
 /// Override this method and instantiate your model and main view classes, as
 /// well as the main
 /// window size and settings.
 
-void MTApp::initialize()
-{
-}
+void MTApp::initialize() {}
 
 void MTApp::createAppViews()
 {
 #ifndef TARGET_RASPBERRY_PI
-   ofGLFWWindowSettings windowSettings;
+    ofGLFWWindowSettings windowSettings;
 #else
-   ofAppEGLWindowSettings windowSettings;
+    ofAppEGLWindowSettings windowSettings;
 #endif
-   windowSettings.setSize(1280, 800);
-   mainWindow = createWindow("Main Window", windowSettings);
+    windowSettings.setSize(1280, 800);
+    mainWindow = createWindow("Main Window", windowSettings);
 }
 
 /// APP MODES
 
 void MTApp::setAppMode(MTAppModeName mode)
 {
-   //	if(!ofContains(appModes, mode)) return;
+    //	if(!ofContains(appModes, mode)) return;
 
-   if (mode == currentMode)
-   {
-      return;
-   }
-   else
-   {
-      static MTAppModeChangeArgs changeArgs;
-      changeArgs.newModeName = mode;
-      changeArgs.oldModeName = currentMode;
-      currentMode = mode;
-      appModeChanged(changeArgs);
-      ofNotifyEvent(MTApp::appModeChangedEvent, changeArgs, this);
-   }
+    if (mode == currentMode)
+    {
+        return;
+    }
+    else
+    {
+        static MTAppModeChangeArgs changeArgs;
+        changeArgs.newModeName = mode;
+        changeArgs.oldModeName = currentMode;
+        currentMode = mode;
+        appModeChanged(changeArgs);
+        ofNotifyEvent(MTApp::appModeChangedEvent, changeArgs, this);
+    }
 }
 
 MTAppModeName MTApp::getAppMode()
 {
-   return currentMode;
+    return currentMode;
 }
 
 #ifndef TARGET_RASPBERRY_PI
 
-//std::shared_ptr<MTOffscreenWindow>
-//MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings& settings, bool useTextureRectangle)
+// std::shared_ptr<MTOffscreenWindow>
+// MTApp::createOffscreenWindow(std::string windowName, ofGLFWWindowSettings&
+// settings, bool useTextureRectangle)
 //{
 //	if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
 //		ofGetTargetPlatform() == OF_TARGET_IOS ||
@@ -318,8 +332,8 @@ MTAppModeName MTApp::getAppMode()
 //		ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
 //		ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
 //	{
-//		ofLogError("MTApp") << "createOffscreenWindow() is not compatible with the current platform";
-//		return nullptr;
+//		ofLogError("MTApp") << "createOffscreenWindow() is not
+//compatible with the current platform"; 		return nullptr;
 //	}
 //
 //	if (!ofAppInitialized)
@@ -333,8 +347,10 @@ MTAppModeName MTApp::getAppMode()
 //		settings.glVersionMinor = glVersionMinor;
 //	}
 //
-//	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName, useTextureRectangle);
-////	ofGLFWWindowSettings* glfwWS = dynamic_cast<ofGLFWWindowSettings*>(&settings);
+//	auto offscreenWindow = std::make_shared<MTOffscreenWindow>(windowName,
+//useTextureRectangle);
+////	ofGLFWWindowSettings* glfwWS =
+///dynamic_cast<ofGLFWWindowSettings*>(&settings);
 //	offscreenWindow->setup(settings);
 //	addAllEvents(offscreenWindow.get());
 //	ofGetMainLoop()->addWindow(offscreenWindow);
@@ -343,9 +359,11 @@ MTAppModeName MTApp::getAppMode()
 //	glfwHideWindow(offscreenWindow->getGLFWWindow());
 //
 //	// The ofApp system only notifies setup for the first window it creates,
-//	// the rest are on their own apparently. So we check if we have initialized
+//	// the rest are on their own apparently. So we check if we have
+//initialized
 //	// the ofApp system, and if we have, then
-//	// that means that we need to notify setup for the window we are creating
+//	// that means that we need to notify setup for the window we are
+//creating
 //
 //	if (!ofAppInitialized)
 //	{
@@ -353,7 +371,8 @@ MTAppModeName MTApp::getAppMode()
 //	}
 //	else
 //	{
-//		// Note that MTView::setup is not called from this event, only the
+//		// Note that MTView::setup is not called from this event, only
+//the
 //		// MTWindow's setup
 //		offscreenWindow->events().notifySetup();
 //	}
@@ -364,143 +383,154 @@ MTAppModeName MTApp::getAppMode()
 #endif
 
 #ifdef TARGET_RASPBERRY_PI
-std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofAppEGLWindowSettings& settings)
+std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
+                                              ofAppEGLWindowSettings& settings)
 {
-   auto window = std::make_shared<MTWindow>(windowName);
-   ofGetMainLoop()->addWindow(window);
-   windows.push_back(window);
-   window->setup(settings);
+    auto window = std::make_shared<MTWindow>(windowName);
+    ofGetMainLoop()->addWindow(window);
+    windows.push_back(window);
+    window->setup(settings);
 
-   addAllEvents(window.get());
+    addAllEvents(window.get());
 
-   // Add the "global" keyboard event listener:
-   ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_BEFORE_APP);
-   ofAddListener(window->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_BEFORE_APP);
+    // Add the "global" keyboard event listener:
+    ofAddListener(window->events().keyPressed,
+                  this,
+                  &MTApp::keyPressed,
+                  OF_EVENT_ORDER_BEFORE_APP);
+    ofAddListener(window->events().keyReleased,
+                  this,
+                  &MTApp::keyReleased,
+                  OF_EVENT_ORDER_BEFORE_APP);
 
-   // The ofApp system only notifies setup for the first window it creates,
-   // the rest are on their own apparently. So we check if we have initialized
-   // the ofApp system, and if we have, then
-   // that means that we need to notify setup for the window we are creating
+    // The ofApp system only notifies setup for the first window it creates,
+    // the rest are on their own apparently. So we check if we have initialized
+    // the ofApp system, and if we have, then
+    // that means that we need to notify setup for the window we are creating
 
-   if (!ofAppInitialized)
-   {
-      ofAppInitialized = true;
-   }
-   else
-   {
-      // Note that MTView::setup is not called from this event, only the
-      // MTWindow's setup
-      window->events().notifySetup();
-   }
+    if (!ofAppInitialized)
+    {
+        ofAppInitialized = true;
+    }
+    else
+    {
+        // Note that MTView::setup is not called from this event, only the
+        // MTWindow's setup
+        window->events().notifySetup();
+    }
 
-   //	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
-   //	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleasedInternal);
+    //	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
+    //	ofAddListener(window->events().keyReleased, this,
+    //&MTApp::keyReleasedInternal);
 
-   return window;
+    return window;
 }
 
 #else
 
 std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName)
 {
-   ofGLFWWindowSettings settings;
-   settings.shareContextWith = mainWindow;
-   return createWindow(windowName, settings);
+    ofGLFWWindowSettings settings;
+    settings.shareContextWith = mainWindow;
+    return createWindow(windowName, settings);
 }
 
-
-std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWindowSettings settings)
+std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName,
+                                              ofGLFWWindowSettings settings)
 {
     ofLogVerbose("MTApp") << "Creating window with name: " << windowName;
-   for (auto& w : windows)
-   {
-      if (w->name.get() == windowName)
-      {
-         return nullptr;
-      }
-   }
+    for (auto& w : windows)
+    {
+        if (w->name.get() == windowName)
+        {
+            return nullptr;
+        }
+    }
 
-   auto window = std::make_shared<MTWindow>(windowName);
-   ofGetMainLoop()->addWindow(window);
-   windows.push_back(window);
+    auto window = std::make_shared<MTWindow>(windowName);
+    ofGetMainLoop()->addWindow(window);
+    windows.push_back(window);
 
-   if (!ofAppInitialized)
-   {
-      glVersionMajor = settings.glVersionMajor;
-      glVersionMinor = settings.glVersionMinor;
-   }
-   else
-   {
-      settings.glVersionMajor = glVersionMajor;
-      settings.glVersionMinor = glVersionMinor;
-   }
+    if (!ofAppInitialized)
+    {
+        glVersionMajor = settings.glVersionMajor;
+        glVersionMinor = settings.glVersionMinor;
+    }
+    else
+    {
+        settings.glVersionMajor = glVersionMajor;
+        settings.glVersionMinor = glVersionMinor;
+    }
 
-   window->setup(settings);
+    window->setup(settings);
 
-   addAllEvents(window.get());
+    addAllEvents(window.get());
 
-   auto wp = wpMap.find(windowName);
-   if (wp != wpMap.end())
-   {
-      // Need to make a copy here because calling setWindowShape will change the value
-      // of the stored windowParam.
-      WindowParams paramsCopy = wp->second;
-      window->setWindowShape(paramsCopy.size.x, paramsCopy.size.y);
+    auto wp = wpMap.find(windowName);
+    if (wp != wpMap.end())
+    {
+        // Need to make a copy here because calling setWindowShape will change
+        // the value of the stored windowParam.
+        WindowParams paramsCopy = wp->second;
+        window->setWindowShape(paramsCopy.size.x, paramsCopy.size.y);
 
-      // Windows sets the window position without considering the chrome, so we need to address that:
-      //if (ofGetTargetPlatform() == OF_TARGET_MINGW || ofGetTargetPlatform() == OF_TARGET_WINVS)
-      //{
-      //   if (paramsCopy.position.y < 1.0f)
-      //   {
-      //      paramsCopy.position.y = 50.0f;
-      //   }
-      //}
-      // Make sure the window is within any of the monitors:
-      bool inside = false;
-      for (auto& d : displays)
-      {
-         if (d->getFrame().inside(paramsCopy.position + glm::vec2(1.0, 1.0)))
-         {
-            inside = true;
-            break;
-         }
-      }
-      if (!inside)
-      {
-         paramsCopy.position = {100, 100};
-      }
-      window->setWindowPosition(paramsCopy.position.x, paramsCopy.position.y);
-      window->setWindowTitle(windowName);
-   }
-   else
-   {
-      WindowParams wp;
-      wp.name = windowName;
-      wp.position = window->getWindowPosition();
-      wp.size = window->getWindowSize();
-      wpMap[wp.name] = wp;
-   }
+        // Windows sets the window position without considering the chrome, so
+        // we need to address that:
+        // if (ofGetTargetPlatform() == OF_TARGET_MINGW || ofGetTargetPlatform()
+        // == OF_TARGET_WINVS)
+        //{
+        //   if (paramsCopy.position.y < 1.0f)
+        //   {
+        //      paramsCopy.position.y = 50.0f;
+        //   }
+        //}
+        // Make sure the window is within any of the monitors:
+        bool inside = false;
+        for (auto& d : displays)
+        {
+            if (d->getFrame().inside(paramsCopy.position + glm::vec2(1.0, 1.0)))
+            {
+                inside = true;
+                break;
+            }
+        }
+        if (!inside)
+        {
+            paramsCopy.position = {100, 100};
+        }
+        window->setWindowPosition(paramsCopy.position.x, paramsCopy.position.y);
+        window->setWindowTitle(windowName);
+    }
+    else
+    {
+        WindowParams wp;
+        wp.name = windowName;
+        wp.position = window->getWindowPosition();
+        wp.size = window->getWindowSize();
+        wpMap[wp.name] = wp;
+    }
 
-   // The ofApp system only notifies setup for the first window it creates,
-   // the rest are on their own apparently. So we check if we have initialized
-   // the ofApp system, and if we have, then
-   // that means that we need to notify setup for the window we are creating
+    // The ofApp system only notifies setup for the first window it creates,
+    // the rest are on their own apparently. So we check if we have initialized
+    // the ofApp system, and if we have, then
+    // that means that we need to notify setup for the window we are creating
 
-   if (!ofAppInitialized)
-   {
-      ofAppInitialized = true;
-   }
-   else
-   {
-      // Note that MTView::setup is not called from this event, only the
-      // MTWindow's setup
-      window->events().notifySetup();
-   }
+    if (!ofAppInitialized)
+    {
+        ofAppInitialized = true;
+    }
+    else
+    {
+        // Note that MTView::setup is not called from this event, only the
+        // MTWindow's setup
+        window->events().notifySetup();
+    }
 
-   //	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
-   //	ofAddListener(window->events().keyReleased, this, &MTApp::keyReleasedInternal);
+    //	ofAddListener(window->events().keyPressed, this, &MTApp::keyPressed);
+    //	ofAddListener(window->events().keyReleased, this,
+    //&MTApp::keyReleasedInternal);
 
-   return window;
+    return window;
 }
 
 #endif
@@ -508,53 +538,55 @@ std::shared_ptr<MTWindow> MTApp::createWindow(std::string windowName, ofGLFWWind
 void MTApp::closeWindow(std::shared_ptr<MTWindow> window)
 {
 #ifndef TARGET_RASPBERRY_PI
-//	auto offscreenWindow = std::dynamic_pointer_cast<MTOffscreenWindow>(window);
+//	auto offscreenWindow =
+//std::dynamic_pointer_cast<MTOffscreenWindow>(window);
 #else
-   std::shared_ptr<MTWindow> offscreenWindow = nullptr;
+    std::shared_ptr<MTWindow> offscreenWindow = nullptr;
 #endif
-   // 	Update the Window Parameters Map if the window is not an offscreen
-   // 	window
-   //	if (!offscreenWindow)
-   //	{
-   auto it = wpMap.find(window->name.get());
-   if (it != wpMap.end())
-   {
-      auto& wp = it->second;
-      wp.position = window->getWindowPosition();
-      wp.size = window->getWindowSize();
-      saveAppPreferences();
-   }
-   //	}
+    // 	Update the Window Parameters Map if the window is not an offscreen
+    // 	window
+    //	if (!offscreenWindow)
+    //	{
+    auto it = wpMap.find(window->name.get());
+    if (it != wpMap.end())
+    {
+        auto& wp = it->second;
+        wp.position = window->getWindowPosition();
+        wp.size = window->getWindowSize();
+        saveAppPreferences();
+    }
+    //	}
 
-   auto wIter = std::find(windows.begin(), windows.end(), window);
-   if (wIter != windows.end())
-   {
-      windows.erase(wIter);
-   }
-   else
-   {
-      ofLogWarning(__FUNCTION__) << "Could not find window to delete: " << window->name;
-   }
-   removeAllEvents(window.get());
+    auto wIter = std::find(windows.begin(), windows.end(), window);
+    if (wIter != windows.end())
+    {
+        windows.erase(wIter);
+    }
+    else
+    {
+        ofLogWarning(__FUNCTION__)
+            << "Could not find window to delete: " << window->name;
+    }
+    removeAllEvents(window.get());
 
-   window->setWindowShouldClose();
+    window->setWindowShouldClose();
 }
 
 std::shared_ptr<MTWindow> MTApp::getWindowWithName(std::string windowName)
 {
-   for (auto w : windows)
-   {
-      if (w->name.get() == windowName)
-      {
-         return w;
-      }
-   }
-   return nullptr;
+    for (auto w : windows)
+    {
+        if (w->name.get() == windowName)
+        {
+            return w;
+        }
+    }
+    return nullptr;
 }
 
 void MTApp::addAllEvents(MTWindow* w)
 {
-   // clang-format off
+    // clang-format off
         w->events().enable();
         ofAddListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
         ofAddListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
@@ -609,24 +641,26 @@ void MTApp::addAllEvents(MTWindow* w)
                 ofAddListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
                 ofAddListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
         }
-   // clang-format on
+    // clang-format on
 }
 
 void MTApp::windowPosCb(GLFWwindow* w, int x, int y)
 {
-   if (auto app = MTApp::Instance())
-   {
-      if (app->isInitialized)
-      {
-         auto ofw = std::dynamic_pointer_cast<MTWindow>(ofGetCurrentWindow());
-         if (ofw) ofw->events().notifyWindowMoved(x, y);
-      }
-   }
+    if (auto app = MTApp::Instance())
+    {
+        if (app->isInitialized)
+        {
+            auto ofw =
+                std::dynamic_pointer_cast<MTWindow>(ofGetCurrentWindow());
+            if (ofw)
+                ofw->events().notifyWindowMoved(x, y);
+        }
+    }
 }
 
 void MTApp::removeAllEvents(MTWindow* w)
 {
-   // clang-format off
+    // clang-format off
         ofRemoveListener(w->events().setup, w, &MTWindow::setupInternal, OF_EVENT_ORDER_APP);
         ofRemoveListener(w->events().update, w, &MTWindow::update, OF_EVENT_ORDER_APP);
         ofRemoveListener(w->events().draw, w, &MTWindow::draw, OF_EVENT_ORDER_APP);
@@ -655,353 +689,375 @@ void MTApp::removeAllEvents(MTWindow* w)
                 ofRemoveListener(w->events().keyPressed, this, &MTApp::keyPressed, OF_EVENT_ORDER_APP);
                 ofRemoveListener(w->events().keyReleased, this, &MTApp::keyReleased, OF_EVENT_ORDER_APP);
         }
-   // clang-format on
+    // clang-format on
 }
 
 //// UI
 std::weak_ptr<MTWindow> MTApp::getMainWindow()
 {
-   return mainWindow;
+    return mainWindow;
 }
 
 //// FILE HANDLING
 
 bool MTApp::open(std::string filepath)
 {
-   if (ofGetTargetPlatform() == OF_TARGET_ANDROID || ofGetTargetPlatform() == OF_TARGET_IOS ||
-       ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L || ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
-       ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
-   {
-      ofLogError("MTApp") << "open() is not compatible with the current platform";
-      return false;
-   }
+    if (ofGetTargetPlatform() == OF_TARGET_ANDROID ||
+        ofGetTargetPlatform() == OF_TARGET_IOS ||
+        ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L ||
+        ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L ||
+        ofGetTargetPlatform() == OF_TARGET_EMSCRIPTEN)
+    {
+        ofLogError("MTApp")
+            << "open() is not compatible with the current platform";
+        return false;
+    }
 
-   if (filepath.empty())
-   {
-       std::string fileChooserPath = "";
-       if (!MTPrefLastFile->empty())
-       {
-           fileChooserPath = ofFilePath::getEnclosingDirectory(MTPrefLastFile.get(), false);
-       }
-       else
-       {
-           fileChooserPath = ofToDataPath("", true);
-       }
+    if (filepath.empty())
+    {
+        std::string fileChooserPath = "";
+        if (!MTPrefLastFile->empty())
+        {
+            fileChooserPath =
+                ofFilePath::getEnclosingDirectory(MTPrefLastFile.get(), false);
+        }
+        else
+        {
+            fileChooserPath = ofToDataPath("", true);
+        }
 
-       ofFileDialogResult result = ofSystemLoadDialog("", false, fileChooserPath);
+        ofFileDialogResult result =
+            ofSystemLoadDialog("", false, fileChooserPath);
 
-      if (result.bSuccess)
-      {
-         return openImpl(result.filePath);
-      }
-      else
-      {
-         ofLogError("MTApp::open") << "Could not open file: " << filepath;
-         return false;
-      }
-   }
-   else
-   {
-      if (!std::filesystem::exists(filepath))
-      {
-         ofLogError("MTApp::open") << "Tried opening file that does not exist: " << filepath;
-         return false;
-      }
-      else
-      {
-         return openImpl(filepath);
-      }
-   }
+        if (result.bSuccess)
+        {
+            return openImpl(result.filePath);
+        }
+        else
+        {
+            ofLogError("MTApp::open") << "Could not open file: " << filepath;
+            return false;
+        }
+    }
+    else
+    {
+        if (!std::filesystem::exists(filepath))
+        {
+            ofLogError("MTApp::open")
+                << "Tried opening file that does not exist: " << filepath;
+            return false;
+        }
+        else
+        {
+            return openImpl(filepath);
+        }
+    }
 }
 
 void MTApp::save()
 {
-   if (MTPrefLastFile.get() == std::string(""))
-   {
-      saveAs();
-   }
-   else
-   {
-      saveImpl();
-   }
+    if (MTPrefLastFile.get() == std::string(""))
+    {
+        saveAs();
+    }
+    else
+    {
+        saveImpl();
+    }
 }
 
 void MTApp::saveAs()
 {
 #ifdef TARGET_RASPBERRY_PI
-   saveAsImpl("settings." + fileExtension);
+    saveAsImpl("settings." + fileExtension);
 #else
-   ofFileDialogResult result = ofSystemSaveDialog(ofFilePath::getFileName(MTPrefLastFile.get()), "Save As...");
-   if (!result.bSuccess)
-   {
-      //		ofSystemAlertDialog("Could not save file!");
-      return;
-   }
-   else
-   {
-      if (ofFilePath::getFileExt(result.filePath) != fileExtension)
-      {
-         saveAsImpl(result.filePath + "." + fileExtension);
-      }
-      else
-      {
-         saveAsImpl(result.filePath);
-      }
-   }
+    ofFileDialogResult result =
+        ofSystemSaveDialog(ofFilePath::getFileName(MTPrefLastFile.get()),
+                           "Save As...");
+    if (!result.bSuccess)
+    {
+        //		ofSystemAlertDialog("Could not save file!");
+        return;
+    }
+    else
+    {
+        if (ofFilePath::getFileExt(result.filePath) != fileExtension)
+        {
+            saveAsImpl(result.filePath + "." + fileExtension);
+        }
+        else
+        {
+            saveAsImpl(result.filePath);
+        }
+    }
 #endif
 }
 
 void MTApp::saveCopy(std::string filepath)
 {
-   std::string temp = MTPrefLastFile.get();
-   MTPrefLastFile.setWithoutEventNotifications(filepath);
-   saveImpl();
-   MTPrefLastFile.setWithoutEventNotifications(temp);
+    std::string temp = MTPrefLastFile.get();
+    MTPrefLastFile.setWithoutEventNotifications(filepath);
+    saveImpl();
+    MTPrefLastFile.setWithoutEventNotifications(temp);
 }
-
 
 bool MTApp::saveAsImpl(std::string filePath)
 {
     ofLogVerbose("MTApp") << "Saving as: " << filePath;
-   std::string temp = MTPrefLastFile;
-   MTPrefLastFile.setWithoutEventNotifications(filePath);
+    std::string temp = MTPrefLastFile;
+    MTPrefLastFile.setWithoutEventNotifications(filePath);
 
-   if (!saveImpl())
-   {
-      MTPrefLastFile.setWithoutEventNotifications(temp);
-      return false;
-   }
+    if (!saveImpl())
+    {
+        MTPrefLastFile.setWithoutEventNotifications(temp);
+        return false;
+    }
 
-   fileName = ofFilePath::getFileName(filePath);
-   isInitialized = true;
-   mainWindow->setWindowTitle(fileName);
-   // Fire the change value event?
-   return true;
+    fileName = ofFilePath::getFileName(filePath);
+    isInitialized = true;
+    mainWindow->setWindowTitle(fileName);
+    // Fire the change value event?
+    return true;
 }
 
 bool MTApp::saveImpl()
 {
     ofLogVerbose("MTApp") << "Saving file";
 
-   if (serializerType == XML)
-   {
-      auto serializer = ofXml();
-      model->serialize(serializer);
+    if (serializerType == XML)
+    {
+        auto serializer = ofXml();
+        model->serialize(serializer);
 
-      if (!serializer.save(MTPrefLastFile.get()))
-      {
-         ofLogError("MTApp") << "Encountered an error while saving the XML file";
-         //ofSystemAlertDialog("Encountered an error while saving the file");
-         return false;
-      }
-   }
-   else
-   {
-      ofJson serializer;
-      model->serialize(serializer);
+        if (!serializer.save(MTPrefLastFile.get()))
+        {
+            ofLogError("MTApp")
+                << "Encountered an error while saving the XML file";
+            // ofSystemAlertDialog("Encountered an error while saving the
+            // file");
+            return false;
+        }
+    }
+    else
+    {
+        ofJson serializer;
+        model->serialize(serializer);
 
-      if (!ofSavePrettyJson(MTPrefLastFile.get(), serializer))
-      {
-         ofLogError("MTApp") << "Encountered an error while saving the JSON file";
-         //ofSystemAlertDialog("Encountered an error while saving the file");
-         return false;
-      }
-   }
-   saveAppPreferences();
-   return true;
+        if (!ofSavePrettyJson(MTPrefLastFile.get(), serializer))
+        {
+            ofLogError("MTApp")
+                << "Encountered an error while saving the JSON file";
+            // ofSystemAlertDialog("Encountered an error while saving the
+            // file");
+            return false;
+        }
+    }
+    saveAppPreferences();
+    return true;
 }
 
 /// Open sesame.
 bool MTApp::openImpl(std::string path)
 {
-   if (path.empty())
-   {
-      newFile();
-      return true;
-   }
-   std::string filepath = path;
-   if (ofFilePath::isAbsolute(path))
-   {
-      auto exePath = ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(), false);
-      auto rPath = ofFilePath::makeRelative(exePath, path);
-      ofLogNotice("MTApp") << "Document path: " << rPath;
-      if (!rPath.empty())
-      {
-         filepath = rPath;
-      }
-   }
+    if (path.empty())
+    {
+        newFile();
+        return true;
+    }
+    std::string filepath = path;
+    if (ofFilePath::isAbsolute(path))
+    {
+#ifdef TARGET_OS_MAC
+        filePath = ofToDataPath(path);
 
-   bool success = false;
-   ofJson json;
-   ofXml xml;
+#else
+        auto exePath =
+            ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(),
+                                              false);
+        auto rPath = ofFilePath::makeRelative(exePath, path);
+        ofLogNotice("MTApp") << "Document path: " << rPath;
+        if (!rPath.empty())
+        {
+            filepath = rPath;
+        }
+#endif
+    }
 
-   if (serializerType == XML)
-   {
-      success = xml.load(filepath);
-   }
-   else
-   {
-      try
-      {
-         json = ofLoadJson(filepath);
-         success = json.empty() ? false : true;
-      }
-      catch (std::exception& e)
-      {
-         success = false;
-      }
-   }
+    bool success = false;
+    ofJson json;
+    ofXml xml;
 
-   if (!success)
-   {
-      ofLogError("MTApp") << "Failed loading file " << filepath;
-      return false;
-   }
-   newFile();
-   ofLogVerbose("MTApp") << "Opening file: " << filepath;
-   if (serializerType == XML)
-   {
-      preDeserializeXMLEvent.notify(xml);
-      model->deserialize(xml);
-   }
-   else
-   {
-      preDeserializeJsonEvent.notify(json);
-      model->deserialize(json);
-   }
+    if (serializerType == XML)
+    {
+        success = xml.load(filepath);
+    }
+    else
+    {
+        try
+        {
+            json = ofLoadJson(filepath);
+            success = json.empty() ? false : true;
+        }
+        catch (std::exception& e)
+        {
+            success = false;
+        }
+    }
 
-   if (model == nullptr)
-   {
-      ofLogError("MTApp") << "Failed to load Model";
-      //ofSystemAlertDialog("Failed Loading Model");
-      return false;
-   }
+    if (!success)
+    {
+        ofLogError("MTApp") << "Failed loading file " << filepath;
+        return false;
+    }
+    newFile();
+    ofLogVerbose("MTApp") << "Opening file: " << filepath;
+    if (serializerType == XML)
+    {
+        preDeserializeXMLEvent.notify(xml);
+        model->deserialize(xml);
+    }
+    else
+    {
+        preDeserializeJsonEvent.notify(json);
+        model->deserialize(json);
+    }
 
-   MTPrefLastFile = filepath;
-   fileName = ofFilePath::getFileName(filepath);
-   isInitialized = true;
-   mainWindow->setWindowTitle(fileName);
-   //            saveAppPreferences();
-   auto args = ofEventArgs();
-   modelLoadedEvent.notify(args);
-   saveAppPreferences();
-   ofLogVerbose("MTApp") << "File loaded.";
-   return true;
+    if (model == nullptr)
+    {
+        ofLogError("MTApp") << "Failed to load Model";
+        // ofSystemAlertDialog("Failed Loading Model");
+        return false;
+    }
+
+    MTPrefLastFile = filepath;
+    fileName = ofFilePath::getFileName(filepath);
+    isInitialized = true;
+    mainWindow->setWindowTitle(fileName);
+    //            saveAppPreferences();
+    auto args = ofEventArgs();
+    modelLoadedEvent.notify(args);
+    saveAppPreferences();
+    ofLogVerbose("MTApp") << "File loaded.";
+    return true;
 }
 
 void MTApp::newFile()
 {
-   // Call the user's newFile method:
+    // Call the user's newFile method:
 
-   //    saveAppPreferences();
+    //    saveAppPreferences();
 
-   newFileSetup();
-   MTPrefLastFile = "";
-   fileName = "";
-   model->newFile();
-   ofEventArgs fooArgs;
-   newFileEvent.notify();
-   isInitialized = true;
-   mainWindow->setWindowTitle(fileName);
+    newFileSetup();
+    MTPrefLastFile = "";
+    fileName = "";
+    model->newFile();
+    ofEventArgs fooArgs;
+    newFileEvent.notify();
+    isInitialized = true;
+    mainWindow->setWindowTitle(fileName);
 
-   //setAppMode(defaultMode);
+    // setAppMode(defaultMode);
 
-   auto args = ofEventArgs();
-   modelLoadedEvent.notify(args);
+    auto args = ofEventArgs();
+    modelLoadedEvent.notify(args);
 }
 
 /// Reload the last opened file.
 bool MTApp::revert()
 {
-   return openImpl(MTPrefLastFile);
+    return openImpl(MTPrefLastFile);
 }
 
 /// Saves!
 bool MTApp::saveAppPreferences()
 {
-   // Return if the app has not yet initialized
-   // Prevents bogus window prefs from being saved
-   if (!isInitialized) return false;
-   ofXml appPrefsXml;
-   //appPrefsXml.removeChild("App_Preferences");
-   ofSerialize(appPrefsXml, appPreferences);
+    // Return if the app has not yet initialized
+    // Prevents bogus window prefs from being saved
+    if (!isInitialized)
+        return false;
+    ofXml appPrefsXml;
+    // appPrefsXml.removeChild("App_Preferences");
+    ofSerialize(appPrefsXml, appPreferences);
 
-   auto root = appPrefsXml.getChild("App_Preferences");
-   root.removeChild("Windows");
-   auto windowsXml = root.appendChild("Windows");
+    auto root = appPrefsXml.getChild("App_Preferences");
+    root.removeChild("Windows");
+    auto windowsXml = root.appendChild("Windows");
 
-   for (auto& wp : wpMap)
-   {
-      auto foundFsPos = wp.first.find("FS");
-      if (foundFsPos == 0)
-      {
-         continue;  // Don't store FS windows
-      }
-      // TODO: Avoid saving prefs of ofWindowMode::OF_FULLSCREEN windows
-      // Constrain window pos and size to something reasonable to avoid NaNs and weird values
+    for (auto& wp : wpMap)
+    {
+        auto foundFsPos = wp.first.find("FS");
+        if (foundFsPos == 0)
+        {
+            continue;  // Don't store FS windows
+        }
+        // TODO: Avoid saving prefs of ofWindowMode::OF_FULLSCREEN windows
+        // Constrain window pos and size to something reasonable to avoid NaNs
+        // and weird values
 
-      //wp.second.position = glm::max(wp.second.position, {-10000, -10000});
-      auto sizeNan = glm::isnan(wp.second.size);
-      if (sizeNan.x || sizeNan.y)
-      {
-         ofLogNotice("MTApp") << "Window size was invalid, setting default values instead";
-         wp.second.size = {1024, 768};
-      }
-      else
-      {
-         wp.second.size = glm::max(wp.second.size, {200, 200});
-      }
+        // wp.second.position = glm::max(wp.second.position, {-10000, -10000});
+        auto sizeNan = glm::isnan(wp.second.size);
+        if (sizeNan.x || sizeNan.y)
+        {
+            ofLogNotice("MTApp")
+                << "Window size was invalid, setting default values instead";
+            wp.second.size = {1024, 768};
+        }
+        else
+        {
+            wp.second.size = glm::max(wp.second.size, {200, 200});
+        }
 
-      auto winCenter = wp.second.position + (wp.second.size * 0.5);
+        auto winCenter = wp.second.position + (wp.second.size * 0.5);
 
-      auto w = getWindowWithName(wp.first);
-      if (w)
-      {
-         auto monitor = getMonitorForWindow(w.get());
-         // TODO: This is a temp bug fix for a crash when moving the window across monitors
-         if (monitor)
-         {
-            int xpos, ypos;
-            glfwGetMonitorPos(monitor, &xpos, &ypos);
-            wp.second.position.y = glm::max(wp.second.position.y, (float)ypos);
-            //wp.second.position.x = xpos;
-            //wp.second.position.y = ypos;
-         }
-      }
+        auto w = getWindowWithName(wp.first);
+        if (w)
+        {
+            auto monitor = getMonitorForWindow(w.get());
+            // TODO: This is a temp bug fix for a crash when moving the window
+            // across monitors
+            if (monitor)
+            {
+                int xpos, ypos;
+                glfwGetMonitorPos(monitor, &xpos, &ypos);
+                wp.second.position.y =
+                    glm::max(wp.second.position.y, (float)ypos);
+                // wp.second.position.x = xpos;
+                // wp.second.position.y = ypos;
+            }
+        }
 
-      auto winXml = windowsXml.appendChild("Window");
-      winXml.appendChild("Name").set(wp.first);
-      winXml.appendChild("Position").set(wp.second.position);
-      winXml.appendChild("Size").set(wp.second.size);
-   }
-   ofDisableDataPath();
-   auto success = appPrefsXml.save(appPreferencesPath);
-   ofEnableDataPath();
-   return success;
+        auto winXml = windowsXml.appendChild("Window");
+        winXml.appendChild("Name").set(wp.first);
+        winXml.appendChild("Position").set(wp.second.position);
+        winXml.appendChild("Size").set(wp.second.size);
+    }
+    ofDisableDataPath();
+    auto success = appPrefsXml.save(appPreferencesPath);
+    ofEnableDataPath();
+    return success;
 }
 
 GLFWmonitor* MTApp::getMonitorForWindow(MTWindow* w)
 {
-   int monitorCount;
-   auto monitors = glfwGetMonitors(&monitorCount);
+    int monitorCount;
+    auto monitors = glfwGetMonitors(&monitorCount);
 
-   GLFWmonitor* resultMonitor;
-   auto winCenter = w->getWindowPosition() + (w->getWindowSize() * 0.5);
-   for (int i = 0; i < monitorCount; i++)
-   {
-      auto m = monitors[i];
-      int xpos, ypos;
-      glfwGetMonitorPos(m, &xpos, &ypos);
-      const GLFWvidmode* mode = glfwGetVideoMode(m);
-      auto mr = ofRectangle(xpos, ypos, mode->width, mode->height);
-      if (mr.inside(winCenter))
-      {
-         return m;
-      }
-   }
-   return nullptr;
+    GLFWmonitor* resultMonitor;
+    auto winCenter = w->getWindowPosition() + (w->getWindowSize() * 0.5);
+    for (int i = 0; i < monitorCount; i++)
+    {
+        auto m = monitors[i];
+        int xpos, ypos;
+        glfwGetMonitorPos(m, &xpos, &ypos);
+        const GLFWvidmode* mode = glfwGetVideoMode(m);
+        auto mr = ofRectangle(xpos, ypos, mode->width, mode->height);
+        if (mr.inside(winCenter))
+        {
+            return m;
+        }
+    }
+    return nullptr;
 }
-
 
 /**
  * ~/.local/share/filename
@@ -1011,151 +1067,168 @@ GLFWmonitor* MTApp::getMonitorForWindow(MTWindow* w)
  */
 void MTApp::createAppPreferencesFilePath()
 {
-   if (!saveAppPreferencesInHomeDir)
-   {
-      appPreferencesPath = ofToDataPath(appPreferencesFilename);
-   }
-   else
-   {
-      std::string prefix;
-      std::string home = ofFilePath::getUserHomeDir();
+    if (!saveAppPreferencesInHomeDir)
+    {
+        appPreferencesPath = ofToDataPath(appPreferencesFilename);
+    }
+    else
+    {
+        std::string prefix;
+        std::string home = ofFilePath::getUserHomeDir();
 
-      switch (ofGetTargetPlatform())
-      {
-      case OF_TARGET_LINUX:
-      case OF_TARGET_LINUX64:
-      case OF_TARGET_LINUXARMV7L:
-      case OF_TARGET_LINUXARMV6L: prefix = home + "/.local/share/"; break;
-      case OF_TARGET_OSX: prefix = home + "/Library/Preferences/"; break;
-      case OF_TARGET_WINVS:
-      case OF_TARGET_MINGW: prefix = home + "\\AppData\\Roaming\\"; break;
-      default: ofLogError("MTApp") << "Target platform is not supported";
-      }
+        switch (ofGetTargetPlatform())
+        {
+            case OF_TARGET_LINUX:
+            case OF_TARGET_LINUX64:
+            case OF_TARGET_LINUXARMV7L:
+            case OF_TARGET_LINUXARMV6L:
+                prefix = home + "/.local/share/";
+                break;
+            case OF_TARGET_OSX:
+                prefix = home + "/Library/Preferences/";
+                break;
+            case OF_TARGET_WINVS:
+            case OF_TARGET_MINGW:
+                prefix = home + "\\AppData\\Roaming\\";
+                break;
+            default:
+                ofLogError("MTApp") << "Target platform is not supported";
+        }
 
-      appPreferencesPath = prefix + appPreferencesFilename;
-   }
+        appPreferencesPath = prefix + appPreferencesFilename;
+    }
 }
-//int MTApp::getLocalMouseX()
+// int MTApp::getLocalMouseX()
 //{
 //	/// TODO: Get local mouse
 //	ofLogNotice() << "Not implemented yet!!";
 //	return 0;
-//	//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+//	//    auto mtView =
+//getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
 //	//    if (mtView != nullptr)
 //	//    {
 //	//        return mtView->getContentMouse().x;
 //	//    }
 //	//    else
 //	//    {
-//	//        ofLogNotice("MTApp") << "getLocalMouseX: Could not find MTView for
+//	//        ofLogNotice("MTApp") << "getLocalMouseX: Could not find MTView
+//for
 //	//        window";
 //	//        return -1;
 //	//    }
-//}
+// }
 //
-//int MTApp::getLocalMouseY()
+// int MTApp::getLocalMouseY()
 //{
 //	/// TODO: Get local mouse
 //	ofLogNotice() << "Not implemented yet!!";
 //	return 0;
-//	//    auto mtView = getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
+//	//    auto mtView =
+//getMTViewForWindow(ofGetMainLoop()->getCurrentWindow());
 //	//    if (mtView != nullptr)
 //	//    {
 //	//        return mtView->getContentMouse().y;
 //	//    }
 //	//    else
 //	//    {
-//	//        ofLogNotice("MTApp") << "getLocalMouseY: Could not find MTView for
+//	//        ofLogNotice("MTApp") << "getLocalMouseY: Could not find MTView
+//for
 //	//        window";
 //	//        return -1;
 //	//    }
-//}
+// }
 
 int mtGetLocalMouseX()
 {
-   //	return MTApp::Instance()->getLocalMouseX();
-   return -1;
+    //	return MTApp::Instance()->getLocalMouseX();
+    return -1;
 }
 
 int mtGetLocalMouseY()
 {
-   //	return MTApp::Instance()->getLocalMouseY();
-   return -1;
+    //	return MTApp::Instance()->getLocalMouseY();
+    return -1;
 }
 
 ofPath MTApp::pathFromString(std::string s)
 {
-   std::vector<std::string> commandStrings = ofSplitString(s, "{", true, true);
-   ofPath thePath;
+    std::vector<std::string> commandStrings = ofSplitString(s, "{", true, true);
+    ofPath thePath;
 
-   for (auto cs : commandStrings)
-   {
-      std::vector<std::string> commandStringElements = ofSplitString(cs, ";", true, true);
+    for (auto cs : commandStrings)
+    {
+        std::vector<std::string> commandStringElements =
+            ofSplitString(cs, ";", true, true);
 
-      ofPath::Command* thisCommand;
-      int commandType = ofToInt(commandStringElements[0]);
-      ofPoint p, cp1, cp2;
-      switch (commandType)
-      {
-      case ofPath::Command::moveTo:
-         p = ofFromString<ofPoint>(commandStringElements[1]);
-         thePath.moveTo(p);
-         break;
-      case ofPath::Command::lineTo:
-         p = ofFromString<ofPoint>(commandStringElements[1]);
-         thePath.lineTo(p);
-         break;
-      case ofPath::Command::curveTo: p = ofFromString<ofPoint>(commandStringElements[1]); thePath.curveTo(p);
-      case ofPath::Command::bezierTo:
-         p = ofFromString<ofPoint>(commandStringElements[1]);
-         cp1 = ofFromString<ofPoint>(commandStringElements[2]);
-         cp2 = ofFromString<ofPoint>(commandStringElements[3]);
-         thePath.bezierTo(cp1, cp2, p);
-         break;
-      case ofPath::Command::close: thePath.close(); break;
-      default:
-          ofLogWarning("MTApp") << "pathFromString: A Path Command supplied is not implemented";
+        ofPath::Command* thisCommand;
+        int commandType = ofToInt(commandStringElements[0]);
+        ofPoint p, cp1, cp2;
+        switch (commandType)
+        {
+            case ofPath::Command::moveTo:
+                p = ofFromString<ofPoint>(commandStringElements[1]);
+                thePath.moveTo(p);
+                break;
+            case ofPath::Command::lineTo:
+                p = ofFromString<ofPoint>(commandStringElements[1]);
+                thePath.lineTo(p);
+                break;
+            case ofPath::Command::curveTo:
+                p = ofFromString<ofPoint>(commandStringElements[1]);
+                thePath.curveTo(p);
+            case ofPath::Command::bezierTo:
+                p = ofFromString<ofPoint>(commandStringElements[1]);
+                cp1 = ofFromString<ofPoint>(commandStringElements[2]);
+                cp2 = ofFromString<ofPoint>(commandStringElements[3]);
+                thePath.bezierTo(cp1, cp2, p);
+                break;
+            case ofPath::Command::close:
+                thePath.close();
+                break;
+            default:
+                ofLogWarning("MTApp") << "pathFromString: A Path Command "
+                                         "supplied is not implemented";
 
-         break;
-      }
-   }
+                break;
+        }
+    }
 
-   return thePath;
+    return thePath;
 }
 
 std::string MTApp::pathToString(const ofPath& path)
 {
-   std::vector<ofPath::Command> commands = path.getCommands();
+    std::vector<ofPath::Command> commands = path.getCommands();
 
-   std::string out = "";
+    std::string out = "";
 
-   for (auto c : commands)
-   {
-      out += "{ " + ofToString(c.type) + "; " + ofToString(c.to) + "; " + ofToString(c.cp1) + "; " + ofToString(c.cp2) + "; } ";
-   }
+    for (auto c : commands)
+    {
+        out += "{ " + ofToString(c.type) + "; " + ofToString(c.to) + "; " +
+               ofToString(c.cp1) + "; " + ofToString(c.cp2) + "; } ";
+    }
 
-   return out;
+    return out;
 }
-
 
 void MTApp::updateDisplays()
 {
 #ifndef TARGET_RASPBERRY_PI
-   int num;
-   auto glfwMonitors = glfwGetMonitors(&num);
-   MTApp::displays.clear();
+    int num;
+    auto glfwMonitors = glfwGetMonitors(&num);
+    MTApp::displays.clear();
 
-   for (int i = 0; i < num; i++)
-   {
-      auto monitor = glfwMonitors[i];
-      auto name = std::string(glfwGetMonitorName(monitor));
-      int x, y;
-      glfwGetMonitorPos(monitor, &x, &y);
-      auto mode = glfwGetVideoMode(monitor);
-      auto frame = ofRectangle(x, y, mode->width, mode->height);
-      auto display = std::make_shared<MTDisplay>(name, frame, i);
-      MTApp::displays.push_back(display);
-   }
+    for (int i = 0; i < num; i++)
+    {
+        auto monitor = glfwMonitors[i];
+        auto name = std::string(glfwGetMonitorName(monitor));
+        int x, y;
+        glfwGetMonitorPos(monitor, &x, &y);
+        auto mode = glfwGetVideoMode(monitor);
+        auto frame = ofRectangle(x, y, mode->width, mode->height);
+        auto display = std::make_shared<MTDisplay>(name, frame, i);
+        MTApp::displays.push_back(display);
+    }
 #endif
 }
 
@@ -1163,9 +1236,9 @@ void MTApp::updateDisplays()
 
 void MTApp::setMonitorCb(GLFWmonitor* monitor, int connected)
 {
-   MTApp::updateDisplays();
-   ofEventArgs args;
-   MTApp::Instance()->displaysChangedEvent.notify(args);
+    MTApp::updateDisplays();
+    ofEventArgs args;
+    MTApp::Instance()->displaysChangedEvent.notify(args);
 }
 
 #endif
