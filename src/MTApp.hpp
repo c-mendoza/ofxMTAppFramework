@@ -11,20 +11,14 @@
 #include "ofJson.h"
 
 class MTView;
-
 class MTModel;
-
 class MTViewMode;
-
 class MTWindow;
-
 class MTOffscreenWindow;
-
 class ofAppEGLWindowSettings;
+class MTAppModeChangeArgs;
 
 typedef std::string MTAppModeName;
-
-class MTAppModeChangeArgs;
 
 class MTDisplay
 {
@@ -42,15 +36,15 @@ class MTDisplay
     }
 
     const std::string& getName() const { return name; }
-
     const ofRectangle& getFrame() const { return frame; }
-
     int getId() const { return id; }
 };
 
 class MTApp : public ofBaseApp, public MTEventListenerStore
 {
    public:
+    MTApp(MTApp const&) = delete;
+    void operator=(MTApp const&) = delete;
     enum SerializerType
     {
         XML,
@@ -77,10 +71,11 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     static void CreateApp(MTAppSettings settings)
     {
         ofLogVerbose("MTApp") << "Creating App...";
+        auto model = std::make_shared<ModelType>(settings.modelName);
         auto app = std::make_shared<AppType>();
+        app->model = model;
         AppPtr = app;
         ofLogVerbose("MTApp") << "Creating Model " << settings.modelName;
-        app->model = std::make_unique<ModelType>(settings.modelName);
         app->model->newFile();
         app->appPreferencesFilename = settings.appPreferencesFileName;
         app->fileExtension = settings.fileExtension;
@@ -88,7 +83,13 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
         app->saveAppPreferencesInHomeDir = settings.appPreferencesFileInHomeDir;
         app->filePathFromAppSettings = settings.fileToOpen;
         app->commandLineArgs = settings.commandLineArgs;
-        RunApp(std::move(app), settings.mainWindowSettings);
+        // RunApp(std::move(app), settings.mainWindowSettings);
+        ofLogVerbose("MTApp") << "Running app...";
+        app->createAppPreferencesFilePath();
+        app->loadAppPreferences();
+        app->mainWindow =
+            app->createWindow("Main Window", settings.mainWindowSettings);
+        ofRunApp(std::move(app));
     }
 
     template <class AppType = MTApp, class ModelType = MTModel>
@@ -99,11 +100,6 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     }
 
    private:
-    static void RunApp(std::shared_ptr<MTApp>&& app,
-                       ofGLFWWindowSettings mainWindowSettings);
-    MTApp(MTApp const&) = delete;
-    void operator=(MTApp const&) = delete;
-
     void releasePointers();
     //	static MTApp* instance;
     //	static std::shared_ptr<MTApp> instance;
@@ -285,20 +281,14 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
      * @brief Gets the current file name, without the path.
      * @return A copy of the the file name.
      */
-    std::string getFileName()
-    {
-        return fileName;
-    }
+    std::string getFileName() { return fileName; }
 
     /**
-     * @brief Gets the full path of the current file. This should be the same as the value
-     * stored in MTPrefLastFile.
+     * @brief Gets the full path of the current file. This should be the same as
+     * the value stored in MTPrefLastFile.
      * @return A string copy of the full file path.
      */
-    std::string getFilePath()
-    {
-        return filePath;
-    }
+    std::string getFilePath() { return filePath; }
     /**
      * @brief Registers a new app preference. App preferences are saved
      * automatically prior to the app closing.
@@ -376,8 +366,8 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
     ofEvent<MTAppModeChangeArgs> appModeChangedEvent;
 
     /**
-     * Fires after a model is loaded from the file system and deserialized. At this
-     * point, all parameters in the Model's parameterGroup should be set.
+     * Fires after a model is loaded from the file system and deserialized. At
+     * this point, all parameters in the Model's parameterGroup should be set.
      */
     ofEvent<ofEventArgs> modelLoadedEvent;
 
@@ -557,14 +547,11 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
 
     bool inLoop = false;
 
-private:
+   private:
     bool fileHandlingShortcutsEnabled = true;
 
-public:
-    void enableFileHandlingShortcuts()
-    {
-        fileHandlingShortcutsEnabled = true;
-    }
+   public:
+    void enableFileHandlingShortcuts() { fileHandlingShortcutsEnabled = true; }
 
     void disableFileHandlingShortcuts()
     {

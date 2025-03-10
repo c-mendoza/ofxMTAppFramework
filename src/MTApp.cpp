@@ -151,17 +151,6 @@ MTApp::MTApp()
         });
 }
 
-void MTApp::RunApp(std::shared_ptr<MTApp>&& app,
-                   ofGLFWWindowSettings mainWindowSettings)
-{
-    ofLogVerbose("MTApp") << "Running app...";
-    app->createAppPreferencesFilePath();
-    app->loadAppPreferences();
-    app->mainWindow = app->createWindow("Main Window", mainWindowSettings);
-    AppPtr = app;
-    ofRunApp(std::move(app));
-}
-
 MTApp::~MTApp()
 {
     exit();
