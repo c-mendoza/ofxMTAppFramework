@@ -860,15 +860,16 @@ bool MTApp::openImpl(std::string path)
         filePath = ofToDataPath(path);
 
 #else
-        auto exePath =
-            ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(),
-                                              false);
-        auto rPath = ofFilePath::makeRelative(exePath, path);
-        ofLogNotice("MTApp") << "Document path: " << rPath;
-        if (!rPath.empty())
-        {
-            filepath = rPath;
-        }
+        //auto exePath =
+        //    ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(),
+        //                                      false);
+        //auto rPath = ofFilePath::makeRelative(exePath, path);
+        //ofLogNotice("MTApp") << "Document path: " << rPath;
+        //if (!rPath.empty())
+        //{
+        //    filepath = rPath;
+        //}
+        filePath = ofToDataPath(path);
 #endif
     }
 
