@@ -857,19 +857,27 @@ bool MTApp::openImpl(std::string path)
     if (ofFilePath::isAbsolute(path))
     {
 #ifdef TARGET_OS_MAC
-        filePath = ofToDataPath(path);
+        filepath = ofToDataPath(path);
 
 #else
-        //auto exePath =
-        //    ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(),
-        //                                      false);
+        auto exePath =
+            ofFilePath::getEnclosingDirectory(ofFilePath::getCurrentExePath(),
+                                              false);
+        auto rPath = std::filesystem::relative(path, exePath);
         //auto rPath = ofFilePath::makeRelative(exePath, path);
-        //ofLogNotice("MTApp") << "Document path: " << rPath;
-        //if (!rPath.empty())
-        //{
-        //    filepath = rPath;
-        //}
-        filePath = ofToDataPath(path);
+        ofLogNotice("MTApp") << "Document path: " << rPath;
+        if (!rPath.empty())
+        {
+            filepath = rPath.string();
+        }
+        else
+        {
+            // failsafe... this will not return a relative path in Windows
+            filepath = ofToDataPath(path);
+        }
+        // For some reason this does not work on Windows.
+        // There seems to be a bug in the WIN implementation of ofToDataPath
+         //filepath = ofToDataPath(path);
 #endif
     }
 
@@ -921,6 +929,7 @@ bool MTApp::openImpl(std::string path)
 
     MTPrefLastFile = filepath;
     fileName = ofFilePath::getFileName(filepath);
+    filePath = filepath;
     isInitialized = true;
     mainWindow->setWindowTitle(fileName);
     //            saveAppPreferences();
