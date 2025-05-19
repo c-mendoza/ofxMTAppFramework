@@ -1224,7 +1224,12 @@ void MTApp::updateDisplays()
         int x, y;
         glfwGetMonitorPos(monitor, &x, &y);
         auto mode = glfwGetVideoMode(monitor);
-        auto frame = ofRectangle(x, y, mode->width, mode->height);
+        float xScale, yScale;
+        glfwGetMonitorContentScale(monitor, &xScale, &yScale);
+        auto frame = ofRectangle(x * xScale,
+                                 y * yScale,
+                                 mode->width * xScale,
+                                 mode->height * yScale);
         auto display = std::make_shared<MTDisplay>(name, frame, i);
         MTApp::displays.push_back(display);
     }
