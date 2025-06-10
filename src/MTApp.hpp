@@ -389,6 +389,11 @@ class MTApp : public ofBaseApp, public MTEventListenerStore
      */
     ofEvent<ofXml> preDeserializeXMLEvent;
 
+    /**
+     * Notifies prior to the model being serialized and saved to disk.
+     */
+    ofEvent<void> modelWillSaveEvent;
+
    protected:
     SerializerType serializerType = XML;
     /// The name of the current file.

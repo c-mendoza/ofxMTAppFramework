@@ -813,6 +813,8 @@ bool MTApp::saveImpl()
 {
     ofLogVerbose("MTApp") << "Saving file";
 
+    modelWillSaveEvent.notify();
+
     if (serializerType == XML)
     {
         auto serializer = ofXml();
