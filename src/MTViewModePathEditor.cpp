@@ -267,7 +267,7 @@ void MTViewModePathEditor::mouseReleased(int x, int y, int button)
                   pEventArgs.path = pathPtr;
                   pathCreatedEvent.notify(pEventArgs);
                   onPathCreated(pEventArgs);
-                  ofLogVerbose() << "Active UI Path: " << activeUIPath;
+                  ofLogVerbose("MTViewModePathEditor") << "Active UI Path: " << activeUIPath;
                }
             }
          }
