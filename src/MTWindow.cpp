@@ -55,37 +55,6 @@ void MTWindow::close()
       MTApp::Instance()->closeWindow(shared_from_this());
    }
 
-   //onClose();
-   //	if(auto windowP = getGLFWWindow()){
-   //		MTApp::Instance()->closeWindow(shared_from_this());
-   //		glfwSetMouseButtonCallback( windowP, nullptr );
-   //		glfwSetCursorPosCallback( windowP, nullptr );
-   //		glfwSetCursorEnterCallback( windowP, nullptr );
-   //		glfwSetKeyCallback( windowP, nullptr );
-   //		glfwSetWindowSizeCallback( windowP, nullptr );
-   //		glfwSetFramebufferSizeCallback( windowP, nullptr);
-   //		glfwSetWindowCloseCallback( windowP, nullptr );
-   //		glfwSetScrollCallback( windowP, nullptr );
-   //#if GLFW_VERSION_MAJOR>3 || GLFW_VERSION_MINOR>=1
-   //		glfwSetDropCallback( windowP, nullptr );
-   //#endif
-   //		//hide the window before we destroy it stops a flicker on OS X on exit.
-   //		glfwHideWindow(windowP);
-   //
-   //		// We must ensure renderer is destroyed *before* glfw destroys the window in glfwDestroyWindow,
-   //		// as `glfwDestroyWindow` at least on Windows has the effect of unloading OpenGL, making all
-   //		// calls to OpenGL illegal.
-   //		renderer().reset();
-   //
-   //		glfwDestroyWindow(windowP);
-   //		windowP = nullptr;
-   //		events().disable();
-   //	}
-   // This ensures that we destroy the right context:
-   //	 if (isImGuiEnabled)
-   //	 {
-   //		setImGuiEnabled(false);
-   //	 }
    //// This will destroy the gui:
    bindImGuiContext();
    gui.reset();

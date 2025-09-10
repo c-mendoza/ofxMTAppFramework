@@ -153,6 +153,10 @@ MTApp::MTApp()
 
 MTApp::~MTApp()
 {
+     for (auto w : windows)
+    {
+         w->close();
+     }
     exit();
     saveAppPreferences();
     releasePointers();

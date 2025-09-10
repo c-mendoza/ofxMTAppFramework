@@ -28,11 +28,11 @@ MTView::MTView(std::string _name)
           appModeChanged(args);
        },
        -100);
-	exitEventListener = ofGetMainLoop()->exitEvent.newListener([this]()
+    exitEventListener = ofGetMainLoop()->exitEvent.newListener([this]()
 	{
 		ofEventArgs args;
 		exit(args);
-	});
+	}, OF_EVENT_ORDER_BEFORE_APP);
 }
 
 MTView::~MTView()
